@@ -1,8 +1,8 @@
 # VPet: Pixel Art Companions for IntelliJ
 
 ![Build](https://github.com/stillya/vpet/workflows/Build/badge.svg)
-[![Version](https://img.shields.io/jetbrains/plugin/v/26896.svg)](https://plugins.jetbrains.com/plugin/26896)
-[![Downloads](https://img.shields.io/jetbrains/plugin/d/26896.svg)](https://plugins.jetbrains.com/plugin/26896)
+[![Version](https://img.shields.io/jetbrains/plugin/v/26898.svg)](https://plugins.jetbrains.com/plugin/26898)
+[![Downloads](https://img.shields.io/jetbrains/plugin/d/26898.svg)](https://plugins.jetbrains.com/plugin/26898)
 
 <!-- Plugin description -->
 VPet is a delightful IntelliJ IDEA plugin that brings cute pixel art companions to your
