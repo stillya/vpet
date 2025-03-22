@@ -1,18 +1,45 @@
 <!-- Plugin Configuration File. Read more: https://plugins.jetbrains.com/docs/intellij/plugin-configuration-file.html -->
 <idea-plugin>
-    <id>com.github.stillya.vpet</id>
-    <name>vpet</name>
-    <vendor>stillya</vendor>
+	<!-- Unique identifier of the plugin. It should be FQN. It cannot be changed between the plugin versions. -->
+	<id>dev.stillya.vpet</id>
 
-    <depends>com.intellij.modules.platform</depends>
+	<!-- Public plugin name should be written in Title Case.
+		 Guidelines: https://plugins.jetbrains.com/docs/marketplace/plugin-overview-page.html#plugin-name -->
+	<name>Vpet</name>
 
-    <resource-bundle>messages.MyBundle</resource-bundle>
+	<!-- A displayed Vendor name or Organization ID displayed on the Plugins Page. -->
+	<vendor>stillya</vendor>
 
-    <extensions defaultExtensionNs="com.intellij">
-        <toolWindow factoryClass="com.github.stillya.vpet.toolWindow.MyToolWindowFactory" id="MyToolWindow"/>
-    </extensions>
+	<!-- Description of the plugin displayed on the Plugin Page and IDE Plugin Manager.
+		 Simple HTML elements (text formatting, paragraphs, and lists) can be added inside of <![CDATA[ ]]> tag.
+		 Guidelines: https://plugins.jetbrains.com/docs/marketplace/plugin-overview-page.html#plugin-description -->
+	<description><![CDATA[
+    Animated pixel art in your IDE status bar.
+  ]]></description>
 
-    <applicationListeners>
-        <listener class="com.github.stillya.vpet.listeners.MyApplicationActivationListener" topic="com.intellij.openapi.application.ApplicationActivationListener"/>
-    </applicationListeners>
+	<!-- Product and plugin compatibility requirements.
+		 Read more: https://plugins.jetbrains.com/docs/intellij/plugin-compatibility.html -->
+	<depends>com.intellij.modules.platform</depends>
+	<depends>com.intellij.modules.lang</depends>
+
+	<!-- Extension points defined by the plugin.
+		 Read more: https://plugins.jetbrains.com/docs/intellij/plugin-extension-points.html -->
+	<extensions defaultExtensionNs="com.intellij">
+		<statusBarWidgetFactory
+				implementation="dev.stillya.vpet.AnimatedStatusBarWidgetFactory"
+				id="vpet"/>
+	</extensions>
+
+	<projectListeners>
+		<listener class="dev.stillya.vpet.listener.BuildEventListener"
+				  topic="com.intellij.task.ProjectTaskListener"/>
+	</projectListeners>
+	<projectListeners>
+		<listener class="dev.stillya.vpet.listener.BuildEventListener"
+				  topic="com.intellij.execution.ExecutionListener"/>
+	</projectListeners>
+	<projectListeners>
+		<listener class="dev.stillya.vpet.service.AnimationEventService"
+				  topic="dev.stillya.vpet.AnimationEventListener"/>
+	</projectListeners>
 </idea-plugin>
