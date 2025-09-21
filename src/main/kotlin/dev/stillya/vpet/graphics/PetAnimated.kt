@@ -11,7 +11,6 @@ import java.awt.image.BufferedImage
 import javax.imageio.ImageIO
 import kotlin.random.Random
 
-// TODO: It's really hard to understand what's going on here. Need to refactor
 @Service
 class PetAnimated : Animated {
 	private val atlasLoader: AtlasLoader
@@ -104,187 +103,162 @@ class PetAnimated : Animated {
 	private fun playWalkAnimation() {
 		val walkVariant = getRandomAnimation(listOf("Walk"))
 
-		renderer.enqueue(
-			Animation(
-				name = "walking",
-				loop = SHORT_LOOP,
-				sheet = createSpriteSheet(walkVariant),
-				onFinish = {
-					if (Random.nextFloat() < 0.3) {
-						playRandomIdleBehavior()
-					} else {
-						playDefaultAnimation(withRandom = false)
-					}
+		val walkAnim = Animation(
+			name = "walking",
+			loop = SHORT_LOOP,
+			sheet = createSpriteSheet(walkVariant),
+			onFinish = {
+				if (Random.nextFloat() < 0.3) {
+					playRandomIdleBehavior()
+				} else {
+					playDefaultAnimation(withRandom = false)
 				}
-			)
+			}
 		)
+
+		renderer.enqueue(walkAnim)
 	}
 
 	private fun playOccasionAnimation() {
 		val occasionVariant = getRandomAnimation(listOf("Pac-Cat", "Goomba"))
 
-		renderer.enqueue(
-			Animation(
-				name = "occasion",
-				loop = MEDIUM_LOOP,
-				sheet = createSpriteSheet(occasionVariant),
-				onFinish = { playDefaultAnimation() }
-			)
+		val occasionAnim = Animation(
+			name = "occasion",
+			loop = MEDIUM_LOOP,
+			sheet = createSpriteSheet(occasionVariant),
+			onFinish = { playDefaultAnimation() }
 		)
+
+		renderer.enqueue(occasionAnim)
 	}
 
 	private fun playGroomingAnimation() {
-		renderer.enqueue(
-			Animation(
-				name = "groom_start",
-				sheet = createSpriteSheet("Sit_Up"),
-				onFinish = {
-					renderer.enqueue(
-						Animation(
-							name = "grooming",
-							loop = SHORT_LOOP,
-							sheet = createSpriteSheet("Scratching"),
-							onFinish = {
-								renderer.enqueue(
-									Animation(
-										name = "groom_end",
-										sheet = createSpriteSheet("Sit_Down"),
-										onFinish = { playDefaultAnimation(withRandom = false) }
-									)
-								)
-							}
-						)
-					)
-				}
-			)
+		val sitUpAnim = Animation(
+			name = "groom_start",
+			sheet = createSpriteSheet("Sit_Up")
 		)
+
+		val groomingAnim = Animation(
+			name = "grooming",
+			loop = SHORT_LOOP,
+			sheet = createSpriteSheet("Scratching")
+		)
+
+		val sitDownAnim = Animation(
+			name = "groom_end",
+			sheet = createSpriteSheet("Sit_Down"),
+			onFinish = { playDefaultAnimation(withRandom = false) }
+		)
+
+		sitUpAnim.onNext(groomingAnim).onNext(sitDownAnim)
+		renderer.enqueue(sitUpAnim)
 	}
 
 	private fun playStretchAnimation() {
 		val stretchVariant = getRandomAnimation(listOf("On_2_Paws", "On_4_Paws"))
 
-		renderer.enqueue(
-			Animation(
-				name = "stretch",
-				sheet = createSpriteSheet(stretchVariant),
-				onFinish = { playDefaultAnimation(withRandom = false) }
-			)
+		val stretchAnim = Animation(
+			name = "stretch",
+			sheet = createSpriteSheet(stretchVariant),
+			onFinish = { playDefaultAnimation(withRandom = false) }
 		)
+
+		renderer.enqueue(stretchAnim)
 	}
 
 	private fun playSitThenStandAnimation() {
-		renderer.enqueue(
-			Animation(
-				name = "sit_up",
-				sheet = createSpriteSheet("Sit_Up"),
-				onFinish = {
-					renderer.enqueue(
-						Animation(
-							name = "look_around",
-							loop = SHORT_LOOP,
-							sheet = createSpriteSheet("Aggress"),
-							onFinish = {
-								renderer.enqueue(
-									Animation(
-										name = "sit_down",
-										sheet = createSpriteSheet("Sit_Down"),
-										onFinish = { playDefaultAnimation(withRandom = false) }
-									)
-								)
-							}
-						)
-					)
-				}
-			)
+		val sitUpAnim = Animation(
+			name = "sit_up",
+			sheet = createSpriteSheet("Sit_Up")
 		)
+
+		val lookAroundAnim = Animation(
+			name = "look_around",
+			loop = SHORT_LOOP,
+			sheet = createSpriteSheet("Aggress")
+		)
+
+		val sitDownAnim = Animation(
+			name = "sit_down",
+			sheet = createSpriteSheet("Sit_Down"),
+			onFinish = { playDefaultAnimation(withRandom = false) }
+		)
+
+		sitUpAnim.onNext(lookAroundAnim).onNext(sitDownAnim)
+		renderer.enqueue(sitUpAnim)
 	}
 
 	private fun playDeathAnimation() {
 		val deathVariant = getRandomAnimation(listOf("Death_1", "Death_2"))
 
-		renderer.enqueue(
-			Animation(
-				name = "fail_death",
-				sheet = createSpriteSheet(deathVariant),
-				onFinish = {
-					renderer.enqueue(
-						Animation(
-							name = "bleeding",
-							loop = 10,
-							sheet = createSpriteSheet("Deat_End"),
-							onFinish = {
-								renderer.enqueue(
-									Animation(
-										name = "comeback",
-										sheet = createSpriteSheet("Spawn_2"),
-										onFinish = { playDefaultAnimation() }
-									)
-								)
-							}
-						)
-					)
-				}
-			)
+		val deathAnim = Animation(
+			name = "fail_death",
+			sheet = createSpriteSheet(deathVariant)
 		)
+
+		val bleedingAnim = Animation(
+			name = "bleeding",
+			loop = 10,
+			sheet = createSpriteSheet("Deat_End")
+		)
+
+		val comebackAnim = Animation(
+			name = "comeback",
+			sheet = createSpriteSheet("Spawn_2"),
+			onFinish = { playDefaultAnimation() }
+		)
+
+		deathAnim.onNext(bleedingAnim).onNext(comebackAnim)
+		renderer.enqueue(deathAnim)
 	}
 
 	private fun playPoopingDiggingSequence() {
-		renderer.enqueue(
-			Animation(
-				name = "sit_up_for_poop",
-				sheet = createSpriteSheet("Sit_Up"),
-				onFinish = {
-					renderer.enqueue(
-						Animation(
-							name = "fail_pooping",
-							sheet = createSpriteSheet("Pooping"),
-							onFinish = {
-								val digVariant = getRandomAnimation(listOf("Dig"))
-								renderer.enqueue(
-									Animation(
-										name = "fail_digging",
-										loop = MEDIUM_LOOP,
-										sheet = createSpriteSheet(digVariant),
-										onFinish = {
-											renderer.enqueue(
-												Animation(
-													name = "sit_down_after_poop",
-													sheet = createSpriteSheet("Sit_Down"),
-													onFinish = { playDefaultAnimation() }
-												)
-											)
-										}
-									)
-								)
-							}
-						)
-					)
-				}
-			)
+		val sitUpAnim = Animation(
+			name = "sit_up_for_poop",
+			sheet = createSpriteSheet("Sit_Up")
 		)
+
+		val poopingAnim = Animation(
+			name = "fail_pooping",
+			sheet = createSpriteSheet("Pooping")
+		)
+
+		val digVariant = getRandomAnimation(listOf("Dig"))
+		val diggingAnim = Animation(
+			name = "fail_digging",
+			loop = MEDIUM_LOOP,
+			sheet = createSpriteSheet(digVariant)
+		)
+
+		val sitDownAnim = Animation(
+			name = "sit_down_after_poop",
+			sheet = createSpriteSheet("Sit_Down"),
+			onFinish = { playDefaultAnimation() }
+		)
+
+		sitUpAnim.onNext(poopingAnim).onNext(diggingAnim).onNext(sitDownAnim)
+		renderer.enqueue(sitUpAnim)
 	}
 
 	private fun playSuccessAnimation() {
 		val walkVariant = getRandomAnimation(listOf("Walk"))
 
-		renderer.enqueue(
-			Animation(
-				name = "success_walk",
-				loop = SHORT_LOOP,
-				sheet = createSpriteSheet(walkVariant),
-				onFinish = {
-					val jumpVariant = getRandomAnimation(listOf("J_1", "J_2", "J_3"))
-					renderer.enqueue(
-						Animation(
-							name = "success_jump",
-							loop = SHORT_LOOP,
-							sheet = createSpriteSheet(jumpVariant),
-							onFinish = { playDefaultAnimation(withRandom = false) }
-						)
-					)
-				}
-			)
+		val walkAnim = Animation(
+			name = "success_walk",
+			loop = SHORT_LOOP,
+			sheet = createSpriteSheet(walkVariant)
 		)
+
+		val jumpVariant = getRandomAnimation(listOf("J_1"))
+		val jumpAnim = Animation(
+			name = "success_jump",
+			loop = SHORT_LOOP,
+			sheet = createSpriteSheet(jumpVariant),
+			onFinish = { playDefaultAnimation(withRandom = false) }
+		)
+
+		walkAnim.onNext(jumpAnim)
+		renderer.enqueue(walkAnim)
 	}
 
 	private fun playProgressAnimation() {
@@ -300,36 +274,31 @@ class PetAnimated : Animated {
 	}
 
 	private fun playCelebrateAnimation() {
-		renderer.enqueue(
-			Animation(
-				name = "celebrate_start",
-				sheet = createSpriteSheet("Sit_Up"),
-				onFinish = {
-					val attackVariant = getRandomAnimation(
-						listOf("Attack_1", "Attack_2", "Attack_3", "Attack_4", "Attack_5")
-					)
-
-					renderer.enqueue(
-						Animation(
-							name = "celebrate_attack",
-							loop = MEDIUM_LOOP,
-							sheet = createSpriteSheet(attackVariant),
-							onFinish = {
-								val walkVariant =
-									getRandomAnimation(listOf("Walk"))
-								renderer.enqueue(
-									Animation(
-										name = "celebrate_walk",
-										loop = MEDIUM_LOOP,
-										sheet = createSpriteSheet(walkVariant),
-									)
-								)
-							}
-						)
-					)
-				}
-			)
+		val sitUpAnim = Animation(
+			name = "celebrate_start",
+			sheet = createSpriteSheet("Sit_Up")
 		)
+
+		val attackVariant = getRandomAnimation(
+			listOf("Attack_1", "Attack_2", "Attack_3", "Attack_4", "Attack_5")
+		)
+
+		val attackAnim = Animation(
+			name = "celebrate_attack",
+			loop = MEDIUM_LOOP,
+			sheet = createSpriteSheet(attackVariant)
+		)
+
+		val walkVariant = getRandomAnimation(listOf("Walk"))
+		val walkAnim = Animation(
+			name = "celebrate_walk",
+			loop = MEDIUM_LOOP,
+			sheet = createSpriteSheet(walkVariant),
+			onFinish = { playDefaultAnimation() }
+		)
+
+		sitUpAnim.onNext(attackAnim).onNext(walkAnim)
+		renderer.enqueue(sitUpAnim)
 	}
 
 	private fun loadImage(path: String): BufferedImage {

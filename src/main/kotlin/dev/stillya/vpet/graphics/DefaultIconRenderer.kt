@@ -28,7 +28,7 @@ class DefaultIconRenderer : IconRenderer {
 	override fun render(): List<Icon> {
 		currentAnimation?.let {
 			if (it.loop <= 0) {
-				currentAnimation = doPoll()
+				currentAnimation = processNextAnimation(it)
 			} else {
 				it.loop--
 			}
@@ -39,8 +39,16 @@ class DefaultIconRenderer : IconRenderer {
 		return currentAnimation?.let { doRender(it.sheet) } ?: emptyList()
 	}
 
+	private fun processNextAnimation(animation: Animation): Animation? {
+		animation.nextAnimation?.let { next ->
+			return next
+		} ?: run {
+			animation.onFinish.invoke()
+			return doPoll()
+		}
+	}
+
 	private fun doPoll(): Animation? {
-		currentAnimation?.onFinish?.let { it() }
 		val head = animationQueue.poll()
 		head?.let {
 			if (it.loop == INFINITE) {
