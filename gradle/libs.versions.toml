@@ -8,9 +8,11 @@ intelliJPlatform = "2.2.0"
 kotlin = "2.2.20"
 kover = "0.8.3"
 qodana = "2024.2.3"
+jackson = "2.15.2"
 
 [libraries]
 junit = { group = "junit", name = "junit", version.ref = "junit" }
+jacksonDatabind = { group = "com.fasterxml.jackson.core", name = "jackson-databind", version.ref = "jackson" }
 
 [plugins]
 changelog = { id = "org.jetbrains.changelog", version.ref = "changelog" }
