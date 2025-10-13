@@ -69,6 +69,8 @@ class AnimatedStatusBarWidget : IconWidgetPresentation {
 		flow {
 			while (true) {
 				if (curFrames.isNotEmpty() && curFrameIdx < curFrames.size) {
+					emit(curFrames[curFrameIdx])
+					delay(FRAME_RATE_MS)
 					curFrameIdx = (curFrameIdx + 1) % curFrames.size
 					if (curFrameIdx == 0) {
 						try {
@@ -77,13 +79,11 @@ class AnimatedStatusBarWidget : IconWidgetPresentation {
 								stopAnimation()
 								continue
 							}
-						} catch (e: Exception) {
+						} catch (_: Exception) {
 							stopAnimation()
 							continue
 						}
 					}
-					emit(curFrames[curFrameIdx])
-					delay(FRAME_RATE_MS)
 				}
 			}
 		}

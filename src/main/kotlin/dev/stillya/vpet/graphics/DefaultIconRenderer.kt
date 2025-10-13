@@ -8,6 +8,7 @@ import java.awt.image.AffineTransformOp
 import java.awt.image.BufferedImage
 import java.util.*
 import java.util.concurrent.LinkedBlockingQueue
+import java.util.concurrent.atomic.AtomicInteger
 import javax.swing.Icon
 import javax.swing.ImageIcon
 
@@ -16,7 +17,10 @@ import javax.swing.ImageIcon
 class DefaultIconRenderer : IconRenderer {
 	private val animationQueue: Queue<Animation> = LinkedBlockingQueue()
 	private var lastStableAnimation: Animation? = null
+
+	@Volatile
 	private var currentAnimation: Animation? = null
+	private val currentLoopCount: AtomicInteger = AtomicInteger(0)
 	private var scaleValue: Double = 1.2
 	private var isFlipped: Boolean = false
 	private var verticalOffset: Int = -8
@@ -27,24 +31,28 @@ class DefaultIconRenderer : IconRenderer {
 
 	override fun render(): List<Icon> {
 		currentAnimation?.let {
-			if (it.loop <= 0) {
+			if (currentLoopCount.get() <= 0) {
 				currentAnimation = processNextAnimation(it)
+				currentAnimation?.let { nextAnim ->
+					currentLoopCount.set(nextAnim.loop)
+				}
 			} else {
-				it.loop--
+				currentLoopCount.decrementAndGet()
 			}
 		} ?: run {
 			currentAnimation = doPoll()
+			currentAnimation?.let { anim ->
+				currentLoopCount.set(anim.loop)
+			}
 		}
 
 		return currentAnimation?.let { doRender(it.sheet) } ?: emptyList()
 	}
 
 	private fun processNextAnimation(animation: Animation): Animation? {
-		animation.nextAnimation?.let { next ->
-			return next
-		} ?: run {
+		return animation.nextAnimation ?: run {
 			animation.onFinish.invoke()
-			return doPoll()
+			doPoll()
 		}
 	}
 
