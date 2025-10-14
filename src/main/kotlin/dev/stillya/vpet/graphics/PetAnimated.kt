@@ -21,6 +21,7 @@ class PetAnimated : Animated {
 
 	private lateinit var atlas: SpriteSheetAtlas
 	private lateinit var image: Image
+	private lateinit var transitionMatrix: TransitionMatrix
 
 	companion object {
 		const val INFINITE = -1
@@ -33,34 +34,205 @@ class PetAnimated : Animated {
 			?: throw IllegalArgumentException("Atlas not found")
 		image = loadImage(params.imgPath)
 
-		playDefaultAnimation(withRandom = false)
+		transitionMatrix = buildTransitionMatrix()
+		val context = renderer.createAnimationContext(
+			AnimationTrigger.IDLE_BEHAVIOR,
+			AnimationState.IDLE
+		)
+		playTransition(transitionMatrix.transitionTo(AnimationState.IDLE), context)
 	}
 
-	override fun onFail() {
-		when (Random.nextInt(2)) {
-			0 -> playDeathAnimation()
-			else -> playPoopingDiggingSequence()
+	private fun buildTransitionMatrix(): TransitionMatrix = transitions {
+		// Idle state
+		idle(AnimationState.IDLE, sequence {
+			playRandom("Idle", "Sit", "Dream", "Rest", loops = INFINITE)
+		})
+
+		// Idle → Active states
+		from(AnimationState.IDLE) to AnimationState.GROOMING via sequence {
+			transition("Sit_Up")
+			play("Scratching", loops = SHORT_LOOP)
+			transition("Sit_Down")
+		}
+
+		from(AnimationState.IDLE) to AnimationState.STRETCHING via sequence {
+			playRandom("On_2_Paws", "On_4_Paws")
+		}
+
+		from(AnimationState.IDLE) to AnimationState.WALKING via sequence {
+			play("Walk", loops = SHORT_LOOP)
+		}
+
+		from(AnimationState.IDLE) to AnimationState.SITTING via sequence {
+			transition("Sit_Up")
+			playRandom("Aggress", loops = SHORT_LOOP)
+			transition("Sit_Down")
+		}
+
+		// Build events
+		from(AnimationState.IDLE) to AnimationState.RUNNING via sequence {
+			playInfinite("Run", guard = AnimationGuard.buildGuard())
+		}
+
+		from(AnimationState.IDLE) to AnimationState.CELEBRATING via sequence {
+			transition("Sit_Up")
+			playRandom(
+				"Attack_1",
+				"Attack_2",
+				"Attack_3",
+				"Attack_4",
+				"Attack_5",
+				loops = MEDIUM_LOOP
+			)
+			play("Walk", loops = MEDIUM_LOOP)
+		}
+
+		// Failure animations (death variant)
+		from(AnimationState.IDLE) to AnimationState.FAILED via sequence {
+			playRandom("Death_1", "Death_2")
+			play("Deat_End", loops = 10)
+			play("Spawn_2")
+		}
+
+		// Failure animations (pooping variant)
+		from(AnimationState.SITTING) to AnimationState.FAILED via sequence {
+			play("Pooping")
+			play("Dig", loops = MEDIUM_LOOP)
+		}
+
+		// User interaction
+		from(AnimationState.IDLE) to AnimationState.OCCASION via sequence {
+			playRandom("Pac-Cat", "Goomba", loops = MEDIUM_LOOP)
+		}
+
+		// Running → transitions
+		from(AnimationState.RUNNING) to AnimationState.IDLE via sequence {
+			transition("Walk")
+			play("Walk", loops = 1)
+		}
+
+		from(AnimationState.RUNNING) to AnimationState.CELEBRATING via sequence {
+			transition("Walk")
+			play("J_1", loops = SHORT_LOOP)
+		}
+
+		// Return to idle transitions
+		from(AnimationState.GROOMING) to AnimationState.IDLE via sequence {
+			playRandom("Idle", "Sit", "Dream", "Rest", loops = INFINITE)
+		}
+
+		from(AnimationState.STRETCHING) to AnimationState.IDLE via sequence {
+			playRandom("Idle", "Sit", "Dream", "Rest", loops = INFINITE)
+		}
+
+		from(AnimationState.WALKING) to AnimationState.IDLE via sequence {
+			playRandom("Idle", "Sit", "Dream", "Rest", loops = INFINITE)
+		}
+
+		from(AnimationState.SITTING) to AnimationState.IDLE via sequence {
+			playRandom("Idle", "Sit", "Dream", "Rest", loops = INFINITE)
+		}
+
+		from(AnimationState.CELEBRATING) to AnimationState.IDLE via sequence {
+			playRandom("Idle", "Sit", "Dream", "Rest", loops = INFINITE)
+		}
+
+		from(AnimationState.FAILED) to AnimationState.IDLE via sequence {
+			playRandom("Idle", "Sit", "Dream", "Rest", loops = INFINITE)
+		}
+
+		from(AnimationState.OCCASION) to AnimationState.IDLE via sequence {
+			playRandom("Idle", "Sit", "Dream", "Rest", loops = INFINITE)
 		}
 	}
 
+	private fun playTransition(
+		steps: List<AnimationStep>,
+		context: AnimationContext? = null
+	) {
+		if (steps.isEmpty()) return
+
+		val animations = steps.mapIndexed { index, step ->
+			val tag = if (step.variants.isNotEmpty()) {
+				step.variants[Random.nextInt(step.variants.size)]
+			} else {
+				step.animationTag
+			}
+
+			val isLast = index == steps.size - 1
+			val onFinish: () -> Unit = if (isLast && step.loops != INFINITE) {
+				{
+					val idleContext = renderer.createAnimationContext(
+						AnimationTrigger.IDLE_BEHAVIOR,
+						AnimationState.IDLE
+					)
+					playTransition(transitionMatrix.getRandomIdleBehavior(), idleContext)
+				}
+			} else {
+				{}
+			}
+
+			Animation(
+				name = tag,
+				loop = step.loops,
+				sheet = createSpriteSheet(tag),
+				onFinish = onFinish,
+				context = context,
+				guard = step.guard
+			)
+		}
+
+		animations.forEachIndexed { index, animation ->
+			if (index < animations.size - 1) {
+				animation.nextAnimation = animations[index + 1]
+			}
+		}
+
+		renderer.enqueue(animations.first())
+	}
+
+	override fun onFail() {
+		val fromState = if (Random.nextInt(2) == 0) {
+			AnimationState.IDLE
+		} else {
+			AnimationState.SITTING
+		}
+
+		val context = renderer.createAnimationContext(AnimationTrigger.BUILD_FAIL, AnimationState.FAILED)
+		val transition = transitionMatrix.getTransition(fromState, AnimationState.FAILED)
+		playTransition(transition, context)
+	}
+
 	override fun onSuccess() {
-		playSuccessAnimation()
+		val context = renderer.createAnimationContext(
+			AnimationTrigger.BUILD_SUCCESS,
+			AnimationState.CELEBRATING
+		)
+		playTransition(transitionMatrix.transitionTo(AnimationState.CELEBRATING), context)
 	}
 
 	override fun onProgress() {
-		playProgressAnimation()
+		val context = renderer.createAnimationContext(
+			AnimationTrigger.BUILD_START,
+			AnimationState.RUNNING
+		)
+		playTransition(transitionMatrix.transitionTo(AnimationState.RUNNING), context)
 	}
 
 	override fun onCompleted() {
-		playCelebrateAnimation()
+		val context = renderer.createAnimationContext(
+			AnimationTrigger.BUILD_SUCCESS,
+			AnimationState.CELEBRATING
+		)
+		playTransition(transitionMatrix.transitionTo(AnimationState.CELEBRATING), context)
 	}
 
 	override fun onOccasion() {
-		playOccasionAnimation()
-	}
-
-	private fun getRandomAnimation(variants: List<String>): String {
-		return variants[Random.nextInt(variants.size)]
+		val context = renderer.createAnimationContext(
+			AnimationTrigger.USER_CLICK,
+			AnimationState.OCCASION
+		)
+		playTransition(transitionMatrix.transitionTo(AnimationState.OCCASION), context)
 	}
 
 	private fun createSpriteSheet(animationTag: String): SpriteSheet {
@@ -71,234 +243,6 @@ class PetAnimated : Animated {
 			image = image,
 			frames = atlas.frames.subList(frameTag.from, frameTag.to + 1)
 		)
-	}
-
-	private fun playDefaultAnimation(withRandom: Boolean = true) {
-		if (withRandom) {
-			playRandomIdleBehavior()
-			return
-		}
-
-		val idleVariant = getRandomAnimation(listOf("Idle", "Sit", "Dream", "Rest"))
-
-		renderer.enqueue(
-			Animation(
-				name = "default_idle",
-				loop = INFINITE,
-				sheet = createSpriteSheet(idleVariant),
-			)
-		)
-	}
-
-	private fun playRandomIdleBehavior() {
-		when (Random.nextInt(5)) {
-			0 -> playGroomingAnimation()
-			1 -> playStretchAnimation()
-			2 -> playWalkAnimation()
-			3 -> playSitThenStandAnimation()
-			else -> playDefaultAnimation(withRandom = false)
-		}
-	}
-
-	private fun playWalkAnimation() {
-		val walkVariant = getRandomAnimation(listOf("Walk"))
-
-		val walkAnim = Animation(
-			name = "walking",
-			loop = SHORT_LOOP,
-			sheet = createSpriteSheet(walkVariant),
-			onFinish = {
-				if (Random.nextFloat() < 0.3) {
-					playRandomIdleBehavior()
-				} else {
-					playDefaultAnimation(withRandom = false)
-				}
-			}
-		)
-
-		renderer.enqueue(walkAnim)
-	}
-
-	private fun playOccasionAnimation() {
-		val occasionVariant = getRandomAnimation(listOf("Pac-Cat", "Goomba"))
-
-		val occasionAnim = Animation(
-			name = "occasion",
-			loop = MEDIUM_LOOP,
-			sheet = createSpriteSheet(occasionVariant),
-			onFinish = { playDefaultAnimation() }
-		)
-
-		renderer.enqueue(occasionAnim)
-	}
-
-	private fun playGroomingAnimation() {
-		val sitUpAnim = Animation(
-			name = "groom_start",
-			sheet = createSpriteSheet("Sit_Up")
-		)
-
-		val groomingAnim = Animation(
-			name = "grooming",
-			loop = SHORT_LOOP,
-			sheet = createSpriteSheet("Scratching")
-		)
-
-		val sitDownAnim = Animation(
-			name = "groom_end",
-			sheet = createSpriteSheet("Sit_Down"),
-			onFinish = { playDefaultAnimation(withRandom = false) }
-		)
-
-		sitUpAnim.onNext(groomingAnim).onNext(sitDownAnim)
-		renderer.enqueue(sitUpAnim)
-	}
-
-	private fun playStretchAnimation() {
-		val stretchVariant = getRandomAnimation(listOf("On_2_Paws", "On_4_Paws"))
-
-		val stretchAnim = Animation(
-			name = "stretch",
-			sheet = createSpriteSheet(stretchVariant),
-			onFinish = { playDefaultAnimation(withRandom = false) }
-		)
-
-		renderer.enqueue(stretchAnim)
-	}
-
-	private fun playSitThenStandAnimation() {
-		val sitUpAnim = Animation(
-			name = "sit_up",
-			sheet = createSpriteSheet("Sit_Up")
-		)
-
-		val lookAroundAnim = Animation(
-			name = "look_around",
-			loop = SHORT_LOOP,
-			sheet = createSpriteSheet("Aggress")
-		)
-
-		val sitDownAnim = Animation(
-			name = "sit_down",
-			sheet = createSpriteSheet("Sit_Down"),
-			onFinish = { playDefaultAnimation(withRandom = false) }
-		)
-
-		sitUpAnim.onNext(lookAroundAnim).onNext(sitDownAnim)
-		renderer.enqueue(sitUpAnim)
-	}
-
-	private fun playDeathAnimation() {
-		val deathVariant = getRandomAnimation(listOf("Death_1", "Death_2"))
-
-		val deathAnim = Animation(
-			name = "fail_death",
-			sheet = createSpriteSheet(deathVariant)
-		)
-
-		val bleedingAnim = Animation(
-			name = "bleeding",
-			loop = 10,
-			sheet = createSpriteSheet("Deat_End")
-		)
-
-		val comebackAnim = Animation(
-			name = "comeback",
-			sheet = createSpriteSheet("Spawn_2"),
-			onFinish = { playDefaultAnimation() }
-		)
-
-		deathAnim.onNext(bleedingAnim).onNext(comebackAnim)
-		renderer.enqueue(deathAnim)
-	}
-
-	private fun playPoopingDiggingSequence() {
-		val sitUpAnim = Animation(
-			name = "sit_up_for_poop",
-			sheet = createSpriteSheet("Sit_Up")
-		)
-
-		val poopingAnim = Animation(
-			name = "fail_pooping",
-			sheet = createSpriteSheet("Pooping")
-		)
-
-		val digVariant = getRandomAnimation(listOf("Dig"))
-		val diggingAnim = Animation(
-			name = "fail_digging",
-			loop = MEDIUM_LOOP,
-			sheet = createSpriteSheet(digVariant)
-		)
-
-		val sitDownAnim = Animation(
-			name = "sit_down_after_poop",
-			sheet = createSpriteSheet("Sit_Down"),
-			onFinish = { playDefaultAnimation() }
-		)
-
-		sitUpAnim.onNext(poopingAnim).onNext(diggingAnim).onNext(sitDownAnim)
-		renderer.enqueue(sitUpAnim)
-	}
-
-	private fun playSuccessAnimation() {
-		val walkVariant = getRandomAnimation(listOf("Walk"))
-
-		val walkAnim = Animation(
-			name = "success_walk",
-			loop = SHORT_LOOP,
-			sheet = createSpriteSheet(walkVariant)
-		)
-
-		val jumpVariant = getRandomAnimation(listOf("J_1"))
-		val jumpAnim = Animation(
-			name = "success_jump",
-			loop = SHORT_LOOP,
-			sheet = createSpriteSheet(jumpVariant),
-			onFinish = { playDefaultAnimation(withRandom = false) }
-		)
-
-		walkAnim.onNext(jumpAnim)
-		renderer.enqueue(walkAnim)
-	}
-
-	private fun playProgressAnimation() {
-		val runVariant = getRandomAnimation(listOf("Run"))
-
-		renderer.enqueue(
-			Animation(
-				name = "progress_run",
-				loop = INFINITE,
-				sheet = createSpriteSheet(runVariant)
-			)
-		)
-	}
-
-	private fun playCelebrateAnimation() {
-		val sitUpAnim = Animation(
-			name = "celebrate_start",
-			sheet = createSpriteSheet("Sit_Up")
-		)
-
-		val attackVariant = getRandomAnimation(
-			listOf("Attack_1", "Attack_2", "Attack_3", "Attack_4", "Attack_5")
-		)
-
-		val attackAnim = Animation(
-			name = "celebrate_attack",
-			loop = MEDIUM_LOOP,
-			sheet = createSpriteSheet(attackVariant)
-		)
-
-		val walkVariant = getRandomAnimation(listOf("Walk"))
-		val walkAnim = Animation(
-			name = "celebrate_walk",
-			loop = MEDIUM_LOOP,
-			sheet = createSpriteSheet(walkVariant),
-			onFinish = { playDefaultAnimation() }
-		)
-
-		sitUpAnim.onNext(attackAnim).onNext(walkAnim)
-		renderer.enqueue(sitUpAnim)
 	}
 
 	private fun loadImage(path: String): BufferedImage {
