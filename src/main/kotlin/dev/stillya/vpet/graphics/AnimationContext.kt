@@ -33,7 +33,10 @@ class AnimationEpochManager {
 
 	fun incrementEpoch(): Long = currentEpoch.incrementAndGet()
 
-	fun createContext(trigger: AnimationTrigger, targetState: AnimationState): AnimationContext {
+	fun createContext(
+		trigger: AnimationTrigger,
+		targetState: AnimationState
+	): AnimationContext {
 		return AnimationContext(
 			epoch = incrementEpoch(),
 			triggerEvent = trigger,

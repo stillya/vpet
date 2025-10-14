@@ -2,8 +2,9 @@ package dev.stillya.vpet.graphics
 
 import kotlin.random.Random
 
-class 	TransitionMatrix {
-	private val transitions = mutableMapOf<Pair<AnimationState, AnimationState>, List<AnimationStep>>()
+class TransitionMatrix {
+	private val transitions =
+		mutableMapOf<Pair<AnimationState, AnimationState>, List<AnimationStep>>()
 	private val idleVariants = mutableMapOf<AnimationState, List<AnimationStep>>()
 
 	@Volatile
@@ -23,7 +24,11 @@ class 	TransitionMatrix {
 		return transition
 	}
 
-	fun defineTransition(from: AnimationState, to: AnimationState, steps: List<AnimationStep>) {
+	fun defineTransition(
+		from: AnimationState,
+		to: AnimationState,
+		steps: List<AnimationStep>
+	) {
 		transitions[from to to] = steps
 	}
 

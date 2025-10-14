@@ -19,9 +19,9 @@ class PetAnimated : Animated {
 	private val renderer: IconRenderer
 		get() = service<DefaultIconRenderer>()
 
+	private var transitionMatrix: TransitionMatrix
 	private lateinit var atlas: SpriteSheetAtlas
 	private lateinit var image: Image
-	private lateinit var transitionMatrix: TransitionMatrix
 
 	companion object {
 		const val INFINITE = -1
@@ -29,12 +29,15 @@ class PetAnimated : Animated {
 		const val MEDIUM_LOOP = 8
 	}
 
+	init {
+		transitionMatrix = buildTransitionMatrix()
+	}
+
 	override fun init(params: Animated.Params) {
 		atlas = atlasLoader.load(params.atlasPath)
 			?: throw IllegalArgumentException("Atlas not found")
 		image = loadImage(params.imgPath)
 
-		transitionMatrix = buildTransitionMatrix()
 		val context = renderer.createAnimationContext(
 			AnimationTrigger.IDLE_BEHAVIOR,
 			AnimationState.IDLE
@@ -198,7 +201,10 @@ class PetAnimated : Animated {
 			AnimationState.SITTING
 		}
 
-		val context = renderer.createAnimationContext(AnimationTrigger.BUILD_FAIL, AnimationState.FAILED)
+		val context = renderer.createAnimationContext(
+			AnimationTrigger.BUILD_FAIL,
+			AnimationState.FAILED
+		)
 		val transition = transitionMatrix.getTransition(fromState, AnimationState.FAILED)
 		playTransition(transition, context)
 	}

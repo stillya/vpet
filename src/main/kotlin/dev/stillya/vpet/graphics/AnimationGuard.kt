@@ -2,7 +2,11 @@ package dev.stillya.vpet.graphics
 
 data class AnimationGuard(
 	val canStart: (AnimationContext, Long) -> Boolean = { _, _ -> true },
-	val canContinue: (AnimationContext, Long) -> Boolean = { ctx, currentEpoch -> ctx.isValid(currentEpoch) },
+	val canContinue: (AnimationContext, Long) -> Boolean = { ctx, currentEpoch ->
+		ctx.isValid(
+			currentEpoch
+		)
+	},
 	val isInterruptible: Boolean = true
 ) {
 	companion object {

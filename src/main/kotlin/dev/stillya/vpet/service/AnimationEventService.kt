@@ -6,6 +6,7 @@ import dev.stillya.vpet.graphics.Animated
 import dev.stillya.vpet.graphics.PetAnimated
 
 class AnimationEventService : AnimationEventListener {
+	// TODO: Don't hardcode specific implementation
 	private val animated: Animated
 		get() = service<PetAnimated>()
 

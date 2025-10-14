@@ -9,5 +9,8 @@ import javax.swing.Icon
 interface IconRenderer {
 	fun enqueue(animation: Animation)
 	fun render(): List<Icon>
-	fun createAnimationContext(trigger: AnimationTrigger, targetState: AnimationState): AnimationContext
+	fun createAnimationContext(
+		trigger: AnimationTrigger,
+		targetState: AnimationState
+	): AnimationContext
 }

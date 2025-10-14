@@ -28,7 +28,10 @@ class DefaultIconRenderer : IconRenderer {
 
 	private val epochManager = AnimationEpochManager()
 
-	override fun createAnimationContext(trigger: AnimationTrigger, targetState: AnimationState): AnimationContext {
+	override fun createAnimationContext(
+		trigger: AnimationTrigger,
+		targetState: AnimationState
+	): AnimationContext {
 		return epochManager.createContext(trigger, targetState)
 	}
 
@@ -55,6 +58,7 @@ class DefaultIconRenderer : IconRenderer {
 							}
 						}
 					}
+
 					count == 0 -> {
 						currentAnimation = processNextAnimation(current)
 						currentAnimation?.let { nextAnim ->
