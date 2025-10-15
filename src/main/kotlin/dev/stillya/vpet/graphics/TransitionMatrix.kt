@@ -44,6 +44,8 @@ class TransitionMatrix {
 			AnimationState.STRETCHING,
 			AnimationState.WALKING,
 			AnimationState.SITTING,
+			AnimationState.EATING,
+			AnimationState.LOOKING_AROUND,
 			AnimationState.IDLE
 		)
 		val targetState = behaviors[Random.nextInt(behaviors.size)]

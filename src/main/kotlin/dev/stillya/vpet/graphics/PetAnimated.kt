@@ -63,7 +63,7 @@ class PetAnimated : Animated {
 		}
 
 		from(AnimationState.IDLE) to AnimationState.STRETCHING via sequence {
-			playRandom("On_2_Paws", "On_4_Paws")
+			play("Paws", loops = 2)
 		}
 
 		from(AnimationState.IDLE) to AnimationState.WALKING via sequence {
@@ -72,30 +72,42 @@ class PetAnimated : Animated {
 
 		from(AnimationState.IDLE) to AnimationState.SITTING via sequence {
 			transition("Sit_Up")
-			playRandom("Aggress", loops = SHORT_LOOP)
+			play("Aggress", loops = 1)
 			transition("Sit_Down")
+		}
+
+		from(AnimationState.IDLE) to AnimationState.EATING via sequence {
+			play("Eat", loops = MEDIUM_LOOP)
+		}
+
+		from(AnimationState.IDLE) to AnimationState.LOOKING_AROUND via sequence {
+			play("Paws", loops = 1)
+			play("rook_around", loops = 1)
 		}
 
 		// Build events
 		from(AnimationState.IDLE) to AnimationState.RUNNING via sequence {
+			transition("Walk_Run")
 			playInfinite("Run", guard = AnimationGuard.buildGuard())
 		}
 
 		from(AnimationState.IDLE) to AnimationState.CELEBRATING via sequence {
-			transition("Sit_Up")
+			play("Paws", loops = 2)
+			playRandom("J_1", "J_U_D", loops = SHORT_LOOP)
 			playRandom(
 				"Attack_1",
 				"Attack_2",
 				"Attack_3",
 				"Attack_4",
 				"Attack_5",
-				loops = MEDIUM_LOOP
+				loops = 3
 			)
-			play("Walk", loops = MEDIUM_LOOP)
+			play("Walk", loops = 3)
 		}
 
 		// Failure animations (death variant)
 		from(AnimationState.IDLE) to AnimationState.FAILED via sequence {
+			play("Dmg")
 			playRandom("Death_1", "Death_2")
 			play("Deat_End", loops = 10)
 			play("Spawn_2")
@@ -109,17 +121,18 @@ class PetAnimated : Animated {
 
 		// User interaction
 		from(AnimationState.IDLE) to AnimationState.OCCASION via sequence {
-			playRandom("Pac-Cat", "Goomba", loops = MEDIUM_LOOP)
+			playRandom("Paws", "Pac-Cat", "Goomba", "J_1", "rook_around", loops = 3)
 		}
 
 		// Running → transitions
 		from(AnimationState.RUNNING) to AnimationState.IDLE via sequence {
+			transition("Stop")
 			transition("Walk")
 			play("Walk", loops = 1)
 		}
 
 		from(AnimationState.RUNNING) to AnimationState.CELEBRATING via sequence {
-			transition("Walk")
+			transition("Stop")
 			play("J_1", loops = SHORT_LOOP)
 		}
 
@@ -149,6 +162,14 @@ class PetAnimated : Animated {
 		}
 
 		from(AnimationState.OCCASION) to AnimationState.IDLE via sequence {
+			playRandom("Idle", "Sit", "Dream", "Rest", loops = INFINITE)
+		}
+
+		from(AnimationState.EATING) to AnimationState.IDLE via sequence {
+			playRandom("Idle", "Sit", "Dream", "Rest", loops = INFINITE)
+		}
+
+		from(AnimationState.LOOKING_AROUND) to AnimationState.IDLE via sequence {
 			playRandom("Idle", "Sit", "Dream", "Rest", loops = INFINITE)
 		}
 	}
