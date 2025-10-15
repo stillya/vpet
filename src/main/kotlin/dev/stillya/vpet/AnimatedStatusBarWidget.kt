@@ -9,9 +9,9 @@ import com.intellij.openapi.wm.WidgetPresentation
 import com.intellij.openapi.wm.WidgetPresentationDataContext
 import com.intellij.openapi.wm.WidgetPresentationFactory
 import com.jetbrains.rd.util.AtomicInteger
-import dev.stillya.vpet.graphics.Animated
 import dev.stillya.vpet.graphics.DefaultIconRenderer
-import dev.stillya.vpet.graphics.PetAnimated
+import dev.stillya.vpet.pet.Animated
+import dev.stillya.vpet.pet.PetAnimated
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow

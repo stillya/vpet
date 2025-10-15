@@ -2,8 +2,8 @@ package dev.stillya.vpet.service
 
 import com.intellij.openapi.components.service
 import dev.stillya.vpet.AnimationEventListener
-import dev.stillya.vpet.graphics.Animated
-import dev.stillya.vpet.graphics.PetAnimated
+import dev.stillya.vpet.pet.Animated
+import dev.stillya.vpet.pet.PetAnimated
 
 class AnimationEventService : AnimationEventListener {
 	// TODO: Don't hardcode specific implementation
