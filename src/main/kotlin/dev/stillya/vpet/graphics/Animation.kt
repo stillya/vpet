@@ -6,14 +6,8 @@ data class Animation(
 	val loop: Int = 0,
 	val onFinish: () -> Unit = {},
 	var nextAnimation: Animation? = null,
+	val context: AnimationContext? = null,
+	val guard: AnimationGuard = AnimationGuard.ALWAYS_VALID
 )
-
-// TODO: Animation sequencing: Add animations to sequence instead of using onFinish callbacks.
-//  Infinite animations must be only the last one in a sequence
-
-fun Animation.onNext(animation: Animation): Animation {
-	this.nextAnimation = animation
-	return animation
-}
 
 const val INFINITE = -1

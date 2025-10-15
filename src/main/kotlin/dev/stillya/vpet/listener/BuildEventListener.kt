@@ -13,25 +13,39 @@ import java.util.concurrent.atomic.AtomicBoolean
 class BuildEventListener : ProjectTaskListener, ExecutionListener {
 
 	private val inProgress = AtomicBoolean(false)
+	private var lastEventTimestamp = 0L
+	private var lastEventType: AnimationEventListener.AnimationEvent? = null
 
-	override fun started(context: ProjectTaskContext) {
-		inProgress.set(true)
+	fun isBuildInProgress(): Boolean = inProgress.get()
+
+	private fun publishEvent(event: AnimationEventListener.AnimationEvent) {
+		val now = System.currentTimeMillis()
+
+		if (lastEventType == event && now - lastEventTimestamp < 500) {
+			return
+		}
+
+		lastEventTimestamp = now
+		lastEventType = event
+
 		ApplicationManager.getApplication().messageBus
 			.syncPublisher(AnimationEventListener.TOPIC)
-			.onEvent(AnimationEventListener.AnimationEvent.PROGRESS)
+			.onEvent(event)
+	}
+
+	override fun started(context: ProjectTaskContext) {
+		if (inProgress.compareAndSet(false, true)) {
+			publishEvent(AnimationEventListener.AnimationEvent.PROGRESS)
+		}
 	}
 
 	override fun finished(result: ProjectTaskManager.Result) {
-		inProgress.set(false)
-
-		if (result.hasErrors()) {
-			ApplicationManager.getApplication().messageBus
-				.syncPublisher(AnimationEventListener.TOPIC)
-				.onEvent(AnimationEventListener.AnimationEvent.FAIL)
-		} else {
-			ApplicationManager.getApplication().messageBus
-				.syncPublisher(AnimationEventListener.TOPIC)
-				.onEvent(AnimationEventListener.AnimationEvent.SUCCESS)
+		if (inProgress.compareAndSet(true, false)) {
+			if (result.hasErrors()) {
+				publishEvent(AnimationEventListener.AnimationEvent.FAIL)
+			} else {
+				publishEvent(AnimationEventListener.AnimationEvent.SUCCESS)
+			}
 		}
 	}
 
@@ -40,10 +54,9 @@ class BuildEventListener : ProjectTaskListener, ExecutionListener {
 		env: ExecutionEnvironment,
 		handler: ProcessHandler
 	) {
-		inProgress.set(true)
-		ApplicationManager.getApplication().messageBus
-			.syncPublisher(AnimationEventListener.TOPIC)
-			.onEvent(AnimationEventListener.AnimationEvent.PROGRESS)
+		if (inProgress.compareAndSet(false, true)) {
+			publishEvent(AnimationEventListener.AnimationEvent.PROGRESS)
+		}
 	}
 
 	override fun processTerminated(
@@ -52,16 +65,12 @@ class BuildEventListener : ProjectTaskListener, ExecutionListener {
 		handler: ProcessHandler,
 		exitCode: Int
 	) {
-		inProgress.set(false)
-
-		if (exitCode == 0) {
-			ApplicationManager.getApplication().messageBus
-				.syncPublisher(AnimationEventListener.TOPIC)
-				.onEvent(AnimationEventListener.AnimationEvent.SUCCESS)
-		} else {
-			ApplicationManager.getApplication().messageBus
-				.syncPublisher(AnimationEventListener.TOPIC)
-				.onEvent(AnimationEventListener.AnimationEvent.FAIL)
+		if (inProgress.compareAndSet(true, false)) {
+			if (exitCode == 0) {
+				publishEvent(AnimationEventListener.AnimationEvent.SUCCESS)
+			} else {
+				publishEvent(AnimationEventListener.AnimationEvent.FAIL)
+			}
 		}
 	}
 }
