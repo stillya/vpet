@@ -16,6 +16,8 @@ class BuildEventListener : ProjectTaskListener, ExecutionListener {
 	private var lastEventTimestamp = 0L
 	private var lastEventType: AnimationEventListener.AnimationEvent? = null
 
+	fun isBuildInProgress(): Boolean = inProgress.get()
+	
 	private fun publishEvent(event: AnimationEventListener.AnimationEvent) {
 		val now = System.currentTimeMillis()
 

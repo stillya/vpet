@@ -1,43 +1,63 @@
 package dev.stillya.vpet.graphics
 
-data class AnimationGuard(
-	val canStart: (AnimationContext, Long) -> Boolean = { _, _ -> true },
-	val canContinue: (AnimationContext, Long) -> Boolean = { ctx, currentEpoch ->
-		ctx.isValid(
-			currentEpoch
-		)
-	},
-	val isInterruptible: Boolean = true
-) {
+interface AnimationGuard {
+	fun canStart(context: AnimationContext, currentEpoch: Long): Boolean
+	fun canContinue(context: AnimationContext, currentEpoch: Long): Boolean
+	val isInterruptible: Boolean
+
 	companion object {
-		val ALWAYS_VALID = AnimationGuard()
+		val ALWAYS_VALID: AnimationGuard = AlwaysValidGuard
 
-		val NON_INTERRUPTIBLE = AnimationGuard(
-			isInterruptible = false
-		)
+		val NON_INTERRUPTIBLE: AnimationGuard = NonInterruptibleGuard
 
-		fun epochGuard(isInterruptible: Boolean = true) = AnimationGuard(
-			canStart = { ctx, currentEpoch -> ctx.isValid(currentEpoch) && !ctx.isExpired() },
-			canContinue = { ctx, currentEpoch -> ctx.isValid(currentEpoch) },
-			isInterruptible = isInterruptible
-		)
+		fun epochGuard(isInterruptible: Boolean = true): AnimationGuard =
+			EpochGuard(isInterruptible)
 
-		fun buildGuard() = AnimationGuard(
-			canStart = { ctx, _ ->
-				ctx.triggerEvent in setOf(
-					AnimationTrigger.BUILD_START,
-					AnimationTrigger.BUILD_SUCCESS,
-					AnimationTrigger.BUILD_FAIL
-				)
-			},
-			canContinue = { ctx, currentEpoch -> ctx.isValid(currentEpoch) },
-			isInterruptible = true
-		)
+		fun buildGuard(): AnimationGuard = BuildAnimationGuard
 
-		fun transitionGuard() = AnimationGuard(
-			canStart = { _, _ -> true },
-			canContinue = { _, _ -> true },
-			isInterruptible = false
-		)
+		fun transitionGuard(): AnimationGuard = TransitionGuard
 	}
+}
+
+object AlwaysValidGuard : AnimationGuard {
+	override fun canStart(context: AnimationContext, currentEpoch: Long) = true
+	override fun canContinue(context: AnimationContext, currentEpoch: Long) =
+		context.isValid(currentEpoch)
+
+	override val isInterruptible = true
+}
+
+object NonInterruptibleGuard : AnimationGuard {
+	override fun canStart(context: AnimationContext, currentEpoch: Long) = true
+	override fun canContinue(context: AnimationContext, currentEpoch: Long) =
+		context.isValid(currentEpoch)
+
+	override val isInterruptible = false
+}
+
+class EpochGuard(override val isInterruptible: Boolean = true) : AnimationGuard {
+	override fun canStart(context: AnimationContext, currentEpoch: Long) =
+		context.isValid(currentEpoch) && !context.isExpired()
+
+	override fun canContinue(context: AnimationContext, currentEpoch: Long) =
+		context.isValid(currentEpoch)
+}
+
+object TransitionGuard : AnimationGuard {
+	override fun canStart(context: AnimationContext, currentEpoch: Long) = true
+	override fun canContinue(context: AnimationContext, currentEpoch: Long) = true
+	override val isInterruptible = false
+}
+
+object BuildAnimationGuard :
+	AnimationGuard {
+	override fun canStart(context: AnimationContext, currentEpoch: Long): Boolean {
+		return context.triggerEvent == AnimationTrigger.BUILD_START
+	}
+
+	override fun canContinue(context: AnimationContext, currentEpoch: Long): Boolean {
+		return context.isValid(currentEpoch)
+	}
+
+	override val isInterruptible = true
 }

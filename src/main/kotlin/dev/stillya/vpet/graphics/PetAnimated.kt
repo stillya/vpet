@@ -6,6 +6,7 @@ import dev.stillya.vpet.AtlasLoader
 import dev.stillya.vpet.IconRenderer
 import dev.stillya.vpet.config.AsepriteJsonAtlasLoader
 import dev.stillya.vpet.config.SpriteSheetAtlas
+import dev.stillya.vpet.listener.BuildEventListener
 import java.awt.Image
 import java.awt.image.BufferedImage
 import javax.imageio.ImageIO
@@ -18,6 +19,9 @@ class PetAnimated : Animated {
 
 	private val renderer: IconRenderer
 		get() = service<DefaultIconRenderer>()
+	
+	private val buildEventListener: BuildEventListener
+		get() = service<BuildEventListener>()
 
 	private var transitionMatrix: TransitionMatrix
 	private lateinit var atlas: SpriteSheetAtlas
