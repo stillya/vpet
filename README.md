@@ -22,6 +22,11 @@ development activities, and add a touch of joy to your coding sessions.
 
 ![VPet Preview](docs/preview.gif)
 
+--------------------------------------------------------------
+_And here it is **zoooommed** in:_
+
+![VPet Zoomed In](docs/preview.png)
+
 ## Installation
 
 ### From JetBrains Marketplace
