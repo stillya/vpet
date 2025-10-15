@@ -19,9 +19,6 @@ class PetAnimated : Animated {
 
 	private val renderer: IconRenderer
 		get() = service<DefaultIconRenderer>()
-	
-	private val buildEventListener: BuildEventListener
-		get() = service<BuildEventListener>()
 
 	private var transitionMatrix: TransitionMatrix
 	private lateinit var atlas: SpriteSheetAtlas
