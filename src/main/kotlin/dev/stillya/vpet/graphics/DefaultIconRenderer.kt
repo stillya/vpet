@@ -1,6 +1,7 @@
 package dev.stillya.vpet.graphics
 
 import com.intellij.openapi.components.Service
+import com.intellij.openapi.diagnostic.Logger
 import dev.stillya.vpet.IconRenderer
 import java.awt.Image
 import java.awt.geom.AffineTransform
@@ -16,6 +17,7 @@ import kotlin.math.roundToInt
 // TODO: Add caching
 @Service
 class DefaultIconRenderer : IconRenderer {
+	private val log = Logger.getInstance(DefaultIconRenderer::class.java)
 	private val animationQueue: Queue<Animation> = LinkedBlockingQueue()
 	private var lastStableAnimation: Animation? = null
 
@@ -36,14 +38,17 @@ class DefaultIconRenderer : IconRenderer {
 	}
 
 	override fun enqueue(animation: Animation) {
+		log.trace("Enqueueing animation: ${animation.name} (loops=${animation.loop}, queueSize=${animationQueue.size + 1})")
 		animationQueue.add(animation)
 	}
 
 	override fun render(): List<Icon> {
 		currentAnimation?.let { current ->
 			if (!validateAnimation(current)) {
+				log.trace("Animation '${current.name}' no longer valid, finding next")
 				currentAnimation = findNextValidAnimation()
 				currentAnimation?.let { anim ->
+					log.trace("Switched to animation: ${anim.name}")
 					currentLoopCount.set(anim.loop)
 				}
 			} else {
@@ -52,16 +57,20 @@ class DefaultIconRenderer : IconRenderer {
 					count > 0 -> {
 						val newCount = currentLoopCount.decrementAndGet()
 						if (newCount == 0) {
+							log.trace("Animation '${current.name}' loop completed")
 							currentAnimation = processNextAnimation(current)
 							currentAnimation?.let { nextAnim ->
+								log.trace("Next animation: ${nextAnim.name}")
 								currentLoopCount.set(nextAnim.loop)
 							}
 						}
 					}
 
 					count == 0 -> {
+						log.trace("Animation '${current.name}' finished, processing next")
 						currentAnimation = processNextAnimation(current)
 						currentAnimation?.let { nextAnim ->
+							log.trace("Next animation: ${nextAnim.name}")
 							currentLoopCount.set(nextAnim.loop)
 						}
 					}
@@ -69,8 +78,10 @@ class DefaultIconRenderer : IconRenderer {
 				}
 			}
 		} ?: run {
+			log.trace("No current animation, finding next from queue")
 			currentAnimation = findNextValidAnimation()
 			currentAnimation?.let { anim ->
+				log.trace("Starting animation: ${anim.name} (loops=${anim.loop})")
 				currentLoopCount.set(anim.loop)
 			}
 		}
@@ -96,14 +107,19 @@ class DefaultIconRenderer : IconRenderer {
 		while (animationQueue.isNotEmpty()) {
 			val candidate = doPoll()
 			if (candidate != null && canStartAnimation(candidate)) {
+				log.trace("Found valid animation from queue: ${candidate.name}")
 				return candidate
+			} else {
+				log.trace("Skipped invalid animation: ${candidate?.name}")
 			}
 		}
 
 		lastStableAnimation?.let { stable ->
 			if (canStartAnimation(stable)) {
+				log.trace("Returning to stable animation: ${stable.name}")
 				return stable
 			} else {
+				log.trace("Stable animation no longer valid, clearing")
 				lastStableAnimation = null
 			}
 		}
@@ -112,7 +128,10 @@ class DefaultIconRenderer : IconRenderer {
 	}
 
 	private fun processNextAnimation(animation: Animation): Animation? {
-		return animation.nextAnimation ?: run {
+		return animation.nextAnimation?.also {
+			log.trace("Chain: ${animation.name} → ${it.name}")
+		} ?: run {
+			log.trace("Invoking onFinish for ${animation.name}")
 			animation.onFinish.invoke()
 			doPoll()
 		}

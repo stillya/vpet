@@ -1,8 +1,9 @@
 package dev.stillya.vpet.graphics
 
-import kotlin.random.Random
+import com.intellij.openapi.diagnostic.Logger
 
 class TransitionMatrix {
+	private val log = Logger.getInstance(TransitionMatrix::class.java)
 	private val transitions =
 		mutableMapOf<Pair<AnimationState, AnimationState>, List<AnimationStep>>()
 	private val idleVariants = mutableMapOf<AnimationState, List<AnimationStep>>()
@@ -13,6 +14,7 @@ class TransitionMatrix {
 
 	fun transitionTo(targetState: AnimationState): List<AnimationStep> {
 		if (currentState == targetState) {
+			log.trace("Already in state $targetState, returning idle variant")
 			return idleVariants[targetState] ?: emptyList()
 		}
 
@@ -20,6 +22,7 @@ class TransitionMatrix {
 			?: transitions[AnimationState.IDLE to targetState]
 			?: emptyList()
 
+		log.trace("State transition: $currentState → $targetState (${transition.size} steps)")
 		currentState = targetState
 		return transition
 	}
@@ -34,26 +37,6 @@ class TransitionMatrix {
 
 	fun defineIdleVariant(state: AnimationState, steps: List<AnimationStep>) {
 		idleVariants[state] = steps
-	}
-
-	fun getRandomIdleBehavior(): List<AnimationStep> {
-		currentState = AnimationState.IDLE
-
-		val behaviors = listOf(
-			AnimationState.GROOMING,
-			AnimationState.STRETCHING,
-			AnimationState.WALKING,
-			AnimationState.SITTING,
-			AnimationState.EATING,
-			AnimationState.LOOKING_AROUND,
-			AnimationState.IDLE
-		)
-		val targetState = behaviors[Random.nextInt(behaviors.size)]
-		return transitionTo(targetState)
-	}
-
-	fun getTransition(from: AnimationState, to: AnimationState): List<AnimationStep> {
-		return transitions[from to to] ?: emptyList()
 	}
 }
 
