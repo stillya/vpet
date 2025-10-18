@@ -7,17 +7,7 @@ import dev.stillya.vpet.AtlasLoader
 import dev.stillya.vpet.IconRenderer
 import dev.stillya.vpet.config.AsepriteJsonAtlasLoader
 import dev.stillya.vpet.config.SpriteSheetAtlas
-import dev.stillya.vpet.graphics.Animation
-import dev.stillya.vpet.graphics.AnimationContext
-import dev.stillya.vpet.graphics.AnimationGuard
-import dev.stillya.vpet.graphics.AnimationState
-import dev.stillya.vpet.graphics.AnimationStep
-import dev.stillya.vpet.graphics.AnimationTrigger
-import dev.stillya.vpet.graphics.DefaultIconRenderer
-import dev.stillya.vpet.graphics.SpriteSheet
-import dev.stillya.vpet.graphics.TransitionMatrix
-import dev.stillya.vpet.graphics.sequence
-import dev.stillya.vpet.graphics.transitions
+import dev.stillya.vpet.graphics.*
 import java.awt.Image
 import java.awt.image.BufferedImage
 import javax.imageio.ImageIO
@@ -40,6 +30,10 @@ class PetAnimated(
 	private lateinit var image: Image
 	private var currentState: AnimationState = AnimationState.IDLE
 
+	private val stateTracker = StateTracker()
+	private val bridgeSet = BridgeSet.createDefaultCatBridges()
+	private lateinit var executor: Executor
+
 	companion object {
 		const val INFINITE = -1
 		const val SHORT_LOOP = 5
@@ -48,6 +42,7 @@ class PetAnimated(
 
 	init {
 		transitionMatrix = buildTransitionMatrix()
+		executor = Executor(stateTracker, bridgeSet)
 	}
 
 	override fun init(params: Animated.Params) {
@@ -97,6 +92,8 @@ class PetAnimated(
 			}
 
 			val onFinish = {
+				executor.applyStepEffect(step)
+
 				if ((index == steps.size - 1) && step.loops != INFINITE) {
 					log.trace("Animation sequence completed, returning to stable idle state")
 					val idleContext = renderer.createAnimationContext(
@@ -203,9 +200,9 @@ class PetAnimated(
 		}
 
 		from(AnimationState.IDLE) to AnimationState.SITTING via sequence {
-			transition("Sit_Up")
+			transition("Sit_Up", effect = StateEffect.setPose(Pose.STAND))
 			play("Aggress", loops = 1)
-			transition("Sit_Down")
+			transition("Sit_Down", effect = StateEffect.setPose(Pose.SIT))
 		}
 
 		from(AnimationState.IDLE) to AnimationState.EATING via sequence {
@@ -218,8 +215,12 @@ class PetAnimated(
 		}
 
 		from(AnimationState.IDLE) to AnimationState.RUNNING via sequence {
-			transition("Walk_Run")
-			playInfinite("Run", guard = AnimationGuard.buildGuard())
+			transition("Walk_Run", effect = StateEffect.setSpeed(0.8f))
+			playInfinite(
+				"Run",
+				guard = AnimationGuard.buildGuard(),
+				effect = StateEffect.setPose(Pose.STAND) + StateEffect.setSpeed(0.8f)
+			)
 		}
 
 		from(AnimationState.IDLE) to AnimationState.CELEBRATING via sequence {
@@ -244,7 +245,7 @@ class PetAnimated(
 		}
 
 		from(AnimationState.SITTING) to AnimationState.FAILED via sequence {
-			play("Pooping")
+			play("Pooping", effect = StateEffect.setPose(Pose.SIT))
 			play("Dig", loops = MEDIUM_LOOP)
 		}
 
@@ -253,13 +254,13 @@ class PetAnimated(
 		}
 
 		from(AnimationState.RUNNING) to AnimationState.IDLE via sequence {
-			transition("Stop")
-			transition("Walk")
+			transition("Stop", effect = StateEffect.stop())
+			transition("Walk", effect = StateEffect.setSpeed(0.5f))
 			play("Walk", loops = 1)
 		}
 
 		from(AnimationState.RUNNING) to AnimationState.CELEBRATING via sequence {
-			transition("Stop")
+			transition("Stop", effect = StateEffect.stop())
 			play("J_1", loops = SHORT_LOOP)
 		}
 

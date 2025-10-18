@@ -43,4 +43,11 @@ class AnimationEpochManager {
 			targetState = targetState
 		)
 	}
+
+	companion object {
+		private val instance = AnimationEpochManager()
+
+		fun currentEpoch(): Long = instance.getCurrentEpoch()
+		fun increment(): Long = instance.incrementEpoch()
+	}
 }
