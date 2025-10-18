@@ -61,11 +61,4 @@ class TransitionMatrixTest {
 		assertEquals(-1, steps[1].loops)
 		assertEquals(AnimationState.RUNNING, matrix.currentState)
 	}
-
-	@Test
-	fun testGetNonExistentTransition() {
-		val steps = matrix.getTransition(AnimationState.RUNNING, AnimationState.WALKING)
-
-		assertTrue(steps.isEmpty())
-	}
 }

@@ -2,6 +2,7 @@ package dev.stillya.vpet.pet
 
 import com.intellij.openapi.components.Service
 import com.intellij.openapi.components.service
+import com.intellij.openapi.diagnostic.Logger
 import dev.stillya.vpet.AtlasLoader
 import dev.stillya.vpet.IconRenderer
 import dev.stillya.vpet.config.AsepriteJsonAtlasLoader
@@ -23,16 +24,21 @@ import javax.imageio.ImageIO
 import kotlin.random.Random
 
 @Service
-class PetAnimated : Animated {
+class PetAnimated(
+	private val injectedRenderer: IconRenderer? = null,
+	private val injectedAtlasLoader: AtlasLoader? = null
+) : Animated {
+	private val log = Logger.getInstance(PetAnimated::class.java)
 	private val atlasLoader: AtlasLoader
-		get() = service<AsepriteJsonAtlasLoader>()
+		get() = injectedAtlasLoader ?: service<AsepriteJsonAtlasLoader>()
 
 	private val renderer: IconRenderer
-		get() = service<DefaultIconRenderer>()
+		get() = injectedRenderer ?: service<DefaultIconRenderer>()
 
 	private var transitionMatrix: TransitionMatrix
 	private lateinit var atlas: SpriteSheetAtlas
 	private lateinit var image: Image
+	private var currentState: AnimationState = AnimationState.IDLE
 
 	companion object {
 		const val INFINITE = -1
@@ -45,6 +51,7 @@ class PetAnimated : Animated {
 	}
 
 	override fun init(params: Animated.Params) {
+		log.trace("Initializing PetAnimated with atlas: ${params.atlasPath}, image: ${params.imgPath}")
 		atlas = atlasLoader.load(params.atlasPath)
 			?: throw IllegalArgumentException("Atlas not found")
 		image = loadImage(params.imgPath)
@@ -53,6 +60,7 @@ class PetAnimated : Animated {
 			AnimationTrigger.IDLE_BEHAVIOR,
 			AnimationState.IDLE
 		)
+		log.trace("Starting initial transition to IDLE state")
 		playTransition(transitionMatrix.transitionTo(AnimationState.IDLE), context)
 	}
 
@@ -60,26 +68,46 @@ class PetAnimated : Animated {
 		steps: List<AnimationStep>,
 		context: AnimationContext? = null
 	) {
-		if (steps.isEmpty()) return
+		if (steps.isEmpty()) {
+			log.trace("Empty transition steps, skipping")
+			return
+		}
+
+		log.trace(
+			"Playing transition sequence [${context?.targetState}]: ${
+				steps.mapIndexed { idx, step ->
+					val tag =
+						if (step.variants.isNotEmpty()) "${step.variants}" else step.animationTag
+					"[$idx]$tag(loops=${step.loops})"
+				}.joinToString(" → ")
+			}"
+		)
+
+		context?.targetState?.let { currentState = it }
 
 		val animations = steps.mapIndexed { index, step ->
 			val tag = if (step.variants.isNotEmpty()) {
-				step.variants[Random.nextInt(step.variants.size)]
+				step.variants[Random.nextInt(step.variants.size)].also {
+					log.trace("  Step $index: Selected '$it' from variants ${step.variants}")
+				}
 			} else {
-				step.animationTag
+				step.animationTag.also {
+					log.trace("  Step $index: Animation '$it' (${if (step.isTransition) "transition" else "play"})")
+				}
 			}
 
-			val isLast = index == steps.size - 1
-			val onFinish: () -> Unit = if (isLast && step.loops != INFINITE) {
-				{
+			val onFinish = {
+				if ((index == steps.size - 1) && step.loops != INFINITE) {
+					log.trace("Animation sequence completed, returning to stable idle state")
 					val idleContext = renderer.createAnimationContext(
 						AnimationTrigger.IDLE_BEHAVIOR,
 						AnimationState.IDLE
 					)
-					playTransition(transitionMatrix.getRandomIdleBehavior(), idleContext)
+					playTransition(
+						transitionMatrix.transitionTo(AnimationState.IDLE),
+						idleContext
+					)
 				}
-			} else {
-				{}
 			}
 
 			Animation(
@@ -98,6 +126,7 @@ class PetAnimated : Animated {
 			}
 		}
 
+		log.trace("Enqueueing first animation: ${animations.first().name}")
 		renderer.enqueue(animations.first())
 	}
 
@@ -108,15 +137,16 @@ class PetAnimated : Animated {
 			AnimationState.SITTING
 		}
 
+		log.trace("BUILD FAILED - Transitioning from $fromState to FAILED")
 		val context = renderer.createAnimationContext(
 			AnimationTrigger.BUILD_FAIL,
 			AnimationState.FAILED
 		)
-		val transition = transitionMatrix.getTransition(fromState, AnimationState.FAILED)
-		playTransition(transition, context)
+		playTransition(transitionMatrix.transitionTo(AnimationState.FAILED), context)
 	}
 
 	override fun onSuccess() {
+		log.trace("BUILD SUCCESS - Transitioning to CELEBRATING")
 		val context = renderer.createAnimationContext(
 			AnimationTrigger.BUILD_SUCCESS,
 			AnimationState.CELEBRATING
@@ -125,6 +155,7 @@ class PetAnimated : Animated {
 	}
 
 	override fun onProgress() {
+		log.trace("BUILD START - Transitioning to RUNNING")
 		val context = renderer.createAnimationContext(
 			AnimationTrigger.BUILD_START,
 			AnimationState.RUNNING
@@ -133,6 +164,7 @@ class PetAnimated : Animated {
 	}
 
 	override fun onCompleted() {
+		log.trace("BUILD COMPLETED - Transitioning to CELEBRATING")
 		val context = renderer.createAnimationContext(
 			AnimationTrigger.BUILD_SUCCESS,
 			AnimationState.CELEBRATING
@@ -141,6 +173,7 @@ class PetAnimated : Animated {
 	}
 
 	override fun onOccasion() {
+		log.trace("USER CLICK - Transitioning to OCCASION")
 		val context = renderer.createAnimationContext(
 			AnimationTrigger.USER_CLICK,
 			AnimationState.OCCASION
@@ -197,7 +230,7 @@ class PetAnimated : Animated {
 				"Attack_2",
 				"Attack_3",
 				"Attack_4",
-				"Attack_SHORT_LOOP",
+				"Attack_5",
 				loops = 3
 			)
 			play("Walk", loops = 3)
