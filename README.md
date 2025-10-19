@@ -1,6 +1,7 @@
 # VPet: Pixel Art Companions for IntelliJ
 
 ![Build](https://github.com/stillya/vpet/workflows/Build/badge.svg)
+[![Coverage Status](https://coveralls.io/repos/github/stillya/vpet/badge.svg?branch=main)](https://coveralls.io/github/stillya/vpet?branch=main)
 [![Version](https://img.shields.io/jetbrains/plugin/v/26898.svg)](https://plugins.jetbrains.com/plugin/26898)
 [![Downloads](https://img.shields.io/jetbrains/plugin/d/26898.svg)](https://plugins.jetbrains.com/plugin/26898)
 
