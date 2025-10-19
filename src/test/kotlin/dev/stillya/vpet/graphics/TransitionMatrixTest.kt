@@ -1,7 +1,10 @@
 package dev.stillya.vpet.graphics
 
+import dev.stillya.vpet.animation.AnimationState
+import dev.stillya.vpet.animation.TransitionMatrix
+import dev.stillya.vpet.animation.sequence
+import dev.stillya.vpet.animation.transitions
 import org.junit.Assert.assertEquals
-import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
 
@@ -12,7 +15,7 @@ class TransitionMatrixTest {
 	@Before
 	fun setup() {
 		matrix = transitions {
-			idle(AnimationState.IDLE, sequence {
+			idle(sequence {
 				play("Idle", loops = -1)
 			})
 
@@ -33,32 +36,80 @@ class TransitionMatrixTest {
 
 	@Test
 	fun testTransitionToSameState() {
-		val steps = matrix.transitionTo(AnimationState.IDLE)
+		val (sequence, targetState) = matrix.transitionTo(AnimationState.IDLE, AnimationState.IDLE)
 
-		assertEquals(1, steps.size)
-		assertEquals("Idle", steps[0].animationTag)
-		assertEquals(AnimationState.IDLE, matrix.currentState)
+		assertEquals(1, sequence.steps.size)
+		assertEquals("Idle", sequence.steps[0].animationTag)
+		assertEquals(AnimationState.IDLE, targetState)
 	}
 
 	@Test
 	fun testTransitionToNewState() {
-		val steps = matrix.transitionTo(AnimationState.WALKING)
+		val (sequence, targetState) = matrix.transitionTo(AnimationState.IDLE, AnimationState.WALKING)
 
-		assertEquals(1, steps.size)
-		assertEquals("Walk", steps[0].animationTag)
-		assertEquals(5, steps[0].loops)
-		assertEquals(AnimationState.WALKING, matrix.currentState)
+		assertEquals(1, sequence.steps.size)
+		assertEquals("Walk", sequence.steps[0].animationTag)
+		assertEquals(5, sequence.steps[0].loops)
+		assertEquals(AnimationState.WALKING, targetState)
 	}
 
 	@Test
 	fun testTransitionWithMultipleSteps() {
-		val steps = matrix.transitionTo(AnimationState.RUNNING)
+		val (sequence, targetState) = matrix.transitionTo(AnimationState.IDLE, AnimationState.RUNNING)
 
-		assertEquals(2, steps.size)
-		assertEquals("Walk_Run", steps[0].animationTag)
-		assertTrue(steps[0].isTransition)
-		assertEquals("Run", steps[1].animationTag)
-		assertEquals(-1, steps[1].loops)
-		assertEquals(AnimationState.RUNNING, matrix.currentState)
+		assertEquals(2, sequence.steps.size)
+		assertEquals("Walk_Run", sequence.steps[0].animationTag)
+		assertEquals("Run", sequence.steps[1].animationTag)
+		assertEquals(-1, sequence.steps[1].loops)
+		assertEquals(AnimationState.RUNNING, targetState)
+	}
+
+	@Test
+	fun testMultipleVariantsForSameTransition() {
+		val matrixWithVariants = transitions(kotlin.random.Random(42)) {
+			from(AnimationState.IDLE) to AnimationState.CELEBRATING via sequence {
+				play("Paws", loops = 2)
+				play("Jump")
+			}
+
+			from(AnimationState.IDLE) to AnimationState.CELEBRATING via sequence {
+				play("Attack", loops = 3)
+			}
+
+			from(AnimationState.IDLE) to AnimationState.CELEBRATING via sequence {
+				play("Dance")
+				play("Walk", loops = 5)
+			}
+		}
+
+		val selectedSequences = mutableSetOf<String>()
+		repeat(20) {
+			val (sequence, _) = matrixWithVariants.transitionTo(
+				AnimationState.IDLE,
+				AnimationState.CELEBRATING
+			)
+			selectedSequences.add(sequence.steps.joinToString(",") { it.animationTag })
+		}
+
+		assertEquals(
+			"Should select from multiple variants",
+			true,
+			selectedSequences.size > 1
+		)
+	}
+
+	@Test
+	fun testMissingTransitionReturnsEmptySequence() {
+		val (sequence, targetState) = matrix.transitionTo(
+			AnimationState.CELEBRATING,
+			AnimationState.RUNNING
+		)
+
+		assertEquals(
+			"Should return empty sequence when transition not defined",
+			0,
+			sequence.steps.size
+		)
+		assertEquals(AnimationState.RUNNING, targetState)
 	}
 }

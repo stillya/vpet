@@ -39,3 +39,4 @@ covprofile
 .intellijPlatform
 .qodana
 build
+.kotlin

@@ -5725,7 +5725,8 @@
       },
       {
         "name": "Walk",
-        "from": 32,
+        "from": 40,
+        "comment": "it was 32-47 previously, but I thought it's too long for walking",
         "to": 47,
         "direction": "forward",
         "color": "#000000ff"

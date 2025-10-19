@@ -126,11 +126,12 @@ jobs:
           name: tests-result
           path: ${{ github.workspace }}/build/reports/tests
 
-      # Upload the Kover report to CodeCov
+      # Upload the Kover report to Coveralls
       - name: Upload Code Coverage Report
-        uses: codecov/codecov-action@v4
+        uses: coverallsapp/github-action@v2
         with:
-          files: ${{ github.workspace }}/build/reports/kover/report.xml
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          file: ${{ github.workspace }}/build/reports/kover/report.xml
 
   # Run plugin structure verification along with IntelliJ Plugin Verifier
   verify:

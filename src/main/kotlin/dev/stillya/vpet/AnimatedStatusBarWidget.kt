@@ -58,7 +58,7 @@ class AnimatedStatusBarWidget : IconWidgetPresentation {
 		const val DEFAULT_SPRITE_SHEET_IMAGE = "/META-INF/spritesheets/cat.png"
 		const val DEFAULT_SPRITE_SHEET_ATLAS = "/META-INF/spritesheets/cat_atlas.json"
 		const val COUNTER_LIMIT = 10
-		const val FRAME_RATE_MS = 100L
+		const val FRAME_RATE_MS = 95L
 	}
 
 	init {

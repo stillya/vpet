@@ -3,6 +3,8 @@ package dev.stillya.vpet.graphics
 import com.intellij.openapi.components.Service
 import com.intellij.openapi.diagnostic.Logger
 import dev.stillya.vpet.IconRenderer
+import dev.stillya.vpet.animation.Animation
+import dev.stillya.vpet.animation.INFINITE
 import java.awt.Image
 import java.awt.geom.AffineTransform
 import java.awt.image.AffineTransformOp
@@ -32,9 +34,8 @@ class DefaultIconRenderer : IconRenderer {
 
 	override fun createAnimationContext(
 		trigger: AnimationTrigger,
-		targetState: AnimationState
 	): AnimationContext {
-		return epochManager.createContext(trigger, targetState)
+		return epochManager.createContext(trigger)
 	}
 
 	override fun enqueue(animation: Animation) {

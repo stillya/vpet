@@ -26,16 +26,14 @@ class AnimationEpochManagerTest {
 		assertEquals(2, manager.getCurrentEpoch())
 
 		val context1 = manager.createContext(
-			AnimationTrigger.IDLE_BEHAVIOR,
-			AnimationState.IDLE
+			AnimationTrigger.IDLE_BEHAVIOR
 		)
 
 		assertEquals(3, context1.epoch)
 		assertEquals(3, manager.getCurrentEpoch())
 
 		val context2 = manager.createContext(
-			AnimationTrigger.BUILD_START,
-			AnimationState.RUNNING
+			AnimationTrigger.BUILD_START
 		)
 
 		assertEquals(4, context2.epoch)
