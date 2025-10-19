@@ -77,6 +77,11 @@ class PetAnimated(
 		sequence: Pair<AnimationSequenceWithRequirement, AnimationState>,
 		context: AnimationContext? = null
 	) {
+		if (sequence.first.steps.isEmpty()) {
+			log.trace("Empty transition sequence, skipping")
+			return
+		}
+
 		val steps = animationPlayer.buildPlaylist(sequence.first)
 
 		if (steps.isEmpty()) {
@@ -210,6 +215,17 @@ class PetAnimated(
 			play("J_1", loops = SHORT_LOOP, effect = StateEffect.setPose(Pose.STAND))
 		}
 
+		from(AnimationState.RUNNING) to AnimationState.CELEBRATING via sequence {
+			require {
+				pose = Pose.STAND
+				speed = WALKING_SPEED
+			}
+			transition("Stop", effect = StateEffect.stop())
+			play("Paws", loops = SHORT_LOOP)
+			playRandom("Attack_1", "Attack_2", "Attack_3", "Attack_4", "Attack_5", loops = SHORT_LOOP)
+			play("Walk", loops = SHORT_LOOP, effect = StateEffect.setPose(Pose.STAND))
+		}
+
 		from(AnimationState.RUNNING) to AnimationState.FAILED via sequence {
 			// no require intended, can be from any running state
 			play("Dmg")
@@ -217,6 +233,15 @@ class PetAnimated(
 			play("Deat_End", loops = MEDIUM_LOOP)
 			play("Spawn_2", effect = StateEffect(pose = Pose.STAND, speed = 0f))
 		}
+
+		from(AnimationState.RUNNING) to AnimationState.FAILED via sequence {
+			require {
+				speed = NO_SPEED
+			}
+			play("Pooping")
+			play("Dig", loops = MEDIUM_LOOP)
+		}
+
 	}
 
 	private fun buildBridges(): List<Bridge> = listOf(

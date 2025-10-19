@@ -8,7 +8,7 @@ class TransitionMatrix(
 ) {
 	private val log = Logger.getInstance(TransitionMatrix::class.java)
 	private val transitions =
-		mutableMapOf<Pair<AnimationState, AnimationState>, AnimationSequenceWithRequirement>()
+		mutableMapOf<Pair<AnimationState, AnimationState>, MutableList<AnimationSequenceWithRequirement>>()
 	private val idleVariants = mutableListOf<AnimationSequenceWithRequirement>()
 
 	fun transitionTo(
@@ -20,10 +20,17 @@ class TransitionMatrix(
 			idleVariants.random(random)
 		} else {
 			log.trace("State transition: $currentState → $targetState")
-			transitions[currentState to targetState] ?: AnimationSequenceWithRequirement(
-				SequenceRequirement.NONE,
-				emptyList()
-			)
+			val variants = transitions[currentState to targetState]
+			if (variants.isNullOrEmpty()) {
+				log.trace("No transition found for $currentState → $targetState")
+				AnimationSequenceWithRequirement(SequenceRequirement.NONE, emptyList())
+			} else {
+				val selected = variants.random(random)
+				if (variants.size > 1) {
+					log.trace("Selected variant ${variants.indexOf(selected) + 1}/${variants.size}")
+				}
+				selected
+			}
 		}
 
 		return transition to targetState
@@ -34,7 +41,7 @@ class TransitionMatrix(
 		to: AnimationState,
 		sequence: AnimationSequenceWithRequirement
 	) {
-		transitions[from to to] = sequence
+		transitions.getOrPut(from to to) { mutableListOf() }.add(sequence)
 	}
 
 	fun defineIdleVariant(vararg sequences: AnimationSequenceWithRequirement) {

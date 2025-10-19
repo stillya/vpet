@@ -77,7 +77,10 @@ class PetAnimatedIntegrationTest {
 		assertTrue(rendererSpy.enqueuedAnimations.isNotEmpty())
 
 		val animations = rendererSpy.collectChain()
-		assertTrue("Should have Paws animation", animations.any { it.name == "J_1" })
+		assertTrue(
+			"Should have celebration animation (J_1 or Paws)",
+			animations.any { it.name == "J_1" || it.name == "Paws" }
+		)
 	}
 
 	@Test
@@ -107,7 +110,10 @@ class PetAnimatedIntegrationTest {
 		assertTrue(rendererSpy.enqueuedAnimations.isNotEmpty())
 
 		val animations = rendererSpy.collectChain()
-		assertTrue("Should have Paws animation", animations.any { it.name == "J_1" })
+		assertTrue(
+			"Should have celebration animation (J_1 or Paws)",
+			animations.any { it.name == "J_1" || it.name == "Paws" }
+		)
 	}
 
 	@Test

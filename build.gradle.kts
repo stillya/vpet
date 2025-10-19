@@ -73,8 +73,7 @@ intellijPlatform {
 				}
 			}
 
-		val changelog =
-			project.changelog // local variable for configuration cache compatibility
+		val changelog = project.changelog // local variable for configuration cache compatibility
 		// Get the latest available change notes from the changelog file
 		changeNotes = providers.gradleProperty("pluginVersion").map { pluginVersion ->
 			with(changelog) {
@@ -134,10 +133,9 @@ kover {
 	}
 }
 
-
-
 tasks {
 	runIde {
+		// Enable debug logging for the plugin
 		jvmArgs("-Didea.log.trace.categories=#dev.stillya.vpet")
 	}
 

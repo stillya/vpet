@@ -63,4 +63,38 @@ class TransitionMatrixTest {
 		assertEquals(-1, sequence.steps[1].loops)
 		assertEquals(AnimationState.RUNNING, targetState)
 	}
+
+	@Test
+	fun testMultipleVariantsForSameTransition() {
+		val matrixWithVariants = transitions(kotlin.random.Random(42)) {
+			from(AnimationState.IDLE) to AnimationState.CELEBRATING via sequence {
+				play("Paws", loops = 2)
+				play("Jump")
+			}
+
+			from(AnimationState.IDLE) to AnimationState.CELEBRATING via sequence {
+				play("Attack", loops = 3)
+			}
+
+			from(AnimationState.IDLE) to AnimationState.CELEBRATING via sequence {
+				play("Dance")
+				play("Walk", loops = 5)
+			}
+		}
+
+		val selectedSequences = mutableSetOf<String>()
+		repeat(20) {
+			val (sequence, _) = matrixWithVariants.transitionTo(
+				AnimationState.IDLE,
+				AnimationState.CELEBRATING
+			)
+			selectedSequences.add(sequence.steps.joinToString(",") { it.animationTag })
+		}
+
+		assertEquals(
+			"Should select from multiple variants",
+			true,
+			selectedSequences.size > 1
+		)
+	}
 }
