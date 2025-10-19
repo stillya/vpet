@@ -3,46 +3,58 @@ package dev.stillya.vpet.config
 import com.fasterxml.jackson.annotation.JsonProperty
 
 data class SpriteSheetAtlas(
-	@JsonProperty("frames")
+	@field:JsonProperty("frames")
+	@param:JsonProperty("frames")
 	val frames: List<AtlasFrame>,
-	@JsonProperty("meta")
+	@field:JsonProperty("meta")
+	@param:JsonProperty("meta")
 	val meta: AtlasMeta
 )
 
 data class AtlasFrame(
-	@JsonProperty("frame")
+	@field:JsonProperty("frame")
+	@param:JsonProperty("frame")
 	val frame: FrameRect,
 )
 
 data class FrameRect(
-	@JsonProperty("x")
+	@field:JsonProperty("x")
+	@param:JsonProperty("x")
 	val x: Int = 0,
 
-	@JsonProperty("y")
+	@field:JsonProperty("y")
+	@param:JsonProperty("y")
 	val y: Int = 0,
 
-	@JsonProperty("w")
+	@field:JsonProperty("w")
+	@param:JsonProperty("w")
 	val width: Int = 0,
 
-	@JsonProperty("h")
+	@field:JsonProperty("h")
+	@param:JsonProperty("h")
 	val height: Int = 0
 )
 
 data class AtlasMeta(
-	@JsonProperty("frameTags")
+	@field:JsonProperty("frameTags")
+	@param:JsonProperty("frameTags")
 	val frameTags: List<FrameTag>
 )
 
 data class FrameTag(
-	@JsonProperty("name")
+	@field:JsonProperty("name")
+	@param:JsonProperty("name")
 	val name: String = "",
 
-	@JsonProperty("from")
+	@field:JsonProperty("from")
+	@param:JsonProperty("from")
 	val from: Int = 0,
 
-	@JsonProperty("to")
+	@field:JsonProperty("to")
+	@param:JsonProperty("to")
 	val to: Int = 0,
 
-	@JsonProperty("duration")
+	@field:JsonProperty("duration")
+	@param:JsonProperty("duration")
 	val duration: Int = 100,
 )

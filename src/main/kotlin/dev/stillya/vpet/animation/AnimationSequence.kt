@@ -1,4 +1,4 @@
-package dev.stillya.vpet.graphics
+package dev.stillya.vpet.animation
 
 data class AnimationStep(
 	val animationTag: String,
@@ -8,6 +8,30 @@ data class AnimationStep(
 	val isTransition: Boolean = false,
 	val effect: StateEffect = StateEffect.NONE
 )
+
+const val INFINITE = -1
+const val SHORT_LOOP = 5
+const val MEDIUM_LOOP = 8
+
+const val NO_SPEED = 0.0f
+const val WALKING_SPEED = 1.0f
+const val RUNNING_SPEED = 3.0f
+
+data class StateEffect(
+	val pose: Pose? = null,
+	val speed: Float? = null,
+	val direction: Direction? = null,
+) {
+	companion object {
+		val NONE = StateEffect()
+
+		fun setPose(pose: Pose) = StateEffect(pose = pose)
+		fun setSpeed(speed: Float) = StateEffect(speed = speed)
+		fun stop() = StateEffect(speed = 0f)
+		fun flip() = StateEffect()
+	}
+}
+
 
 data class AnimationSequenceWithRequirement(
 	val requirement: SequenceRequirement,
@@ -37,7 +61,15 @@ class AnimationSequenceBuilder {
 		guard: AnimationGuard = AnimationGuard.ALWAYS_VALID,
 		effect: StateEffect = StateEffect.NONE
 	) {
-		steps.add(AnimationStep(tags.first(), loops, tags.toList(), guard = guard, effect = effect))
+		steps.add(
+			AnimationStep(
+				tags.first(),
+				loops,
+				tags.toList(),
+				guard = guard,
+				effect = effect
+			)
+		)
 	}
 
 	fun playInfinite(
@@ -60,13 +92,11 @@ class AnimationSequenceBuilder {
 		)
 	}
 
-	fun build(): List<AnimationStep> = steps.toList()
-
 	fun buildWithRequirement(): AnimationSequenceWithRequirement {
 		return AnimationSequenceWithRequirement(requirement, steps.toList())
 	}
 }
 
-fun sequence(builder: AnimationSequenceBuilder.() -> Unit): List<AnimationStep> {
-	return AnimationSequenceBuilder().apply(builder).build()
+fun sequence(builder: AnimationSequenceBuilder.() -> Unit): AnimationSequenceWithRequirement {
+	return AnimationSequenceBuilder().apply(builder).buildWithRequirement()
 }

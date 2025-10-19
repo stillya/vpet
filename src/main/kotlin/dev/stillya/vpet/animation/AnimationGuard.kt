@@ -1,4 +1,7 @@
-package dev.stillya.vpet.graphics
+package dev.stillya.vpet.animation
+
+import dev.stillya.vpet.graphics.AnimationContext
+import dev.stillya.vpet.graphics.AnimationTrigger
 
 interface AnimationGuard {
 	fun canStart(context: AnimationContext, currentEpoch: Long): Boolean
@@ -7,8 +10,6 @@ interface AnimationGuard {
 
 	companion object {
 		val ALWAYS_VALID: AnimationGuard = AlwaysValidGuard
-
-		val NON_INTERRUPTIBLE: AnimationGuard = NonInterruptibleGuard
 
 		fun epochGuard(isInterruptible: Boolean = true): AnimationGuard =
 			EpochGuard(isInterruptible)
@@ -25,14 +26,6 @@ object AlwaysValidGuard : AnimationGuard {
 		context.isValid(currentEpoch)
 
 	override val isInterruptible = true
-}
-
-object NonInterruptibleGuard : AnimationGuard {
-	override fun canStart(context: AnimationContext, currentEpoch: Long) = true
-	override fun canContinue(context: AnimationContext, currentEpoch: Long) =
-		context.isValid(currentEpoch)
-
-	override val isInterruptible = false
 }
 
 class EpochGuard(override val isInterruptible: Boolean = true) : AnimationGuard {

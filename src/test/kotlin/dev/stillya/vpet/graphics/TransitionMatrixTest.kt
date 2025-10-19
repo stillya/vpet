@@ -1,5 +1,9 @@
 package dev.stillya.vpet.graphics
 
+import dev.stillya.vpet.animation.AnimationState
+import dev.stillya.vpet.animation.TransitionMatrix
+import dev.stillya.vpet.animation.sequence
+import dev.stillya.vpet.animation.transitions
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Before

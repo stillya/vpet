@@ -1,4 +1,4 @@
-package dev.stillya.vpet.graphics
+package dev.stillya.vpet.animation
 
 enum class Pose {
 	LIE,

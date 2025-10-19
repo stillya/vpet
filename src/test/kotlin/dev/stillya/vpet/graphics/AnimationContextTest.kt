@@ -1,5 +1,6 @@
 package dev.stillya.vpet.graphics
 
+import dev.stillya.vpet.animation.AnimationState
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
 import org.junit.Test

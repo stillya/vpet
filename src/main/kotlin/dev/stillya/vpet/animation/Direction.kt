@@ -1,4 +1,4 @@
-package dev.stillya.vpet.graphics
+package dev.stillya.vpet.animation
 
 data class Direction(val angle: Float) {
 	companion object {

@@ -3,10 +3,10 @@ package dev.stillya.vpet.pet
 import dev.stillya.vpet.AtlasLoader
 import dev.stillya.vpet.IconRenderer
 import dev.stillya.vpet.config.AsepriteJsonAtlasLoader
-import dev.stillya.vpet.graphics.Animation
+import dev.stillya.vpet.animation.Animation
 import dev.stillya.vpet.graphics.AnimationContext
 import dev.stillya.vpet.graphics.AnimationEpochManager
-import dev.stillya.vpet.graphics.AnimationState
+import dev.stillya.vpet.animation.AnimationState
 import dev.stillya.vpet.graphics.AnimationTrigger
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotNull
