@@ -5,7 +5,6 @@ data class AnimationStep(
 	val loops: Int = 1,
 	val variants: List<String> = emptyList(),
 	val guard: AnimationGuard = AnimationGuard.ALWAYS_VALID,
-	val isTransition: Boolean = false,
 	val effect: StateEffect = StateEffect.NONE
 )
 
@@ -86,7 +85,6 @@ class AnimationSequenceBuilder {
 				tag,
 				loops = 1,
 				guard = AnimationGuard.transitionGuard(),
-				isTransition = true,
 				effect = effect
 			)
 		)

@@ -41,7 +41,6 @@ class AnimationPlayer(
 				animationTag = bridge.animationTag,
 				loops = 1,
 				guard = transitionGuard(),
-				isTransition = true,
 				effect = bridge.effect
 			)
 		}

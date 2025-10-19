@@ -1,16 +1,15 @@
 package dev.stillya.vpet.animation
 
 import com.intellij.openapi.diagnostic.Logger
+import kotlin.random.Random
 
-class TransitionMatrix {
+class TransitionMatrix(
+	private val random: Random = Random
+) {
 	private val log = Logger.getInstance(TransitionMatrix::class.java)
 	private val transitions =
 		mutableMapOf<Pair<AnimationState, AnimationState>, AnimationSequenceWithRequirement>()
 	private val idleVariants = mutableListOf<AnimationSequenceWithRequirement>()
-
-	@Volatile
-	var currentState: AnimationState = AnimationState.IDLE
-		private set
 
 	fun transitionTo(
 		currentState: AnimationState,
@@ -18,7 +17,7 @@ class TransitionMatrix {
 	): Pair<AnimationSequenceWithRequirement, AnimationState> {
 		val transition = if (targetState == AnimationState.IDLE) {
 			log.trace("Transitioning to IDLE state, selecting random idle variant")
-			idleVariants.random()
+			idleVariants.random(random)
 		} else {
 			log.trace("State transition: $currentState → $targetState")
 			transitions[currentState to targetState] ?: AnimationSequenceWithRequirement(
@@ -69,8 +68,11 @@ class TransitionMatrixBuilder(private val matrix: TransitionMatrix) {
 	}
 }
 
-fun transitions(builder: TransitionMatrixBuilder.() -> Unit): TransitionMatrix {
-	val matrix = TransitionMatrix()
+fun transitions(
+	random: Random = Random,
+	builder: TransitionMatrixBuilder.() -> Unit
+): TransitionMatrix {
+	val matrix = TransitionMatrix(random)
 	TransitionMatrixBuilder(matrix).apply(builder)
 	return matrix
 }

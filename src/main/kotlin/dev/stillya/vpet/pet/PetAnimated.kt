@@ -38,7 +38,8 @@ import kotlin.random.Random
 @Service
 class PetAnimated(
 	private val injectedRenderer: IconRenderer? = null,
-	private val injectedAtlasLoader: AtlasLoader? = null
+	private val injectedAtlasLoader: AtlasLoader? = null,
+	randomSeed: Long? = null
 ) : Animated {
 	private val log = Logger.getInstance(PetAnimated::class.java)
 	private val atlasLoader: AtlasLoader
@@ -47,20 +48,15 @@ class PetAnimated(
 	private val renderer: IconRenderer
 		get() = injectedRenderer ?: service<DefaultIconRenderer>()
 
-	private var animationPlayer: AnimationPlayer
-
+	private val random: Random = randomSeed?.let { Random(it) } ?: Random
+	private val bridges: List<Bridge> = buildBridges()
 	private var transitionMatrix: TransitionMatrix = buildTransitionMatrix()
+	private var animationPlayer: AnimationPlayer = AnimationPlayer(bridges)
 
 	@Volatile
 	private var currentState: AnimationState = AnimationState.IDLE
 	private lateinit var atlas: SpriteSheetAtlas
 	private lateinit var image: Image
-
-	private val bridges: List<Bridge> = buildBridges()
-
-	init {
-		animationPlayer = AnimationPlayer(bridges)
-	}
 
 	override fun init(params: Animated.Params) {
 		log.trace("Initializing PetAnimated with atlas: ${params.atlasPath}, image: ${params.imgPath}")
@@ -102,12 +98,12 @@ class PetAnimated(
 
 		val animations = steps.mapIndexed { index, step ->
 			val tag = if (step.variants.isNotEmpty()) {
-				step.variants[Random.nextInt(step.variants.size)].also {
+				step.variants[random.nextInt(step.variants.size)].also {
 					log.trace("Step $index: Selected '$it' from variants ${step.variants}")
 				}
 			} else {
 				step.animationTag.also {
-					log.trace("Step $index: Animation '$it' (${if (step.isTransition) "transition" else "play"})")
+					log.trace("Step $index: Animation '$it'")
 				}
 			}
 
@@ -172,7 +168,7 @@ class PetAnimated(
 		playTransition(transitionMatrix.transitionTo(currentState, AnimationState.OCCASION), context)
 	}
 
-	private fun buildTransitionMatrix(): TransitionMatrix = transitions {
+	private fun buildTransitionMatrix(): TransitionMatrix = transitions(random) {
 		idle(
 			sequence {
 				require { pose = Pose.LIE }
@@ -200,9 +196,10 @@ class PetAnimated(
 			)
 		}
 
-//		from(AnimationState.IDLE) to AnimationState.OCCASION via sequence {
-//			playRandom("Paws", "Pac-Cat", "Goomba", "J_1", "rook_around", loops = 3)
-//		}
+		from(AnimationState.IDLE) to AnimationState.OCCASION via sequence {
+			require { pose = Pose.STAND }
+			playRandom("Paws", "Pac-Cat", "Goomba", "rook_around", loops = SHORT_LOOP)
+		}
 
 		from(AnimationState.RUNNING) to AnimationState.CELEBRATING via sequence {
 			require {

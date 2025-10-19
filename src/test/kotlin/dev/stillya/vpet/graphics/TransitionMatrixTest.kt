@@ -5,7 +5,6 @@ import dev.stillya.vpet.animation.TransitionMatrix
 import dev.stillya.vpet.animation.sequence
 import dev.stillya.vpet.animation.transitions
 import org.junit.Assert.assertEquals
-import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
 
@@ -16,7 +15,7 @@ class TransitionMatrixTest {
 	@Before
 	fun setup() {
 		matrix = transitions {
-			idle(AnimationState.IDLE, sequence {
+			idle(sequence {
 				play("Idle", loops = -1)
 			})
 
@@ -37,32 +36,31 @@ class TransitionMatrixTest {
 
 	@Test
 	fun testTransitionToSameState() {
-		val steps = matrix.transitionTo(AnimationState.IDLE)
+		val (sequence, targetState) = matrix.transitionTo(AnimationState.IDLE, AnimationState.IDLE)
 
-		assertEquals(1, steps.size)
-		assertEquals("Idle", steps[0].animationTag)
-		assertEquals(AnimationState.IDLE, matrix.currentState)
+		assertEquals(1, sequence.steps.size)
+		assertEquals("Idle", sequence.steps[0].animationTag)
+		assertEquals(AnimationState.IDLE, targetState)
 	}
 
 	@Test
 	fun testTransitionToNewState() {
-		val steps = matrix.transitionTo(AnimationState.WALKING)
+		val (sequence, targetState) = matrix.transitionTo(AnimationState.IDLE, AnimationState.WALKING)
 
-		assertEquals(1, steps.size)
-		assertEquals("Walk", steps[0].animationTag)
-		assertEquals(5, steps[0].loops)
-		assertEquals(AnimationState.WALKING, matrix.currentState)
+		assertEquals(1, sequence.steps.size)
+		assertEquals("Walk", sequence.steps[0].animationTag)
+		assertEquals(5, sequence.steps[0].loops)
+		assertEquals(AnimationState.WALKING, targetState)
 	}
 
 	@Test
 	fun testTransitionWithMultipleSteps() {
-		val steps = matrix.transitionTo(AnimationState.RUNNING)
+		val (sequence, targetState) = matrix.transitionTo(AnimationState.IDLE, AnimationState.RUNNING)
 
-		assertEquals(2, steps.size)
-		assertEquals("Walk_Run", steps[0].animationTag)
-		assertTrue(steps[0].isTransition)
-		assertEquals("Run", steps[1].animationTag)
-		assertEquals(-1, steps[1].loops)
-		assertEquals(AnimationState.RUNNING, matrix.currentState)
+		assertEquals(2, sequence.steps.size)
+		assertEquals("Walk_Run", sequence.steps[0].animationTag)
+		assertEquals("Run", sequence.steps[1].animationTag)
+		assertEquals(-1, sequence.steps[1].loops)
+		assertEquals(AnimationState.RUNNING, targetState)
 	}
 }

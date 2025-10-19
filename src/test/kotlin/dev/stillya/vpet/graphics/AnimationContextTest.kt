@@ -1,6 +1,5 @@
 package dev.stillya.vpet.graphics
 
-import dev.stillya.vpet.animation.AnimationState
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
 import org.junit.Test
@@ -11,8 +10,7 @@ class AnimationContextTest {
 	fun testContextIsValidWithMatchingEpoch() {
 		val context = AnimationContext(
 			epoch = 5,
-			triggerEvent = AnimationTrigger.IDLE_BEHAVIOR,
-			targetState = AnimationState.IDLE
+			triggerEvent = AnimationTrigger.IDLE_BEHAVIOR
 		)
 
 		assertTrue(context.isValid(5))
@@ -22,8 +20,7 @@ class AnimationContextTest {
 	fun testContextIsInvalidWithDifferentEpoch() {
 		val context = AnimationContext(
 			epoch = 5,
-			triggerEvent = AnimationTrigger.IDLE_BEHAVIOR,
-			targetState = AnimationState.IDLE
+			triggerEvent = AnimationTrigger.IDLE_BEHAVIOR
 		)
 
 		assertFalse(context.isValid(6))
@@ -34,8 +31,7 @@ class AnimationContextTest {
 	fun testContextIsNotExpiredImmediately() {
 		val context = AnimationContext(
 			epoch = 1,
-			triggerEvent = AnimationTrigger.IDLE_BEHAVIOR,
-			targetState = AnimationState.IDLE
+			triggerEvent = AnimationTrigger.IDLE_BEHAVIOR
 		)
 
 		assertFalse(context.isExpired())
@@ -47,7 +43,6 @@ class AnimationContextTest {
 		val context = AnimationContext(
 			epoch = 1,
 			triggerEvent = AnimationTrigger.IDLE_BEHAVIOR,
-			targetState = AnimationState.IDLE,
 			timestamp = oldTimestamp
 		)
 
