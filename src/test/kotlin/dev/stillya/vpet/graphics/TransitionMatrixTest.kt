@@ -97,4 +97,19 @@ class TransitionMatrixTest {
 			selectedSequences.size > 1
 		)
 	}
+
+	@Test
+	fun testMissingTransitionReturnsEmptySequence() {
+		val (sequence, targetState) = matrix.transitionTo(
+			AnimationState.CELEBRATING,
+			AnimationState.RUNNING
+		)
+
+		assertEquals(
+			"Should return empty sequence when transition not defined",
+			0,
+			sequence.steps.size
+		)
+		assertEquals(AnimationState.RUNNING, targetState)
+	}
 }

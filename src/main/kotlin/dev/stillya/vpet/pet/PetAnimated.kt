@@ -77,11 +77,6 @@ class PetAnimated(
 		sequence: Pair<AnimationSequenceWithRequirement, AnimationState>,
 		context: AnimationContext? = null
 	) {
-		if (sequence.first.steps.isEmpty()) {
-			log.trace("Empty transition sequence, skipping")
-			return
-		}
-
 		val steps = animationPlayer.buildPlaylist(sequence.first)
 
 		if (steps.isEmpty()) {
@@ -145,32 +140,57 @@ class PetAnimated(
 
 	override fun onFail() {
 		log.trace("BUILD FAILED - Transitioning to FAILED")
-		val context = renderer.createAnimationContext(AnimationTrigger.BUILD_FAIL)
-		playTransition(transitionMatrix.transitionTo(currentState, AnimationState.FAILED), context)
+		val sequence = transitionMatrix.transitionTo(currentState, AnimationState.FAILED)
+		if (sequence.first.steps.isNotEmpty()) {
+			val context = renderer.createAnimationContext(AnimationTrigger.BUILD_FAIL)
+			playTransition(sequence, context)
+		} else {
+			log.trace("No transition available from $currentState to FAILED, ignoring")
+		}
 	}
 
 	override fun onSuccess() {
 		log.trace("BUILD SUCCESS - Transitioning to CELEBRATING")
-		val context = renderer.createAnimationContext(AnimationTrigger.BUILD_SUCCESS)
-		playTransition(transitionMatrix.transitionTo(currentState, AnimationState.CELEBRATING), context)
+		val sequence = transitionMatrix.transitionTo(currentState, AnimationState.CELEBRATING)
+		if (sequence.first.steps.isNotEmpty()) {
+			val context = renderer.createAnimationContext(AnimationTrigger.BUILD_SUCCESS)
+			playTransition(sequence, context)
+		} else {
+			log.trace("No transition available from $currentState to CELEBRATING, ignoring")
+		}
 	}
 
 	override fun onProgress() {
 		log.trace("BUILD START - Transitioning to RUNNING")
-		val context = renderer.createAnimationContext(AnimationTrigger.BUILD_START)
-		playTransition(transitionMatrix.transitionTo(currentState, AnimationState.RUNNING), context)
+		val sequence = transitionMatrix.transitionTo(currentState, AnimationState.RUNNING)
+		if (sequence.first.steps.isNotEmpty()) {
+			val context = renderer.createAnimationContext(AnimationTrigger.BUILD_START)
+			playTransition(sequence, context)
+		} else {
+			log.trace("No transition available from $currentState to RUNNING, ignoring")
+		}
 	}
 
 	override fun onCompleted() {
 		log.trace("BUILD COMPLETED - Transitioning to CELEBRATING")
-		val context = renderer.createAnimationContext(AnimationTrigger.BUILD_SUCCESS)
-		playTransition(transitionMatrix.transitionTo(currentState, AnimationState.CELEBRATING), context)
+		val sequence = transitionMatrix.transitionTo(currentState, AnimationState.CELEBRATING)
+		if (sequence.first.steps.isNotEmpty()) {
+			val context = renderer.createAnimationContext(AnimationTrigger.BUILD_SUCCESS)
+			playTransition(sequence, context)
+		} else {
+			log.trace("No transition available from $currentState to CELEBRATING, ignoring")
+		}
 	}
 
 	override fun onOccasion() {
 		log.trace("USER CLICK - Transitioning to OCCASION")
-		val context = renderer.createAnimationContext(AnimationTrigger.USER_CLICK)
-		playTransition(transitionMatrix.transitionTo(currentState, AnimationState.OCCASION), context)
+		val sequence = transitionMatrix.transitionTo(currentState, AnimationState.OCCASION)
+		if (sequence.first.steps.isNotEmpty()) {
+			val context = renderer.createAnimationContext(AnimationTrigger.USER_CLICK)
+			playTransition(sequence, context)
+		} else {
+			log.trace("No transition available from $currentState to OCCASION, ignoring")
+		}
 	}
 
 	private fun buildTransitionMatrix(): TransitionMatrix = transitions(random) {

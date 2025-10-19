@@ -181,6 +181,25 @@ class PetAnimatedIntegrationTest {
 			"Last animation should not have next", animations.last().nextAnimation
 		)
 	}
+
+	@Test
+	fun testMissingTransitionIsIgnored() {
+		rendererSpy.clear()
+
+		petAnimated.onProgress()
+		val runningAnimationCount = rendererSpy.enqueuedAnimations.size
+
+		petAnimated.onFail()
+		val afterFailCount = rendererSpy.enqueuedAnimations.size
+
+		petAnimated.onProgress()
+
+		assertEquals(
+			"Transition from FAILED to RUNNING should be ignored (no new animations after second onProgress)",
+			afterFailCount,
+			rendererSpy.enqueuedAnimations.size
+		)
+	}
 }
 
 class IconRendererSpy : IconRenderer {
