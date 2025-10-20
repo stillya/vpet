@@ -30,6 +30,7 @@ import dev.stillya.vpet.graphics.AnimationContext
 import dev.stillya.vpet.graphics.AnimationTrigger
 import dev.stillya.vpet.graphics.DefaultIconRenderer
 import dev.stillya.vpet.graphics.SpriteSheet
+import dev.stillya.vpet.service.ActivityTracker
 import java.awt.Image
 import java.awt.image.BufferedImage
 import javax.imageio.ImageIO
@@ -57,6 +58,23 @@ class PetAnimated(
 	private var currentState: AnimationState = AnimationState.IDLE
 	private lateinit var atlas: SpriteSheetAtlas
 	private lateinit var image: Image
+
+	@Volatile
+	private var isObserving: Boolean = false
+
+	@Volatile
+	private var currentCursorOnLeft: Boolean = false
+
+	@Volatile
+	private var lastPivotTimeMs: Long = 0L
+
+	@Volatile
+	private var observingStartTimeMs: Long = 0L
+
+	companion object {
+		private const val PIVOT_INTERVAL_MS = 30_000L // 30 seconds
+		private const val OBSERVING_DURATION_MS = 120_000L // 2 minutes
+	}
 
 	override fun init(params: Animated.Params) {
 		log.trace("Initializing PetAnimated with atlas: ${params.atlasPath}, image: ${params.imgPath}")
@@ -140,6 +158,7 @@ class PetAnimated(
 
 	override fun onFail() {
 		log.trace("BUILD FAILED - Transitioning to FAILED")
+		exitObservingMode()
 		val sequence = transitionMatrix.transitionTo(currentState, AnimationState.FAILED)
 		if (sequence.first.steps.isNotEmpty()) {
 			val context = renderer.createAnimationContext(AnimationTrigger.BUILD_FAIL)
@@ -151,6 +170,7 @@ class PetAnimated(
 
 	override fun onSuccess() {
 		log.trace("BUILD SUCCESS - Transitioning to CELEBRATING")
+		exitObservingMode()
 		val sequence = transitionMatrix.transitionTo(currentState, AnimationState.CELEBRATING)
 		if (sequence.first.steps.isNotEmpty()) {
 			val context = renderer.createAnimationContext(AnimationTrigger.BUILD_SUCCESS)
@@ -162,6 +182,7 @@ class PetAnimated(
 
 	override fun onProgress() {
 		log.trace("BUILD START - Transitioning to RUNNING")
+		exitObservingMode()
 		val sequence = transitionMatrix.transitionTo(currentState, AnimationState.RUNNING)
 		if (sequence.first.steps.isNotEmpty()) {
 			val context = renderer.createAnimationContext(AnimationTrigger.BUILD_START)
@@ -173,6 +194,7 @@ class PetAnimated(
 
 	override fun onCompleted() {
 		log.trace("BUILD COMPLETED - Transitioning to CELEBRATING")
+		exitObservingMode()
 		val sequence = transitionMatrix.transitionTo(currentState, AnimationState.CELEBRATING)
 		if (sequence.first.steps.isNotEmpty()) {
 			val context = renderer.createAnimationContext(AnimationTrigger.BUILD_SUCCESS)
@@ -184,6 +206,7 @@ class PetAnimated(
 
 	override fun onOccasion() {
 		log.trace("USER CLICK - Transitioning to OCCASION")
+		exitObservingMode()
 		val sequence = transitionMatrix.transitionTo(currentState, AnimationState.OCCASION)
 		if (sequence.first.steps.isNotEmpty()) {
 			val context = renderer.createAnimationContext(AnimationTrigger.USER_CLICK)
@@ -191,6 +214,79 @@ class PetAnimated(
 		} else {
 			log.trace("No transition available from $currentState to OCCASION, ignoring")
 		}
+	}
+
+	private fun exitObservingMode() {
+		if (isObserving) {
+			log.trace("Exiting OBSERVING mode")
+			isObserving = false
+			observingStartTimeMs = 0L
+			renderer.setFlipped(false)
+			// Reset activity timer so we need fresh inactivity before re-entering observing
+			ActivityTracker.notifyActivity()
+		}
+	}
+
+	override fun onStartObserving() {
+		if (currentState == AnimationState.IDLE && !isObserving) {
+			log.trace("INACTIVITY - Starting OBSERVING mode")
+			isObserving = true
+			observingStartTimeMs = System.currentTimeMillis()
+			lastPivotTimeMs = observingStartTimeMs
+			val sequence = transitionMatrix.transitionTo(currentState, AnimationState.OBSERVING)
+			if (sequence.first.steps.isNotEmpty()) {
+				val context = renderer.createAnimationContext(AnimationTrigger.IDLE_BEHAVIOR)
+				playTransition(sequence, context)
+			}
+		}
+	}
+
+	override fun onCursorMove(isOnLeftSide: Boolean) {
+		if (!isObserving || currentState != AnimationState.OBSERVING) {
+			return
+		}
+
+		val now = System.currentTimeMillis()
+		val observingDuration = now - observingStartTimeMs
+
+		// Check if observing duration exceeded
+		if (observingDuration >= OBSERVING_DURATION_MS) {
+			log.trace("Observing duration exceeded (${observingDuration}ms), returning to IDLE")
+			exitObservingMode()
+			val sequence = transitionMatrix.transitionTo(currentState, AnimationState.IDLE)
+			if (sequence.first.steps.isNotEmpty()) {
+				val context = renderer.createAnimationContext(AnimationTrigger.IDLE_BEHAVIOR)
+				playTransition(sequence, context)
+			}
+			return
+		}
+
+		if (currentCursorOnLeft != isOnLeftSide) {
+			log.trace("Cursor moved to ${if (isOnLeftSide) "LEFT" else "RIGHT"} side")
+			currentCursorOnLeft = isOnLeftSide
+			renderer.setFlipped(isOnLeftSide)
+		}
+
+		val timeSinceLastPivot = now - lastPivotTimeMs
+		if (timeSinceLastPivot >= PIVOT_INTERVAL_MS) {
+			log.trace("Pivot timer triggered - transitioning to front stare")
+			lastPivotTimeMs = now
+			playPivotSequence()
+		}
+	}
+
+	private fun playPivotSequence() {
+		val pivotSequence = sequence {
+			require { pose = Pose.STAND }
+			play("R_A_1")
+			play("R_A_2", loops = SHORT_LOOP)
+			play("R_A_3")
+			play("R_A_4")
+			play("R_A_5", loops = INFINITE)
+		}
+
+		val context = renderer.createAnimationContext(AnimationTrigger.IDLE_BEHAVIOR)
+		playTransition(pivotSequence to AnimationState.OBSERVING, context)
 	}
 
 	private fun buildTransitionMatrix(): TransitionMatrix = transitions(random) {
@@ -262,6 +358,50 @@ class PetAnimated(
 			play("Dig", loops = MEDIUM_LOOP)
 		}
 
+		from(AnimationState.IDLE) to AnimationState.OBSERVING via sequence {
+			require { pose = Pose.STAND }
+			play("R_A_4")
+			play("R_A_5", loops = INFINITE)
+		}
+
+		from(AnimationState.OBSERVING) to AnimationState.IDLE via sequence {
+			require { pose = Pose.STAND }
+			play("R_A_6")
+		}
+
+		from(AnimationState.OBSERVING) to AnimationState.RUNNING via sequence {
+			require { pose = Pose.STAND }
+			play("R_A_6")
+			play("Walk")
+			transition("Walk_Run", effect = StateEffect.setSpeed(WALKING_SPEED))
+			playInfinite(
+				"Run",
+				guard = AnimationGuard.buildGuard(),
+				effect = StateEffect(pose = Pose.STAND, speed = RUNNING_SPEED)
+			)
+		}
+
+		from(AnimationState.OBSERVING) to AnimationState.CELEBRATING via sequence {
+			require { pose = Pose.STAND }
+			play("R_A_6")
+			play("J_1", loops = SHORT_LOOP, effect = StateEffect.setPose(Pose.STAND))
+		}
+
+		from(AnimationState.OBSERVING) to AnimationState.FAILED via sequence {
+			require { pose = Pose.STAND }
+			play("R_A_6")
+			play("Dmg")
+			playRandom("Death_1", "Death_2")
+			play("Deat_End", loops = MEDIUM_LOOP)
+			play("Spawn_2", effect = StateEffect(pose = Pose.STAND, speed = 0f))
+		}
+
+		from(AnimationState.OBSERVING) to AnimationState.OCCASION via sequence {
+			require { pose = Pose.STAND }
+			play("R_A_6")
+			playRandom("Paws", "Pac-Cat", "Goomba", "rook_around", loops = SHORT_LOOP)
+		}
+		
 	}
 
 	private fun buildBridges(): List<Bridge> = listOf(

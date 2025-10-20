@@ -219,6 +219,10 @@ class IconRendererSpy : IconRenderer {
 		return AnimationEpochManager().createContext(trigger)
 	}
 
+	override fun setFlipped(flipped: Boolean) {
+		// No-op for test spy
+	}
+
 	fun clear() {
 		enqueuedAnimations.clear()
 	}

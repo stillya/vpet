@@ -12,11 +12,15 @@ import com.jetbrains.rd.util.AtomicInteger
 import dev.stillya.vpet.graphics.DefaultIconRenderer
 import dev.stillya.vpet.pet.Animated
 import dev.stillya.vpet.pet.PetAnimated
+import dev.stillya.vpet.service.ActivityListener
+import dev.stillya.vpet.service.ActivityTracker
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 import org.jetbrains.annotations.Nls
+import java.awt.MouseInfo
+import java.awt.Toolkit
 import java.awt.event.MouseEvent
 import java.util.*
 import javax.swing.Icon
@@ -39,7 +43,7 @@ class AnimatedStatusBarWidgetFactory : StatusBarWidgetFactory, WidgetPresentatio
 	}
 }
 
-class AnimatedStatusBarWidget : IconWidgetPresentation {
+class AnimatedStatusBarWidget : IconWidgetPresentation, ActivityListener {
 
 	private val animation: Animated
 		get() = service<PetAnimated>()
@@ -54,15 +58,27 @@ class AnimatedStatusBarWidget : IconWidgetPresentation {
 
 	private val counter = AtomicInteger(0)
 
+	@Volatile
+	private var lastActivityTimeMs: Long = System.currentTimeMillis()
+
+	private var cursorTrackingTimer: Timer? = null
+	private var inactivityTimer: Timer? = null
+
 	companion object {
 		const val DEFAULT_SPRITE_SHEET_IMAGE = "/META-INF/spritesheets/cat.png"
 		const val DEFAULT_SPRITE_SHEET_ATLAS = "/META-INF/spritesheets/cat_atlas.json"
 		const val COUNTER_LIMIT = 10
-		const val FRAME_RATE_MS = 95L
+		const val FRAME_RATE_MS = 100L
+		const val INACTIVITY_THRESHOLD_MS = 10 * 60_000L // 10 minutes
+		const val CURSOR_CHECK_INTERVAL_MS = 500L
+		const val INACTIVITY_CHECK_INTERVAL_MS = 5_000L // Check every second
 	}
 
 	init {
+		ActivityTracker.registerListener(this)
 		initAnimation()
+		startCursorTracking()
+		startInactivityMonitoring()
 	}
 
 	override fun icon(): Flow<Icon?> =
@@ -88,7 +104,7 @@ class AnimatedStatusBarWidget : IconWidgetPresentation {
 			}
 		}
 
-	override fun getClickConsumer(): ((MouseEvent) -> Unit)? {
+	override fun getClickConsumer(): (MouseEvent) -> Unit {
 		return {
 			if (counter.get() >= COUNTER_LIMIT) {
 				counter.set(0)
@@ -113,5 +129,43 @@ class AnimatedStatusBarWidget : IconWidgetPresentation {
 	private fun stopAnimation() {
 		timer?.cancel()
 		timer = null
+	}
+
+	private fun startCursorTracking() {
+		cursorTrackingTimer?.cancel()
+		cursorTrackingTimer = Timer().apply {
+			scheduleAtFixedRate(object : TimerTask() {
+				override fun run() {
+					try {
+						val mouseLocation = MouseInfo.getPointerInfo()?.location
+						if (mouseLocation != null) {
+							val screenSize = Toolkit.getDefaultToolkit().screenSize
+							val isOnLeftSide = mouseLocation.x < screenSize.width / 2
+							animation.onCursorMove(isOnLeftSide)
+						}
+					} catch (_: Exception) {
+						// Ignore cursor tracking errors
+					}
+				}
+			}, CURSOR_CHECK_INTERVAL_MS, CURSOR_CHECK_INTERVAL_MS)
+		}
+	}
+
+	private fun startInactivityMonitoring() {
+		inactivityTimer?.cancel()
+		inactivityTimer = Timer().apply {
+			scheduleAtFixedRate(object : java.util.TimerTask() {
+				override fun run() {
+					val inactiveTimeMs = System.currentTimeMillis() - lastActivityTimeMs
+					if (inactiveTimeMs >= INACTIVITY_THRESHOLD_MS) {
+						animation.onStartObserving()
+					}
+				}
+			}, INACTIVITY_CHECK_INTERVAL_MS, INACTIVITY_CHECK_INTERVAL_MS)
+		}
+	}
+
+	override fun onActivity() {
+		lastActivityTimeMs = System.currentTimeMillis()
 	}
 }
