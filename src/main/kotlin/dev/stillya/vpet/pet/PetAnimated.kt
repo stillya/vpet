@@ -401,7 +401,7 @@ class PetAnimated(
 			play("R_A_6")
 			playRandom("Paws", "Pac-Cat", "Goomba", "rook_around", loops = SHORT_LOOP)
 		}
-
+		
 	}
 
 	private fun buildBridges(): List<Bridge> = listOf(
