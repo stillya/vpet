@@ -90,6 +90,10 @@ class DefaultIconRenderer : IconRenderer {
 		return currentAnimation?.let { doRender(it.sheet) } ?: emptyList()
 	}
 
+	override fun setFlipped(flipped: Boolean) {
+		isFlipped = flipped
+	}
+
 	private fun validateAnimation(animation: Animation): Boolean {
 		val context = animation.context ?: return true
 		val guard = animation.guard

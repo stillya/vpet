@@ -11,4 +11,5 @@ interface IconRenderer {
 	fun createAnimationContext(
 		trigger: AnimationTrigger
 	): AnimationContext
+	fun setFlipped(flipped: Boolean)
 }

@@ -11,10 +11,31 @@ class AnimationEventService : AnimationEventListener {
 		get() = service<PetAnimated>()
 
 	override fun onEvent(event: AnimationEventListener.AnimationEvent) {
+		ActivityTracker.notifyActivity()
 		when (event) {
 			AnimationEventListener.AnimationEvent.FAIL -> animated.onFail()
 			AnimationEventListener.AnimationEvent.SUCCESS -> animated.onSuccess()
 			AnimationEventListener.AnimationEvent.PROGRESS -> animated.onProgress()
 		}
 	}
+}
+
+object ActivityTracker {
+	private val listeners = mutableListOf<ActivityListener>()
+
+	fun registerListener(listener: ActivityListener) {
+		listeners.add(listener)
+	}
+
+	fun unregisterListener(listener: ActivityListener) {
+		listeners.remove(listener)
+	}
+
+	fun notifyActivity() {
+		listeners.forEach { it.onActivity() }
+	}
+}
+
+interface ActivityListener {
+	fun onActivity()
 }
