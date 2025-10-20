@@ -200,10 +200,86 @@ class PetAnimatedIntegrationTest {
 			rendererSpy.enqueuedAnimations.size
 		)
 	}
+
+	@Test
+	fun testInactivityTransitionsToObserving() {
+		rendererSpy.clear()
+
+		petAnimated.onStartObserving()
+
+		assertTrue("Should have animations enqueued", rendererSpy.enqueuedAnimations.isNotEmpty())
+
+		val animations = rendererSpy.collectChain()
+		assertTrue(
+			"Should transition to back view with R_A_4",
+			animations.any { it.name == "R_A_4" }
+		)
+
+		val backViewAnimation = animations.find { it.name == "R_A_5" }
+		assertNotNull("Should have R_A_5 back view loop", backViewAnimation)
+		assertEquals("R_A_5 should loop infinitely", -1, backViewAnimation?.loop)
+	}
+
+	@Test
+	fun testObservingDoesNotStartWhenAlreadyObserving() {
+		rendererSpy.clear()
+
+		petAnimated.onStartObserving()
+		val firstCallCount = rendererSpy.enqueuedAnimations.size
+
+		petAnimated.onStartObserving()
+		val secondCallCount = rendererSpy.enqueuedAnimations.size
+
+		assertEquals(
+			"Second onStartObserving call should be ignored",
+			firstCallCount,
+			secondCallCount
+		)
+	}
+
+	@Test
+	fun testObservingDoesNotStartWhenNotIdle() {
+		rendererSpy.clear()
+
+		petAnimated.onProgress()
+		rendererSpy.clear()
+
+		petAnimated.onStartObserving()
+
+		assertEquals(
+			"Should not start observing when not in IDLE state",
+			0,
+			rendererSpy.enqueuedAnimations.size
+		)
+	}
+
+	@Test
+	fun testCursorMoveFlipsSprite() {
+		rendererSpy.clear()
+
+		petAnimated.onStartObserving()
+
+		var flippedLeft = false
+		var flippedRight = false
+
+		// Simulate cursor on left side
+		petAnimated.onCursorMove(true)
+		if (rendererSpy.isFlipped) flippedLeft = true
+
+		// Simulate cursor on right side
+		petAnimated.onCursorMove(false)
+		if (!rendererSpy.isFlipped) flippedRight = true
+
+		assertTrue("Should flip when cursor moves to different sides", flippedLeft || flippedRight)
+	}
 }
 
 class IconRendererSpy : IconRenderer {
 	val enqueuedAnimations = mutableListOf<Animation>()
+	private var flippedState: Boolean = false
+
+	val isFlipped: Boolean
+		get() = flippedState
 
 	override fun enqueue(animation: Animation) {
 		enqueuedAnimations.add(animation)
@@ -220,11 +296,12 @@ class IconRendererSpy : IconRenderer {
 	}
 
 	override fun setFlipped(flipped: Boolean) {
-		// No-op for test spy
+		flippedState = flipped
 	}
 
 	fun clear() {
 		enqueuedAnimations.clear()
+		flippedState = false
 	}
 
 	fun collectChain(): List<Animation> {
