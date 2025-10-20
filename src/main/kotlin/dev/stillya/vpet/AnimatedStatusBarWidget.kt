@@ -8,7 +8,6 @@ import com.intellij.openapi.wm.StatusBarWidgetFactory
 import com.intellij.openapi.wm.WidgetPresentation
 import com.intellij.openapi.wm.WidgetPresentationDataContext
 import com.intellij.openapi.wm.WidgetPresentationFactory
-import com.jetbrains.rd.util.AtomicInteger
 import dev.stillya.vpet.graphics.DefaultIconRenderer
 import dev.stillya.vpet.pet.Animated
 import dev.stillya.vpet.pet.PetAnimated
@@ -23,6 +22,7 @@ import java.awt.MouseInfo
 import java.awt.Toolkit
 import java.awt.event.MouseEvent
 import java.util.*
+import java.util.concurrent.atomic.AtomicInteger
 import javax.swing.Icon
 
 class AnimatedStatusBarWidgetFactory : StatusBarWidgetFactory, WidgetPresentationFactory {
