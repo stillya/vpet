@@ -28,6 +28,13 @@
 		<statusBarWidgetFactory
 				implementation="dev.stillya.vpet.AnimatedStatusBarWidgetFactory"
 				id="vpet"/>
+
+		<projectService
+				serviceInterface="dev.stillya.vpet.IconRenderer"
+				serviceImplementation="dev.stillya.vpet.graphics.DefaultIconRenderer"/>
+		<projectService
+				serviceInterface="dev.stillya.vpet.Animated"
+				serviceImplementation="dev.stillya.vpet.pet.PetAnimated"/>
 	</extensions>
 
 	<projectListeners>

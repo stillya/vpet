@@ -1,12 +1,12 @@
 package dev.stillya.vpet.animation
 
-import com.intellij.openapi.diagnostic.Logger
+import com.intellij.openapi.diagnostic.logger
 import kotlin.random.Random
 
 class TransitionMatrix(
 	private val random: Random = Random
 ) {
-	private val log = Logger.getInstance(TransitionMatrix::class.java)
+	private val log = logger<TransitionMatrix>()
 	private val transitions =
 		mutableMapOf<Pair<AnimationState, AnimationState>, MutableList<AnimationSequenceWithRequirement>>()
 	private val idleVariants = mutableListOf<AnimationSequenceWithRequirement>()
