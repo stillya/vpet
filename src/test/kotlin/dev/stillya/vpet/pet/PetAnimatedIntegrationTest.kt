@@ -1,34 +1,38 @@
 package dev.stillya.vpet.pet
 
-import dev.stillya.vpet.AtlasLoader
+import com.intellij.openapi.application.ApplicationManager
+import com.intellij.openapi.components.service
+import com.intellij.openapi.project.Project
+import com.intellij.testFramework.LightPlatform4TestCase
+import com.intellij.testFramework.registerServiceInstance
+import dev.stillya.vpet.Animated
 import dev.stillya.vpet.IconRenderer
 import dev.stillya.vpet.animation.Animation
 import dev.stillya.vpet.config.AsepriteJsonAtlasLoader
 import dev.stillya.vpet.graphics.AnimationContext
 import dev.stillya.vpet.graphics.AnimationEpochManager
 import dev.stillya.vpet.graphics.AnimationTrigger
-import org.junit.Assert.assertEquals
-import org.junit.Assert.assertNotNull
-import org.junit.Assert.assertNull
-import org.junit.Assert.assertTrue
-import org.junit.Before
 import org.junit.Test
 import javax.swing.Icon
+import kotlin.random.Random
 
-class PetAnimatedIntegrationTest {
+class PetAnimatedIntegrationTest : LightPlatform4TestCase() {
 
 	private lateinit var rendererSpy: IconRendererSpy
 	private lateinit var petAnimated: PetAnimated
 
-	@Before
-	fun setup() {
-		rendererSpy = IconRendererSpy()
-		val atlasLoader: AtlasLoader = AsepriteJsonAtlasLoader()
-		petAnimated = PetAnimated(
-			injectedRenderer = rendererSpy,
-			injectedAtlasLoader = atlasLoader,
-			randomSeed = 42L
-		)
+	override fun setUp() {
+		super.setUp()
+
+		rendererSpy = IconRendererSpy(project)
+
+		ApplicationManager.getApplication()
+			.registerServiceInstance(AsepriteJsonAtlasLoader::class.java, AsepriteJsonAtlasLoader())
+		project.registerServiceInstance(IconRenderer::class.java, rendererSpy)
+		project.registerServiceInstance(Animated::class.java, PetAnimated(project))
+
+		petAnimated = project.service<Animated>() as PetAnimated
+		petAnimated.random = Random(42L)
 
 		petAnimated.init(
 			Animated.Params(
@@ -274,7 +278,7 @@ class PetAnimatedIntegrationTest {
 	}
 }
 
-class IconRendererSpy : IconRenderer {
+class IconRendererSpy(project: Project) : IconRenderer {
 	val enqueuedAnimations = mutableListOf<Animation>()
 	private var flippedState: Boolean = false
 

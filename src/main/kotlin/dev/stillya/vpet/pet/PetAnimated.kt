@@ -1,9 +1,9 @@
 package dev.stillya.vpet.pet
 
-import com.intellij.openapi.components.Service
 import com.intellij.openapi.components.service
 import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.project.Project
+import dev.stillya.vpet.Animated
 import dev.stillya.vpet.AtlasLoader
 import dev.stillya.vpet.IconRenderer
 import dev.stillya.vpet.animation.Animation
@@ -29,7 +29,6 @@ import dev.stillya.vpet.config.AsepriteJsonAtlasLoader
 import dev.stillya.vpet.config.SpriteSheetAtlas
 import dev.stillya.vpet.graphics.AnimationContext
 import dev.stillya.vpet.graphics.AnimationTrigger
-import dev.stillya.vpet.graphics.DefaultIconRenderer
 import dev.stillya.vpet.graphics.SpriteSheet
 import dev.stillya.vpet.service.ActivityTracker
 import java.awt.Image
@@ -37,16 +36,15 @@ import java.awt.image.BufferedImage
 import javax.imageio.ImageIO
 import kotlin.random.Random
 
-@Service(Service.Level.PROJECT)
 class PetAnimated(
 	private val project: Project,
 ) : Animated {
 	private val atlasLoader: AtlasLoader
 		get() = service<AsepriteJsonAtlasLoader>()
 	private val renderer: IconRenderer
-		get() = project.service<DefaultIconRenderer>()
+		get() = project.service<IconRenderer>()
 
-	private var random: Random = Random
+	var random: Random = Random
 		set(value) {
 			field = value
 			transitionMatrix = buildTransitionMatrix()

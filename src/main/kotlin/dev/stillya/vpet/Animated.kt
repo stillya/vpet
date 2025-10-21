@@ -1,4 +1,4 @@
-package dev.stillya.vpet.pet
+package dev.stillya.vpet
 
 interface Animated {
 	fun init(params: Params)

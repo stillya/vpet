@@ -1,6 +1,5 @@
 package dev.stillya.vpet.animation
 
-import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.diagnostic.logger
 import dev.stillya.vpet.animation.AnimationGuard.Companion.transitionGuard
 

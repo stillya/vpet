@@ -1,5 +1,6 @@
 package dev.stillya.vpet
 
+import com.intellij.openapi.components.service
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.wm.IconWidgetPresentation
 import com.intellij.openapi.wm.StatusBar
@@ -7,9 +8,6 @@ import com.intellij.openapi.wm.StatusBarWidgetFactory
 import com.intellij.openapi.wm.WidgetPresentation
 import com.intellij.openapi.wm.WidgetPresentationDataContext
 import com.intellij.openapi.wm.WidgetPresentationFactory
-import dev.stillya.vpet.graphics.DefaultIconRenderer
-import dev.stillya.vpet.pet.Animated
-import dev.stillya.vpet.pet.PetAnimated
 import dev.stillya.vpet.service.ActivityListener
 import dev.stillya.vpet.service.ActivityTracker
 import kotlinx.coroutines.CoroutineScope
@@ -45,10 +43,10 @@ class AnimatedStatusBarWidgetFactory : StatusBarWidgetFactory, WidgetPresentatio
 class AnimatedStatusBarWidget(private val project: Project) : IconWidgetPresentation, ActivityListener {
 
 	private val animation: Animated
-		get() = PetAnimated.getInstance(project)
+		get() = project.service<Animated>()
 
 	private val iconRenderer: IconRenderer
-		get() = DefaultIconRenderer.getInstance(project)
+		get() = project.service<IconRenderer>()
 
 	private var curFrameIdx = 0
 	private var curFrames = emptyList<Icon>()
