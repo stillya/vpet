@@ -1,13 +1,14 @@
 package dev.stillya.vpet.animation
 
 import com.intellij.openapi.diagnostic.Logger
+import com.intellij.openapi.diagnostic.logger
 import dev.stillya.vpet.animation.AnimationGuard.Companion.transitionGuard
 
 class AnimationPlayer(
 	private val bridges: List<Bridge>,
 	private val planner: Planner = GreedyPlanner()
 ) {
-	private val log = Logger.getInstance(AnimationPlayer::class.java)
+	private val log = logger<AnimationPlayer>()
 
 	@Volatile
 	private var currentEffect: StateEffect = StateEffect.NONE

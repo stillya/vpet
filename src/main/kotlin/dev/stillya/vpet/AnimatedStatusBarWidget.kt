@@ -1,6 +1,5 @@
 package dev.stillya.vpet
 
-import com.intellij.openapi.components.service
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.wm.IconWidgetPresentation
 import com.intellij.openapi.wm.StatusBar
@@ -39,17 +38,17 @@ class AnimatedStatusBarWidgetFactory : StatusBarWidgetFactory, WidgetPresentatio
 		context: WidgetPresentationDataContext,
 		scope: CoroutineScope
 	): WidgetPresentation {
-		return AnimatedStatusBarWidget()
+		return AnimatedStatusBarWidget(context.project)
 	}
 }
 
-class AnimatedStatusBarWidget : IconWidgetPresentation, ActivityListener {
+class AnimatedStatusBarWidget(private val project: Project) : IconWidgetPresentation, ActivityListener {
 
 	private val animation: Animated
-		get() = service<PetAnimated>()
+		get() = PetAnimated.getInstance(project)
 
 	private val iconRenderer: IconRenderer
-		get() = service<DefaultIconRenderer>()
+		get() = DefaultIconRenderer.getInstance(project)
 
 	private var curFrameIdx = 0
 	private var curFrames = emptyList<Icon>()

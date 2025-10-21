@@ -1,7 +1,8 @@
 package dev.stillya.vpet.graphics
 
 import com.intellij.openapi.components.Service
-import com.intellij.openapi.diagnostic.Logger
+import com.intellij.openapi.diagnostic.logger
+import com.intellij.openapi.project.Project
 import dev.stillya.vpet.IconRenderer
 import dev.stillya.vpet.animation.Animation
 import dev.stillya.vpet.animation.INFINITE
@@ -17,9 +18,8 @@ import javax.swing.ImageIcon
 import kotlin.math.roundToInt
 
 // TODO: Add caching
-@Service
-class DefaultIconRenderer : IconRenderer {
-	private val log = Logger.getInstance(DefaultIconRenderer::class.java)
+@Service(Service.Level.PROJECT)
+class DefaultIconRenderer(project: Project) : IconRenderer {
 	private val animationQueue: Queue<Animation> = LinkedBlockingQueue()
 	private var lastStableAnimation: Animation? = null
 
@@ -31,6 +31,15 @@ class DefaultIconRenderer : IconRenderer {
 	private var verticalOffset: Int = -8
 
 	private val epochManager = AnimationEpochManager()
+	
+	companion object {
+		private val log = logger<DefaultIconRenderer>()
+
+		@JvmStatic
+		fun getInstance(project: Project): DefaultIconRenderer {
+			return project.getService(DefaultIconRenderer::class.java)
+		}
+	}
 
 	override fun createAnimationContext(
 		trigger: AnimationTrigger,

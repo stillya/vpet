@@ -1,6 +1,6 @@
 package dev.stillya.vpet.animation
 
-import com.intellij.openapi.diagnostic.Logger
+import com.intellij.openapi.diagnostic.logger
 
 data class PlanResult(
 	val bridges: List<Bridge>,
@@ -18,7 +18,7 @@ interface Planner {
 class GreedyPlanner(
 	private val maxBridges: Int = 10
 ) : Planner {
-	private val log = Logger.getInstance(GreedyPlanner::class.java)
+	private val log = logger<GreedyPlanner>()
 
 	override fun plan(
 		currentEffect: StateEffect,

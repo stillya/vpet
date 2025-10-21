@@ -2,7 +2,8 @@ package dev.stillya.vpet.pet
 
 import com.intellij.openapi.components.Service
 import com.intellij.openapi.components.service
-import com.intellij.openapi.diagnostic.Logger
+import com.intellij.openapi.diagnostic.logger
+import com.intellij.openapi.project.Project
 import dev.stillya.vpet.AtlasLoader
 import dev.stillya.vpet.IconRenderer
 import dev.stillya.vpet.animation.Animation
@@ -36,20 +37,21 @@ import java.awt.image.BufferedImage
 import javax.imageio.ImageIO
 import kotlin.random.Random
 
-@Service
+@Service(Service.Level.PROJECT)
 class PetAnimated(
-	private val injectedRenderer: IconRenderer? = null,
-	private val injectedAtlasLoader: AtlasLoader? = null,
-	randomSeed: Long? = null
+	private val project: Project,
 ) : Animated {
-	private val log = Logger.getInstance(PetAnimated::class.java)
 	private val atlasLoader: AtlasLoader
-		get() = injectedAtlasLoader ?: service<AsepriteJsonAtlasLoader>()
-
+		get() = service<AsepriteJsonAtlasLoader>()
 	private val renderer: IconRenderer
-		get() = injectedRenderer ?: service<DefaultIconRenderer>()
+		get() = project.service<DefaultIconRenderer>()
 
-	private val random: Random = randomSeed?.let { Random(it) } ?: Random
+	private var random: Random = Random
+		set(value) {
+			field = value
+			transitionMatrix = buildTransitionMatrix()
+		}
+
 	private val bridges: List<Bridge> = buildBridges()
 	private var transitionMatrix: TransitionMatrix = buildTransitionMatrix()
 	private var animationPlayer: AnimationPlayer = AnimationPlayer(bridges)
@@ -72,8 +74,12 @@ class PetAnimated(
 	private var observingStartTimeMs: Long = 0L
 
 	companion object {
+		private val log = logger<PetAnimated>()
 		private const val PIVOT_INTERVAL_MS = 30_000L // 30 seconds
 		private const val OBSERVING_DURATION_MS = 120_000L // 2 minutes
+
+		@JvmStatic
+		fun getInstance(project: Project): PetAnimated = project.getService(PetAnimated::class.java)
 	}
 
 	override fun init(params: Animated.Params) {
@@ -401,7 +407,7 @@ class PetAnimated(
 			play("R_A_6")
 			playRandom("Paws", "Pac-Cat", "Goomba", "rook_around", loops = SHORT_LOOP)
 		}
-		
+
 	}
 
 	private fun buildBridges(): List<Bridge> = listOf(

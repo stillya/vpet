@@ -1,14 +1,14 @@
 package dev.stillya.vpet.service
 
-import com.intellij.openapi.components.service
+import com.intellij.openapi.project.Project
 import dev.stillya.vpet.AnimationEventListener
 import dev.stillya.vpet.pet.Animated
 import dev.stillya.vpet.pet.PetAnimated
 
-class AnimationEventService : AnimationEventListener {
+class AnimationEventService(private val project: Project) : AnimationEventListener {
 	// TODO: Don't hardcode specific implementation
 	private val animated: Animated
-		get() = service<PetAnimated>()
+		get() = PetAnimated.getInstance(project)
 
 	override fun onEvent(event: AnimationEventListener.AnimationEvent) {
 		ActivityTracker.notifyActivity()
