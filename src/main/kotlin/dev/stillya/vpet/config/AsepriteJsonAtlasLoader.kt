@@ -2,18 +2,23 @@ package dev.stillya.vpet.config
 
 import com.fasterxml.jackson.databind.DeserializationFeature
 import com.fasterxml.jackson.databind.ObjectMapper
-import com.intellij.openapi.components.Service
+import com.intellij.openapi.components.service
 import com.intellij.openapi.diagnostic.logger
 import dev.stillya.vpet.AtlasLoader
 import java.io.InputStream
 
-@Service
 class AsepriteJsonAtlasLoader : AtlasLoader {
 	private val log = logger<AsepriteJsonAtlasLoader>()
 
 	private val mapper: ObjectMapper = ObjectMapper().configure(
 		DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false,
 	)
+
+	companion object {
+		@JvmStatic
+		fun getInstance(): AsepriteJsonAtlasLoader =
+			service<AsepriteJsonAtlasLoader>()
+	}
 
 	override fun load(path: String): SpriteSheetAtlas? {
 		try {

@@ -25,7 +25,6 @@ import dev.stillya.vpet.animation.TransitionMatrix
 import dev.stillya.vpet.animation.WALKING_SPEED
 import dev.stillya.vpet.animation.sequence
 import dev.stillya.vpet.animation.transitions
-import dev.stillya.vpet.config.AsepriteJsonAtlasLoader
 import dev.stillya.vpet.config.SpriteSheetAtlas
 import dev.stillya.vpet.graphics.AnimationContext
 import dev.stillya.vpet.graphics.AnimationTrigger
@@ -40,7 +39,7 @@ class PetAnimated(
 	private val project: Project,
 ) : Animated {
 	private val atlasLoader: AtlasLoader
-		get() = service<AsepriteJsonAtlasLoader>()
+		get() = service<AtlasLoader>()
 	private val renderer: IconRenderer
 		get() = project.service<IconRenderer>()
 
@@ -227,7 +226,7 @@ class PetAnimated(
 			observingStartTimeMs = 0L
 			renderer.setFlipped(false)
 			// Reset activity timer so we need fresh inactivity before re-entering observing
-			ActivityTracker.notifyActivity()
+			ActivityTracker.getInstance(project).notifyActivity()
 		}
 	}
 
