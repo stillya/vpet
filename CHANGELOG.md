@@ -4,7 +4,13 @@
 
 ## [Unreleased]
 
-## [0.0.5] - 2025-01-21
+## [0.0.6] - 2025-10-23
+
+### Fixes
+
+- **Turn off hot install** Disable hot install due to problem with dynamic plugin widgets
+
+## [0.0.5] - 2025-10-21
 
 ### Initial Release
 
