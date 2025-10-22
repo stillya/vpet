@@ -1,5 +1,6 @@
 package dev.stillya.vpet
 
+import com.intellij.openapi.Disposable
 import com.intellij.openapi.components.service
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.wm.IconWidgetPresentation
@@ -14,14 +15,17 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.isActive
+import kotlinx.coroutines.launch
+import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.annotations.Nls
 import java.awt.MouseInfo
 import java.awt.Toolkit
 import java.awt.event.MouseEvent
-import java.util.*
 import java.util.concurrent.atomic.AtomicInteger
 import javax.swing.Icon
 
+@ApiStatus.Internal
 class AnimatedStatusBarWidgetFactory : StatusBarWidgetFactory, WidgetPresentationFactory {
 	override fun getId(): String = "AnimatedStatusBarWidget"
 
@@ -36,11 +40,14 @@ class AnimatedStatusBarWidgetFactory : StatusBarWidgetFactory, WidgetPresentatio
 		context: WidgetPresentationDataContext,
 		scope: CoroutineScope
 	): WidgetPresentation {
-		return AnimatedStatusBarWidget(context.project)
+		return AnimatedStatusBarWidget(context.project, scope)
 	}
 }
 
-class AnimatedStatusBarWidget(private val project: Project) : IconWidgetPresentation, ActivityListener {
+class AnimatedStatusBarWidget(
+	private val project: Project,
+	private val scope: CoroutineScope
+) : IconWidgetPresentation, ActivityListener, Disposable {
 
 	private val animation: Animated
 		get() = project.service<Animated>()
@@ -51,15 +58,10 @@ class AnimatedStatusBarWidget(private val project: Project) : IconWidgetPresenta
 	private var curFrameIdx = 0
 	private var curFrames = emptyList<Icon>()
 
-	private var timer: Timer? = null
-
 	private val counter = AtomicInteger(0)
 
 	@Volatile
 	private var lastActivityTimeMs: Long = System.currentTimeMillis()
-
-	private var cursorTrackingTimer: Timer? = null
-	private var inactivityTimer: Timer? = null
 
 	companion object {
 		const val DEFAULT_SPRITE_SHEET_IMAGE = "/META-INF/spritesheets/cat.png"
@@ -68,12 +70,13 @@ class AnimatedStatusBarWidget(private val project: Project) : IconWidgetPresenta
 		const val FRAME_RATE_MS = 100L
 		const val INACTIVITY_THRESHOLD_MS = 10 * 60_000L // 10 minutes
 		const val CURSOR_CHECK_INTERVAL_MS = 500L
-		const val INACTIVITY_CHECK_INTERVAL_MS = 5_000L // Check every second
+		const val INACTIVITY_CHECK_INTERVAL_MS = 5_000L // 5 seconds
 	}
 
 	init {
-		ActivityTracker.registerListener(this)
+		ActivityTracker.getInstance(project).registerListener(this)
 		initAnimation()
+		curFrames = iconRenderer.render()
 		startCursorTracking()
 		startInactivityMonitoring()
 	}
@@ -89,11 +92,9 @@ class AnimatedStatusBarWidget(private val project: Project) : IconWidgetPresenta
 						try {
 							curFrames = iconRenderer.render()
 							if (curFrames.isEmpty()) {
-								stopAnimation()
 								continue
 							}
 						} catch (_: Exception) {
-							stopAnimation()
 							continue
 						}
 					}
@@ -123,46 +124,41 @@ class AnimatedStatusBarWidget(private val project: Project) : IconWidgetPresenta
 		curFrames = iconRenderer.render()
 	}
 
-	private fun stopAnimation() {
-		timer?.cancel()
-		timer = null
-	}
-
 	private fun startCursorTracking() {
-		cursorTrackingTimer?.cancel()
-		cursorTrackingTimer = Timer().apply {
-			scheduleAtFixedRate(object : TimerTask() {
-				override fun run() {
-					try {
-						val mouseLocation = MouseInfo.getPointerInfo()?.location
-						if (mouseLocation != null) {
-							val screenSize = Toolkit.getDefaultToolkit().screenSize
-							val isOnLeftSide = mouseLocation.x < screenSize.width / 2
-							animation.onCursorMove(isOnLeftSide)
-						}
-					} catch (_: Exception) {
-						// Ignore cursor tracking errors
+		scope.launch {
+			while (isActive) {
+				try {
+					val mouseLocation = MouseInfo.getPointerInfo()?.location
+					if (mouseLocation != null) {
+						val screenSize = Toolkit.getDefaultToolkit().screenSize
+						val isOnLeftSide = mouseLocation.x < screenSize.width / 2
+						animation.onCursorMove(isOnLeftSide)
 					}
+				} catch (_: Exception) {
+					// Ignore cursor tracking errors
 				}
-			}, CURSOR_CHECK_INTERVAL_MS, CURSOR_CHECK_INTERVAL_MS)
+				delay(CURSOR_CHECK_INTERVAL_MS)
+			}
 		}
 	}
 
 	private fun startInactivityMonitoring() {
-		inactivityTimer?.cancel()
-		inactivityTimer = Timer().apply {
-			scheduleAtFixedRate(object : java.util.TimerTask() {
-				override fun run() {
-					val inactiveTimeMs = System.currentTimeMillis() - lastActivityTimeMs
-					if (inactiveTimeMs >= INACTIVITY_THRESHOLD_MS) {
-						animation.onStartObserving()
-					}
+		scope.launch {
+			while (isActive) {
+				val inactiveTimeMs = System.currentTimeMillis() - lastActivityTimeMs
+				if (inactiveTimeMs >= INACTIVITY_THRESHOLD_MS) {
+					animation.onStartObserving()
 				}
-			}, INACTIVITY_CHECK_INTERVAL_MS, INACTIVITY_CHECK_INTERVAL_MS)
+				delay(INACTIVITY_CHECK_INTERVAL_MS)
+			}
 		}
 	}
 
 	override fun onActivity() {
 		lastActivityTimeMs = System.currentTimeMillis()
+	}
+
+	override fun dispose() {
+		ActivityTracker.getInstance(project).unregisterListener(this)
 	}
 }

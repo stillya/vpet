@@ -1,5 +1,6 @@
 <!-- Plugin Configuration File. Read more: https://plugins.jetbrains.com/docs/intellij/plugin-configuration-file.html -->
-<idea-plugin>
+<!-- TODO: why dynamic plugins doesn't work on status widget? -->
+<idea-plugin require-restart="true">
 	<!-- Unique identifier of the plugin. It should be FQN. It cannot be changed between the plugin versions. -->
 	<id>dev.stillya.vpet</id>
 
@@ -29,6 +30,12 @@
 				implementation="dev.stillya.vpet.AnimatedStatusBarWidgetFactory"
 				id="vpet"/>
 
+		<applicationService
+				serviceInterface="dev.stillya.vpet.AtlasLoader"
+				serviceImplementation="dev.stillya.vpet.config.AsepriteJsonAtlasLoader"/>
+
+		<projectService
+				serviceImplementation="dev.stillya.vpet.service.ActivityTracker"/>
 		<projectService
 				serviceInterface="dev.stillya.vpet.IconRenderer"
 				serviceImplementation="dev.stillya.vpet.graphics.DefaultIconRenderer"/>

@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 40 40"
+     fill="none" stroke="currentColor" stroke-width="1" shape-rendering="crispEdges">
+  <!-- Minimal pixel/retro pet face with coding hint "<>" -->
+  <!-- Outer rounded square (slight rounding for friendliness) -->
+  <rect x="4.5" y="4.5" width="31" height="31" rx="5" ry="5"/>
+  
+  <!-- Pixel ears (simple right-angle triangles) -->
+  <path d="M10 10 L14 10 L10 14 Z"/>
+  <path d="M30 10 L26 10 L30 14 Z"/>
+  
+  <!-- Eyes as 3x3 'pixels' -->
+  <rect x="14" y="17" width="3" height="3" />
+  <rect x="23" y="17" width="3" height="3" />
+  
+  <!-- Mouth as "<>" coding chevron -->
+  <path d="M16 24 L14 22 L16 20" />
+  <path d="M24 20 L26 22 L24 24" />
+  
+  <!-- Subtle grid-corner ticks to nod to pixel grid -->
+  <path d="M6 16 H10" />
+  <path d="M6 24 H10" />
+  <path d="M34 16 H30" />
+  <path d="M34 24 H30" />
+</svg>
