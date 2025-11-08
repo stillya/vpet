@@ -32,6 +32,7 @@ import dev.stillya.vpet.graphics.SpriteSheet
 import dev.stillya.vpet.service.ActivityTracker
 import java.awt.Image
 import java.awt.image.BufferedImage
+import java.util.concurrent.atomic.AtomicBoolean
 import javax.imageio.ImageIO
 import kotlin.random.Random
 
@@ -49,20 +50,17 @@ class PetAnimated(
 			transitionMatrix = buildTransitionMatrix()
 		}
 
+	private lateinit var atlas: SpriteSheetAtlas
+	private lateinit var image: Image
+
 	private val bridges: List<Bridge> = buildBridges()
 	private var transitionMatrix: TransitionMatrix = buildTransitionMatrix()
 	private var animationPlayer: AnimationPlayer = AnimationPlayer(bridges)
 
+	private var isObserving = AtomicBoolean(false)
+
 	@Volatile
 	private var currentState: AnimationState = AnimationState.IDLE
-	private lateinit var atlas: SpriteSheetAtlas
-	private lateinit var image: Image
-
-	@Volatile
-	private var isObserving: Boolean = false
-
-	@Volatile
-	private var currentCursorOnLeft: Boolean = false
 
 	@Volatile
 	private var lastPivotTimeMs: Long = 0L
@@ -220,9 +218,8 @@ class PetAnimated(
 	}
 
 	private fun exitObservingMode() {
-		if (isObserving) {
+		if (isObserving.compareAndSet(true, false)) {
 			log.trace("Exiting OBSERVING mode")
-			isObserving = false
 			observingStartTimeMs = 0L
 			renderer.setFlipped(false)
 			// Reset activity timer so we need fresh inactivity before re-entering observing
@@ -231,9 +228,8 @@ class PetAnimated(
 	}
 
 	override fun onStartObserving() {
-		if (currentState == AnimationState.IDLE && !isObserving) {
+		if (currentState == AnimationState.IDLE && isObserving.compareAndSet(false, true)) {
 			log.trace("INACTIVITY - Starting OBSERVING mode")
-			isObserving = true
 			observingStartTimeMs = System.currentTimeMillis()
 			lastPivotTimeMs = observingStartTimeMs
 			val sequence = transitionMatrix.transitionTo(currentState, AnimationState.OBSERVING)
@@ -245,14 +241,13 @@ class PetAnimated(
 	}
 
 	override fun onCursorMove(isOnLeftSide: Boolean) {
-		if (!isObserving || currentState != AnimationState.OBSERVING) {
+		if (currentState != AnimationState.OBSERVING) {
 			return
 		}
 
 		val now = System.currentTimeMillis()
 		val observingDuration = now - observingStartTimeMs
 
-		// Check if observing duration exceeded
 		if (observingDuration >= OBSERVING_DURATION_MS) {
 			log.trace("Observing duration exceeded (${observingDuration}ms), returning to IDLE")
 			exitObservingMode()
@@ -264,11 +259,7 @@ class PetAnimated(
 			return
 		}
 
-		if (currentCursorOnLeft != isOnLeftSide) {
-			log.trace("Cursor moved to ${if (isOnLeftSide) "LEFT" else "RIGHT"} side")
-			currentCursorOnLeft = isOnLeftSide
-			renderer.setFlipped(isOnLeftSide)
-		}
+		renderer.setFlipped(isOnLeftSide)
 
 		val timeSinceLastPivot = now - lastPivotTimeMs
 		if (timeSinceLastPivot >= PIVOT_INTERVAL_MS) {
