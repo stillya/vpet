@@ -5,6 +5,8 @@ import com.intellij.openapi.project.Project
 import dev.stillya.vpet.IconRenderer
 import dev.stillya.vpet.animation.Animation
 import dev.stillya.vpet.animation.INFINITE
+import dev.stillya.vpet.graphics.effect.SnowflakeEffect
+import dev.stillya.vpet.settings.VPetSettings
 import java.awt.Image
 import java.awt.geom.AffineTransform
 import java.awt.image.AffineTransformOp
@@ -27,8 +29,10 @@ class DefaultIconRenderer(project: Project) : IconRenderer {
 	private var scaleValue: Double = 1.2
 	private var isFlipped: Boolean = false
 	private var verticalOffset: Int = -8
+	private var effect: Effect? = null
 
 	private val epochManager = AnimationEpochManager()
+	private val settings by lazy { VPetSettings.getInstance() }
 
 	companion object {
 		private val log = logger<DefaultIconRenderer>()
@@ -217,6 +221,15 @@ class DefaultIconRenderer(project: Project) : IconRenderer {
 					x: Int,
 					y: Int
 				) {
+					if (settings.xmasModeEnabled) {
+						if (effect == null) {
+							effect = SnowflakeEffect(scaledWidth, scaledHeight)
+						}
+						val g2d = g.create() as java.awt.Graphics2D
+						g2d.translate(x, y)
+						effect?.apply(g2d)
+						g2d.dispose()
+					}
 					super.paintIcon(c, g, x, y + verticalOffset)
 				}
 			}

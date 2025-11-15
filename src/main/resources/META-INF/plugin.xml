@@ -33,6 +33,14 @@
 		<applicationService
 				serviceInterface="dev.stillya.vpet.AtlasLoader"
 				serviceImplementation="dev.stillya.vpet.config.AsepriteJsonAtlasLoader"/>
+		<applicationService
+				serviceImplementation="dev.stillya.vpet.settings.VPetSettings"/>
+
+		<applicationConfigurable
+				parentId="tools"
+				instance="dev.stillya.vpet.settings.VPetSettingsConfigurable"
+				id="dev.stillya.vpet.settings.VPetSettingsConfigurable"
+				displayName="VPet"/>
 
 		<projectService
 				serviceImplementation="dev.stillya.vpet.service.ActivityTracker"/>
