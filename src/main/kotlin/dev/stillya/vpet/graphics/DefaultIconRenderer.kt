@@ -20,19 +20,22 @@ import kotlin.math.roundToInt
 
 // TODO: Add caching
 class DefaultIconRenderer(project: Project) : IconRenderer {
+	private val settings
+		get() = VPetSettings.getInstance()
 	private val animationQueue: Queue<Animation> = LinkedBlockingQueue()
 	private var lastStableAnimation: Animation? = null
 
 	@Volatile
 	private var currentAnimation: Animation? = null
-	private val currentLoopCount: AtomicInteger = AtomicInteger(0)
-	private var scaleValue: Double = 1.2
-	private var isFlipped: Boolean = false
-	private var verticalOffset: Int = -8
-	private var effect: Effect? = null
 
+	@Volatile
+	private var isFlipped: Boolean = false
+	private val currentLoopCount: AtomicInteger = AtomicInteger(0)
+
+	private val scaleValue: Double = 1.2
+	private val verticalOffset: Int = -8
+	private var effect: Effect? = null
 	private val epochManager = AnimationEpochManager()
-	private val settings by lazy { VPetSettings.getInstance() }
 
 	companion object {
 		private val log = logger<DefaultIconRenderer>()
@@ -222,6 +225,7 @@ class DefaultIconRenderer(project: Project) : IconRenderer {
 					y: Int
 				) {
 					if (settings.xmasModeEnabled) {
+						// It's racy but currently doesn't matter much, should be fixed on introducing effects manager
 						if (effect == null) {
 							effect = SnowflakeEffect(scaledWidth, scaledHeight)
 						}

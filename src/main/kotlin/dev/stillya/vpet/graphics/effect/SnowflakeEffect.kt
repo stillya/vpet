@@ -22,7 +22,7 @@ class SnowflakeEffect(
 	private val size = 1
 
 	companion object {
-		// NOTE: Don't actually care about light mode :)
+		// Don't actually care about light mode :)
 		private val SNOWFLAKE_COLOR = JBColor(
 			Color(173, 216, 230, 200),
 			Color(255, 255, 255, 200)
