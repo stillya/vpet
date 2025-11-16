@@ -59,6 +59,12 @@ More companions are planned for future releases!
 Once installed, your pixel companion will automatically appear in the status bar. No
 additional configuration is required!
 
+### Settings
+
+Configure VPet through `Settings/Preferences > Tools > VPet`:
+
+- **Enable Xmas Mode** - Toggle festive snowflakes and snowdrifts overlay (enabled by default during holiday season)
+
 ## Development
 
 ### Prerequisites

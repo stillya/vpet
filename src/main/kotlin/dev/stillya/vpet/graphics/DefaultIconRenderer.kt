@@ -5,6 +5,8 @@ import com.intellij.openapi.project.Project
 import dev.stillya.vpet.IconRenderer
 import dev.stillya.vpet.animation.Animation
 import dev.stillya.vpet.animation.INFINITE
+import dev.stillya.vpet.graphics.effect.SnowflakeEffect
+import dev.stillya.vpet.settings.VPetSettings
 import java.awt.Image
 import java.awt.geom.AffineTransform
 import java.awt.image.AffineTransformOp
@@ -18,16 +20,21 @@ import kotlin.math.roundToInt
 
 // TODO: Add caching
 class DefaultIconRenderer(project: Project) : IconRenderer {
+	private val settings
+		get() = VPetSettings.getInstance()
 	private val animationQueue: Queue<Animation> = LinkedBlockingQueue()
 	private var lastStableAnimation: Animation? = null
 
 	@Volatile
 	private var currentAnimation: Animation? = null
-	private val currentLoopCount: AtomicInteger = AtomicInteger(0)
-	private var scaleValue: Double = 1.2
-	private var isFlipped: Boolean = false
-	private var verticalOffset: Int = -8
 
+	@Volatile
+	private var isFlipped: Boolean = false
+	private val currentLoopCount: AtomicInteger = AtomicInteger(0)
+
+	private val scaleValue: Double = 1.2
+	private val verticalOffset: Int = -8
+	private var effect: Effect? = null
 	private val epochManager = AnimationEpochManager()
 
 	companion object {
@@ -217,6 +224,16 @@ class DefaultIconRenderer(project: Project) : IconRenderer {
 					x: Int,
 					y: Int
 				) {
+					if (settings.xmasModeEnabled) {
+						// It's racy but currently doesn't matter much, should be fixed on introducing effects manager
+						if (effect == null) {
+							effect = SnowflakeEffect(scaledWidth, scaledHeight)
+						}
+						val g2d = g.create() as java.awt.Graphics2D
+						g2d.translate(x, y)
+						effect?.apply(g2d)
+						g2d.dispose()
+					}
 					super.paintIcon(c, g, x, y + verticalOffset)
 				}
 			}

@@ -4,6 +4,17 @@
 
 ## [Unreleased]
 
+## [0.0.7] - 2025-11-16
+
+### Added
+
+- **Christmas Mode**: Festive snowflakes and snowdrifts effect overlay. Currently, is
+  enabled by default.
+- **Plugin Settings**: New settings panel under `Settings > Tools > VPet`
+    - Toggle to enable/disable Christmas mode
+- **Effect System**: New system to provide visual effects (e.g., snowflakes) over the pet
+  companion
+
 ## [0.0.6] - 2025-10-23
 
 ### Fixes
