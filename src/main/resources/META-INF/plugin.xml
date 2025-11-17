@@ -22,6 +22,7 @@
 		 Read more: https://plugins.jetbrains.com/docs/intellij/plugin-compatibility.html -->
 	<depends>com.intellij.modules.platform</depends>
 	<depends>com.intellij.modules.lang</depends>
+	<depends>com.intellij.modules.java</depends>
 
 	<!-- Extension points defined by the plugin.
 		 Read more: https://plugins.jetbrains.com/docs/intellij/plugin-extension-points.html -->
@@ -50,6 +51,10 @@
 		<projectService
 				serviceInterface="dev.stillya.vpet.Animated"
 				serviceImplementation="dev.stillya.vpet.pet.PetAnimated"/>
+
+		<codeInsight.inlayProvider
+				language="JAVA"
+				implementationClass="dev.stillya.vpet.editor.PetInlayHintsProvider"/>
 	</extensions>
 
 	<projectListeners>
