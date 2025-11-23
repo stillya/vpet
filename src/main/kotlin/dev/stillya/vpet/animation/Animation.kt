@@ -10,7 +10,8 @@ data class Animation(
 	val onFinish: () -> Unit = {},
 	var nextAnimation: Animation? = null,
 	val context: AnimationContext? = null,
-	val guard: AnimationGuard = AnimationGuard.ALWAYS_VALID
+	val guard: AnimationGuard = AnimationGuard.ALWAYS_VALID,
+	val state: AnimationState
 )
 
 enum class AnimationState {
