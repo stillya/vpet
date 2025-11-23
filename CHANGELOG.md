@@ -4,6 +4,10 @@
 
 ## [Unreleased]
 
+### Added
+
+- **Dynamic Snowflake effect**: Snowflakes and snowdrifts reacts on pet speed and state
+
 ## [0.0.7] - 2025-11-16
 
 ### Added
@@ -28,7 +32,7 @@
 Animated pixel art companion for IntelliJ IDEA that lives in your status bar and reacts to
 your development activities.
 
-#### Features
+#### Added
 
 - **Animated pet companion** in status bar with pixel art sprite animations
 - **Build event reactions**: Pet responds to build start, success, failure, and completion
