@@ -1,6 +1,7 @@
 package dev.stillya.vpet.graphics.effect
 
 import com.intellij.ui.JBColor
+import dev.stillya.vpet.animation.AnimationState
 import dev.stillya.vpet.graphics.Effect
 import java.awt.Color
 import java.awt.Graphics2D
@@ -20,6 +21,7 @@ class SnowflakeEffect(
 
 	private val particles = Particles(snowflakeCount)
 	private val size = 1
+	private var groundOffset = 0f
 
 	companion object {
 		// Don't actually care about light mode :)
@@ -28,8 +30,8 @@ class SnowflakeEffect(
 			Color(255, 255, 255, 200)
 		)
 		private val SNOWDRIFT_COLOR = JBColor(
-			Color(173, 216, 230, 150),
-			Color(255, 255, 255, 150)
+			Color(173, 216, 230, 200),
+			Color(255, 255, 255, 200)
 		)
 	}
 
@@ -39,26 +41,40 @@ class SnowflakeEffect(
 		}
 	}
 
-	private fun resetSnowflake(index: Int, yPosition: Float = 0f) {
+	private fun resetSnowflake(index: Int, yPosition: Float = 0f, state: AnimationState = AnimationState.IDLE) {
 		particles.xPositions[index] = Random.nextFloat() * width
 		particles.yPositions[index] = yPosition
-		particles.speeds[index] = Random.nextFloat() * 0.5f + 0.3f
-		particles.drifts[index] = Random.nextFloat() * 0.3f - 0.15f
+
+		when (state) {
+			AnimationState.RUNNING, AnimationState.WALKING -> {
+				particles.speeds[index] = Random.nextFloat() * 1.5f + 1.0f
+				particles.drifts[index] = Random.nextFloat() * 1.0f + 0.5f
+			}
+
+			else -> {
+				particles.speeds[index] = Random.nextFloat() * 0.5f + 0.3f
+				particles.drifts[index] = Random.nextFloat() * 0.3f - 0.15f
+			}
+		}
 	}
 
-	override fun apply(g: Graphics2D) {
-		updatePositions()
-		drawSnowdrifts(g)
+	override fun apply(g: Graphics2D, state: AnimationState) {
+		updatePositions(state)
+		drawSnowdrifts(g, state)
 		drawSnowflakes(g)
 	}
 
-	private fun updatePositions() {
+	private fun updatePositions(state: AnimationState) {
+		if (state == AnimationState.RUNNING || state == AnimationState.WALKING) {
+			incGroundOffset(2.0f)
+		}
+
 		for (i in 0 until snowflakeCount) {
 			particles.yPositions[i] += particles.speeds[i]
 			particles.xPositions[i] += particles.drifts[i]
 
 			if (particles.yPositions[i] > height) {
-				resetSnowflake(i)
+				resetSnowflake(i, state = state)
 			}
 
 			if (particles.xPositions[i] < 0) {
@@ -85,7 +101,7 @@ class SnowflakeEffect(
 		g.color = originalColor
 	}
 
-	private fun drawSnowdrifts(g: Graphics2D) {
+	private fun drawSnowdrifts(g: Graphics2D, state: AnimationState) {
 		g.color = SNOWDRIFT_COLOR
 
 		val driftHeight = 6
@@ -102,8 +118,20 @@ class SnowflakeEffect(
 		val moundSpacing = width / (moundCount * 2)
 		val moundHeight = 3
 		for (i in 0 until moundCount) {
-			val moundX = (i * 2 + 1) * moundSpacing - moundSpacing / 2
+			val baseX = (i * 2 + 1) * moundSpacing - moundSpacing / 2
+			val moundX = if (state == AnimationState.RUNNING || state == AnimationState.WALKING) {
+				((baseX - groundOffset.toInt()) % width + width) % width
+			} else {
+				baseX
+			}
 			g.fillOval(moundX, driftBaseY - 1, moundSpacing, moundHeight)
+		}
+	}
+
+	private fun incGroundOffset(delta: Float) {
+		groundOffset += delta
+		if (groundOffset >= width) {
+			groundOffset = 0f
 		}
 	}
 }

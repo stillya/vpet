@@ -4,6 +4,7 @@ import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.project.Project
 import dev.stillya.vpet.IconRenderer
 import dev.stillya.vpet.animation.Animation
+import dev.stillya.vpet.animation.AnimationState
 import dev.stillya.vpet.animation.INFINITE
 import dev.stillya.vpet.graphics.effect.SnowflakeEffect
 import dev.stillya.vpet.settings.VPetSettings
@@ -225,13 +226,13 @@ class DefaultIconRenderer(project: Project) : IconRenderer {
 					y: Int
 				) {
 					if (settings.xmasModeEnabled) {
-						// It's racy but currently doesn't matter much, should be fixed on introducing effects manager
 						if (effect == null) {
 							effect = SnowflakeEffect(scaledWidth, scaledHeight)
 						}
 						val g2d = g.create() as java.awt.Graphics2D
 						g2d.translate(x, y)
-						effect?.apply(g2d)
+						val animState = currentAnimation?.state ?: AnimationState.IDLE
+						effect?.apply(g2d, animState)
 						g2d.dispose()
 					}
 					super.paintIcon(c, g, x, y + verticalOffset)

@@ -143,7 +143,8 @@ class PetAnimated(
 				sheet = createSpriteSheet(tag),
 				onFinish = onFinish,
 				context = context,
-				guard = step.guard
+				guard = step.guard,
+				state = sequence.second
 			)
 		}
 
