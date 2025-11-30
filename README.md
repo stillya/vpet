@@ -91,6 +91,10 @@ Configure VPet through `Settings/Preferences > Tools > VPet`:
 
 Contributions are welcome! Feel free to submit a pull request or open an issue.
 
+## Credits
+
+Pixel art sprites by [bowpixel](https://bowpixel.itch.io/one-cat) - thank you for the amazing artwork!
+
 ## License
 
 This project is licensed under the [MIT License](LICENSE).
