@@ -137,15 +137,19 @@ class PetAnimated(
 				}
 			}
 
-			Animation(
-				name = tag,
-				loop = step.loops,
-				sheet = createSpriteSheet(tag),
-				onFinish = onFinish,
-				context = context,
-				guard = step.guard,
-				state = sequence.second
-			)
+			runCatching {
+				Animation(
+					name = tag,
+					loop = step.loops,
+					sheet = createSpriteSheet(tag),
+					onFinish = onFinish,
+					context = context,
+					guard = step.guard,
+					state = sequence.second
+				)
+			}.onFailure {
+				log.warn("Failed to create animation for tag '$tag': ${it.message}", it)
+			}.getOrDefault(Animation.empty(onFinish = onFinish))
 		}
 
 		animations.forEachIndexed { index, animation ->
@@ -341,7 +345,7 @@ class PetAnimated(
 			// no require intended, can be from any running state
 			play("Dmg")
 			playRandom("Death_1", "Death_2")
-			play("Deat_End", loops = MEDIUM_LOOP)
+			play("Death_End", loops = MEDIUM_LOOP)
 			play("Spawn_2", effect = StateEffect(pose = Pose.STAND, speed = 0f))
 		}
 
@@ -387,7 +391,7 @@ class PetAnimated(
 			play("R_A_6")
 			play("Dmg")
 			playRandom("Death_1", "Death_2")
-			play("Deat_End", loops = MEDIUM_LOOP)
+			play("Death_End", loops = MEDIUM_LOOP)
 			play("Spawn_2", effect = StateEffect(pose = Pose.STAND, speed = 0f))
 		}
 

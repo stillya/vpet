@@ -36,8 +36,8 @@ class PetAnimatedIntegrationTest : LightPlatform4TestCase() {
 
 		petAnimated.init(
 			Animated.Params(
-				atlasPath = "/META-INF/spritesheets/cat_atlas.json",
-				imgPath = "/META-INF/spritesheets/cat.png"
+				atlasPath = "/META-INF/spritesheets/cat/atlas.json",
+				imgPath = "/META-INF/spritesheets/cat/sprite.png"
 			)
 		)
 	}

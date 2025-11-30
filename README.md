@@ -64,6 +64,7 @@ additional configuration is required!
 Configure VPet through `Settings/Preferences > Tools > VPet`:
 
 - **Enable Xmas Mode** - Toggle festive snowflakes and snowdrifts overlay (enabled by default during holiday season)
+- **Cat Variant** - Choose between different cat sprite variants (Default Cat or Alternative Cat)
 
 ## Development
 
@@ -90,6 +91,10 @@ Configure VPet through `Settings/Preferences > Tools > VPet`:
 ## Contributing
 
 Contributions are welcome! Feel free to submit a pull request or open an issue.
+
+## Credits
+
+Pixel art sprites by [bowpixel](https://bowpixel.itch.io/one-cat) - thank you for the amazing artwork!
 
 ## License
 

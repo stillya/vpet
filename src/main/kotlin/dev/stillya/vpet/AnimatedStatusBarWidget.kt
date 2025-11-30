@@ -11,6 +11,8 @@ import com.intellij.openapi.wm.WidgetPresentationDataContext
 import com.intellij.openapi.wm.WidgetPresentationFactory
 import dev.stillya.vpet.service.ActivityListener
 import dev.stillya.vpet.service.ActivityTracker
+import dev.stillya.vpet.settings.VPetSettings
+import dev.stillya.vpet.settings.VPetSettingsListener
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
@@ -47,7 +49,7 @@ class AnimatedStatusBarWidgetFactory : StatusBarWidgetFactory, WidgetPresentatio
 class AnimatedStatusBarWidget(
 	private val project: Project,
 	private val scope: CoroutineScope
-) : IconWidgetPresentation, ActivityListener, Disposable {
+) : IconWidgetPresentation, ActivityListener, VPetSettingsListener, Disposable {
 
 	private val animation: Animated
 		get() = project.service<Animated>()
@@ -55,6 +57,8 @@ class AnimatedStatusBarWidget(
 	private val iconRenderer: IconRenderer
 		get() = project.service<IconRenderer>()
 
+	// NOTE: afaik icon flow of widget presentation is always collected from a coroutine backed by single thread executor(cause UI)
+	// so no need to synchronize access to curFrameIdx and curFrames, but it could flake out
 	private var curFrameIdx = 0
 	private var curFrames = emptyList<Icon>()
 
@@ -64,8 +68,6 @@ class AnimatedStatusBarWidget(
 	private var lastActivityTimeMs: Long = System.currentTimeMillis()
 
 	companion object {
-		const val DEFAULT_SPRITE_SHEET_IMAGE = "/META-INF/spritesheets/cat.png"
-		const val DEFAULT_SPRITE_SHEET_ATLAS = "/META-INF/spritesheets/cat_atlas.json"
 		const val COUNTER_LIMIT = 10
 		const val FRAME_RATE_MS = 100L
 		const val INACTIVITY_THRESHOLD_MS = 10 * 60_000L // 10 minutes
@@ -75,32 +77,38 @@ class AnimatedStatusBarWidget(
 
 	init {
 		ActivityTracker.getInstance(project).registerListener(this)
+		project.messageBus.connect(this).subscribe(VPetSettings.TOPIC, this)
 		initAnimation()
 		curFrames = iconRenderer.render()
 		startCursorTracking()
 		startInactivityMonitoring()
 	}
 
-	override fun icon(): Flow<Icon?> =
-		flow {
-			while (true) {
-				if (curFrames.isNotEmpty() && curFrameIdx < curFrames.size) {
-					emit(curFrames[curFrameIdx])
-					delay(FRAME_RATE_MS)
-					curFrameIdx = (curFrameIdx + 1) % curFrames.size
-					if (curFrameIdx == 0) {
-						try {
-							curFrames = iconRenderer.render()
-							if (curFrames.isEmpty()) {
-								continue
-							}
-						} catch (_: Exception) {
-							continue
-						}
-					}
-				}
+	override fun icon(): Flow<Icon?> = flow {
+		while (true) {
+			emit(curFrames[curFrameIdx])
+			delay(FRAME_RATE_MS)
+
+			curFrameIdx = (curFrameIdx + 1) % curFrames.size
+
+			if (curFrameIdx == 0) {
+				curFrames = awaitNonEmptyFrames()
 			}
 		}
+	}
+
+	private suspend fun awaitNonEmptyFrames(): List<Icon> {
+		while (true) {
+			try {
+				val frames = iconRenderer.render()
+				if (frames.isNotEmpty()) {
+					return frames
+				}
+			} catch (_: Exception) {
+			}
+			delay(50L) // actually there should be no more than a one iteration but just in case to prevent tight loop
+		}
+	}
 
 	override fun getClickConsumer(): (MouseEvent) -> Unit {
 		return {
@@ -114,10 +122,13 @@ class AnimatedStatusBarWidget(
 	}
 
 	private fun initAnimation() {
+		val settings = VPetSettings.getInstance()
+		val variant = settings.catVariant
+
 		animation.init(
 			Animated.Params(
-				atlasPath = DEFAULT_SPRITE_SHEET_ATLAS,
-				imgPath = DEFAULT_SPRITE_SHEET_IMAGE
+				atlasPath = variant.atlasPath,
+				imgPath = variant.imagePath
 			)
 		)
 
@@ -152,6 +163,12 @@ class AnimatedStatusBarWidget(
 				delay(INACTIVITY_CHECK_INTERVAL_MS)
 			}
 		}
+	}
+
+	override fun settingsChanged(settings: VPetSettings) {
+		initAnimation()
+		curFrames = iconRenderer.render()
+		curFrameIdx = 0
 	}
 
 	override fun onActivity() {

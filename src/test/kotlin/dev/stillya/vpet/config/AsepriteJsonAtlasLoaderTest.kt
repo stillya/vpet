@@ -16,7 +16,7 @@ class AsepriteJsonAtlasLoaderTest {
 
 	@Test
 	fun testLoadedAtlasHasSuccessfullyLoaded() {
-		val atlas = loader.load("/META-INF/spritesheets/cat_atlas.json")
+		val atlas = loader.load("/META-INF/spritesheets/cat/atlas.json")
 
 		assertNotNull("Atlas should be loaded", atlas)
 		assertTrue(

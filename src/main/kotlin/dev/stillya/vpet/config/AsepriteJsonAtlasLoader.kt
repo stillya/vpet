@@ -16,36 +16,24 @@ class AsepriteJsonAtlasLoader : AtlasLoader {
 
 	companion object {
 		@JvmStatic
-		fun getInstance(): AsepriteJsonAtlasLoader =
-			service<AsepriteJsonAtlasLoader>()
+		fun getInstance(): AsepriteJsonAtlasLoader = service<AsepriteJsonAtlasLoader>()
 	}
 
 	override fun load(path: String): SpriteSheetAtlas? {
-		try {
-			log.info("Loading atlas from classpath resource: $path")
-			val inputStream =
-				AsepriteJsonAtlasLoader::class.java.getResourceAsStream(path)
-			if (inputStream == null) {
-				log.warn("Resource not found: $path")
-				return null
-			}
-
-			return inputStream.use { loadFromStream(it) }
-		} catch (e: Exception) {
-			log.warn("Error loading atlas from classpath: $path", e)
+		log.info("Loading atlas from classpath resource: $path")
+		val inputStream =
+			AsepriteJsonAtlasLoader::class.java.getResourceAsStream(path)
+		if (inputStream == null) {
+			log.warn("Resource not found: $path")
 			return null
 		}
+
+		return inputStream.use { loadFromStream(it) }
 	}
 
 	private fun loadFromStream(inputStream: InputStream): SpriteSheetAtlas? {
-		try {
-			log.info("Loading atlas from input stream")
-			val atlas = mapper.readValue(inputStream, SpriteSheetAtlas::class.java)
-			log.info("Atlas loaded successfully with ${atlas.frames.size} frames and ${atlas.meta.frameTags.size} tags")
-			return atlas
-		} catch (e: Exception) {
-			log.warn("Error parsing atlas JSON", e)
-			return null
-		}
+		val atlas = mapper.readValue(inputStream, SpriteSheetAtlas::class.java)
+		log.info("Atlas loaded successfully with ${atlas.frames.size} frames and ${atlas.meta.frameTags.size} tags")
+		return atlas
 	}
 }

@@ -6,6 +6,8 @@
 
 ### Added
 
+- **Cat Variant Selection**: Choose between pet variants in plugin settings
+    - Default Cat and Alternative Cat variants available
 - **Dynamic Snowflake effect**: Snowflakes and snowdrifts reacts on pet speed and state
 
 ## [0.0.7] - 2025-11-16
