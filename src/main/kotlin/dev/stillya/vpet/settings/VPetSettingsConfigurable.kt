@@ -53,7 +53,7 @@ class VPetSettingsConfigurable : Configurable {
 
 	override fun apply() {
 		val settings = VPetSettings.getInstance()
-		settings.xmasModeEnabled = xmasModeCheckbox?.isSelected ?: true
+		settings.xmasModeEnabled = xmasModeCheckbox?.isSelected ?: true // true until Xmas is over
 		settings.catVariant = catVariantComboBox?.selectedItem as? CatVariant ?: CatVariant.DEFAULT
 	}
 
