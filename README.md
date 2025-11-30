@@ -64,6 +64,7 @@ additional configuration is required!
 Configure VPet through `Settings/Preferences > Tools > VPet`:
 
 - **Enable Xmas Mode** - Toggle festive snowflakes and snowdrifts overlay (enabled by default during holiday season)
+- **Cat Variant** - Choose between different cat sprite variants (Default Cat or Alternative Cat)
 
 ## Development
 
