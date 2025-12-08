@@ -6,6 +6,13 @@
 
 ### Added
 
+- **Build for 2025.3+**: Updated plugin to be compatible with IntelliJ IDEA 2025.3 and
+  later versions
+
+## [0.0.8] - 2025-11-30
+
+### Added
+
 - **Cat Variant Selection**: Choose between pet variants in plugin settings
     - Default Cat and Alternative Cat variants available
 - **Dynamic Snowflake effect**: Snowflakes and snowdrifts reacts on pet speed and state
