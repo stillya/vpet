@@ -61,7 +61,7 @@ class VPetSettings : PersistentStateComponent<VPetSettings.State> {
 	}
 
 	data class State(
-		var xmasModeEnabled: Boolean = true,
+		var xmasModeEnabled: Boolean = false,
 		var catVariantName: String = CatVariant.DEFAULT.name
 	)
 }
