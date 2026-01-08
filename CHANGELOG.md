@@ -6,6 +6,13 @@
 
 ### Added
 
+- **Christmas Mode**: Disable default festive snowflakes and snowdrifts effect via
+  settings
+
+## [0.0.9] - 2025-12-08
+
+### Added
+
 - **Build for 2025.3+**: Updated plugin to be compatible with IntelliJ IDEA 2025.3 and
   later versions
 
