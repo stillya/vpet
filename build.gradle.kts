@@ -32,6 +32,7 @@ repositories {
 dependencies {
 	implementation(libs.jacksonDatabind)
 	testImplementation(libs.junit)
+	testImplementation(libs.lincheck)
 
 	// IntelliJ Platform Gradle Plugin Dependencies Extension - read more: https://plugins.jetbrains.com/docs/intellij/tools-intellij-platform-gradle-plugin-dependencies-extension.html
 	intellijPlatform {
