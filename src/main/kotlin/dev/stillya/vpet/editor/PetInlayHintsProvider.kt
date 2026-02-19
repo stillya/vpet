@@ -14,10 +14,9 @@ import com.intellij.openapi.editor.Editor
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiFile
 import com.intellij.psi.PsiMethod
-import dev.stillya.vpet.AnimatedStatusBarWidget.Companion.DEFAULT_SPRITE_SHEET_ATLAS
-import dev.stillya.vpet.AnimatedStatusBarWidget.Companion.DEFAULT_SPRITE_SHEET_IMAGE
 import dev.stillya.vpet.AtlasLoader
 import dev.stillya.vpet.graphics.SpriteSheet
+import dev.stillya.vpet.settings.CatVariant
 import javax.imageio.ImageIO
 import javax.swing.JComponent
 import javax.swing.JPanel
@@ -95,8 +94,8 @@ class PetInlayHintsCollector(
 	}
 
 	private fun loadSpriteSheet(): SpriteSheet? {
-		val atlas = atlasLoader.load(DEFAULT_SPRITE_SHEET_ATLAS) ?: return null
-		val imageStream = javaClass.getResourceAsStream(DEFAULT_SPRITE_SHEET_IMAGE) ?: return null
+		val atlas = atlasLoader.load(CatVariant.DEFAULT.atlasPath) ?: return null
+		val imageStream = javaClass.getResourceAsStream(CatVariant.DEFAULT.imagePath) ?: return null
 		val image = ImageIO.read(imageStream) ?: return null
 
 		val idleTag = atlas.meta.frameTags.find { it.name == "Idle" } ?: return null

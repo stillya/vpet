@@ -111,12 +111,18 @@ class AnimatedStatusBarWidget(
 	}
 
 	override fun getClickConsumer(): (MouseEvent) -> Unit {
-		return {
-			if (counter.get() >= COUNTER_LIMIT) {
-				counter.set(0)
-				animation.onOccasion()
+		return { event ->
+			if (event.isMetaDown || event.isControlDown) {
+				val controller = dev.stillya.vpet.game.GameController.getInstance(project)
+				if (controller.isGameActive) controller.exitGameMode()
+				else controller.enterGameMode()
 			} else {
-				counter.incrementAndGet()
+				if (counter.get() >= COUNTER_LIMIT) {
+					counter.set(0)
+					animation.onOccasion()
+				} else {
+					counter.incrementAndGet()
+				}
 			}
 		}
 	}
