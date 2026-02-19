@@ -51,6 +51,8 @@
 		<projectService
 				serviceInterface="dev.stillya.vpet.Animated"
 				serviceImplementation="dev.stillya.vpet.pet.PetAnimated"/>
+		<projectService
+				serviceImplementation="dev.stillya.vpet.game.GameController"/>
 
 		<codeInsight.inlayProvider
 				language="JAVA"
