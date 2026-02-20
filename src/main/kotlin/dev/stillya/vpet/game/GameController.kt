@@ -13,21 +13,20 @@ import java.awt.event.ComponentEvent
 import java.awt.event.KeyEvent
 import javax.swing.Timer
 
-@Service(Service.Level.PROJECT)	
+@Service(Service.Level.PROJECT)
 class GameController(private val project: Project) {
 
 	private var editor: Editor? = null
 	private var overlay: GameOverlayPanel? = null
 	private var spriteRenderer: GameSpriteRenderer? = null
-	private var physics = GamePhysics()
 	private var gameTimer: Timer? = null
 	private var gameDisposable: Disposable? = null
 	private val keysHeld = mutableSetOf<Int>()
-	private var jumpConsumed = false
 
-	private var currentAnimState = GameAnimationState.IDLE
-	private var frameIndex = 0
-	private var frameTick = 0
+	private var state = GameState()
+	private var lastTickNanos = 0L
+	private var jumpWasPressed = false
+	private val tileMap = GameTileMap()
 
 	private val resizeListener = object : ComponentAdapter() {
 		override fun componentResized(e: ComponentEvent) {
@@ -41,7 +40,6 @@ class GameController(private val project: Project) {
 
 	companion object {
 		private const val TICK_MS = 16
-		private const val FRAME_ADVANCE_TICKS = 6
 
 		fun getInstance(project: Project): GameController = project.service()
 	}
@@ -58,12 +56,12 @@ class GameController(private val project: Project) {
 		val variant = dev.stillya.vpet.settings.VPetSettings.getInstance().catVariant
 		spriteRenderer = GameSpriteRenderer(variant)
 
-		physics = GamePhysics()
-
 		val caretPos = activeEditor.caretModel.logicalPosition
-		physics.colX = caretPos.column.toFloat()
-		physics.lineY = caretPos.line.toFloat()
-		physics.isOnGround = true
+		state = GameState(
+			colX = caretPos.column.toFloat(),
+			lineY = caretPos.line.toFloat(),
+			isOnGround = true
+		)
 
 		val panel = GameOverlayPanel(activeEditor, spriteRenderer!!)
 		overlay = panel
@@ -75,6 +73,7 @@ class GameController(private val project: Project) {
 		registerKeyDispatcher(disposable)
 
 		isGameActive = true
+		lastTickNanos = System.nanoTime()
 
 		gameTimer = Timer(TICK_MS) { gameTick() }
 		gameTimer?.start()
@@ -92,14 +91,12 @@ class GameController(private val project: Project) {
 		overlay = null
 		spriteRenderer = null
 		keysHeld.clear()
-		jumpConsumed = false
+		jumpWasPressed = false
 		gameDisposable?.let { Disposer.dispose(it) }
 		gameDisposable = null
 		editor?.contentComponent?.requestFocusInWindow()
 		editor = null
-		currentAnimState = GameAnimationState.IDLE
-		frameIndex = 0
-		frameTick = 0
+		state = GameState()
 	}
 
 	private fun registerKeyDispatcher(disposable: Disposable) {
@@ -131,11 +128,28 @@ class GameController(private val project: Project) {
 		IdeEventQueue.getInstance().addDispatcher(dispatcher, disposable)
 	}
 
+	private fun gatherInput(): InputState {
+		val move = when {
+			KeyEvent.VK_LEFT in keysHeld && KeyEvent.VK_RIGHT !in keysHeld -> -1
+			KeyEvent.VK_RIGHT in keysHeld && KeyEvent.VK_LEFT !in keysHeld -> 1
+			else -> 0
+		}
+		val jumpPressed = KeyEvent.VK_UP in keysHeld || KeyEvent.VK_SPACE in keysHeld
+		val justPressed = jumpPressed && !jumpWasPressed
+		jumpWasPressed = jumpPressed
+		return InputState(move, justPressed)
+	}
+
 	private fun gameTick() {
 		val activeEditor = editor ?: return
 		val panel = overlay ?: return
+		val renderer = spriteRenderer ?: return
 
-		processInput()
+		val now = System.nanoTime()
+		val dt = ((now - lastTickNanos) / 1_000_000_000f).coerceAtMost(0.05f)
+		lastTickNanos = now
+
+		val input = gatherInput()
 
 		val visibleArea = activeEditor.scrollingModel.visibleArea
 		val firstVisibleLine = activeEditor.xyToLogicalPosition(java.awt.Point(0, visibleArea.y)).line
@@ -143,70 +157,17 @@ class GameController(private val project: Project) {
 			java.awt.Point(0, visibleArea.y + visibleArea.height)
 		).line.coerceAtMost(activeEditor.document.lineCount - 1)
 
-		physics.update(activeEditor, firstVisibleLine, lastVisibleLine)
+		tileMap.rebuild(activeEditor, firstVisibleLine, lastVisibleLine)
+		state = GameUpdate.update(state, input, dt, tileMap, firstVisibleLine, lastVisibleLine)
 
-		updateAnimationState()
-		advanceFrame()
-
-		panel.colX = physics.colX
-		panel.lineY = physics.lineY
-		panel.facingLeft = physics.facingLeft
-		panel.animState = currentAnimState
-		panel.frameIndex = frameIndex
-		panel.tileMap = physics.tileMap
-		panel.isOnGround = physics.isOnGround
-		panel.repaint()
-	}
-
-	private fun processInput() {
-		physics.inputDirection = when {
-			KeyEvent.VK_LEFT in keysHeld && KeyEvent.VK_RIGHT !in keysHeld -> -1
-			KeyEvent.VK_RIGHT in keysHeld && KeyEvent.VK_LEFT !in keysHeld -> 1
-			else -> 0
-		}
-		val jumpPressed = KeyEvent.VK_UP in keysHeld || KeyEvent.VK_SPACE in keysHeld
-		if (jumpPressed && !jumpConsumed && physics.isOnGround) {
-			physics.jump()
-			jumpConsumed = true
-		}
-		if (!jumpPressed) {
-			jumpConsumed = false
-		}
-	}
-
-	private fun updateAnimationState() {
-		val newState = when {
-			!physics.isOnGround && physics.velocityY < 0 -> GameAnimationState.JUMP_UP
-			!physics.isOnGround && physics.velocityY >= 0 -> GameAnimationState.JUMP_DOWN
-			currentAnimState == GameAnimationState.JUMP_DOWN && physics.isOnGround -> GameAnimationState.LAND
-			kotlin.math.abs(physics.velocityX) > 0.05f -> GameAnimationState.WALK
-			else -> GameAnimationState.IDLE
-		}
-
-		if (newState != currentAnimState) {
-			currentAnimState = newState
-			frameIndex = 0
-			frameTick = 0
-		}
-	}
-
-	private fun advanceFrame() {
-		frameTick++
-		if (frameTick >= FRAME_ADVANCE_TICKS) {
-			frameTick = 0
-			val frames = spriteRenderer?.getFrames(currentAnimState.spriteTag, physics.facingLeft)
-			if (!frames.isNullOrEmpty()) {
-				if (currentAnimState.loops) {
-					frameIndex = (frameIndex + 1) % frames.size
-				} else {
-					if (frameIndex < frames.size - 1) {
-						frameIndex++
-					} else if (currentAnimState == GameAnimationState.LAND) {
-						currentAnimState = GameAnimationState.IDLE
-						frameIndex = 0
-					}
-				}
+		if (state.animState == GameAnimationState.LAND) {
+			val frames = renderer.getFrames("Stop", state.facingLeft)
+			if (frames.isNotEmpty() && state.frameIndex >= frames.size) {
+				state = state.copy(animState = GameAnimationState.IDLE, frameIndex = 0, frameTimer = 0f)
 			}
 		}
+
+		panel.update(state, tileMap)
+		panel.repaint()
 	}
 }

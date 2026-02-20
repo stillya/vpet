@@ -31,7 +31,6 @@ import dev.stillya.vpet.graphics.AnimationTrigger
 import dev.stillya.vpet.graphics.create
 import dev.stillya.vpet.service.ActivityTracker
 import java.awt.Image
-import java.awt.image.BufferedImage
 import java.util.concurrent.atomic.AtomicBoolean
 import javax.imageio.ImageIO
 import kotlin.random.Random

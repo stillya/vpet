@@ -15,16 +15,16 @@ class GameOverlayPanel(
     private val spriteRenderer: GameSpriteRenderer
 ) : JComponent() {
 
-    var colX: Float = 0f
-    var lineY: Float = 0f
-    var facingLeft: Boolean = false
-    var animState: GameAnimationState = GameAnimationState.IDLE
-    var frameIndex: Int = 0
-    var tileMap: GameTileMap? = null
-    var isOnGround: Boolean = true
+    private var state = GameState()
+    private var tileMap: GameTileMap? = null
 
     init {
         isOpaque = false
+    }
+
+    fun update(state: GameState, tileMap: GameTileMap) {
+        this.state = state
+        this.tileMap = tileMap
     }
 
     override fun contains(x: Int, y: Int): Boolean = false
@@ -50,18 +50,20 @@ class GameOverlayPanel(
         val lineHeight = editor.lineHeight
         val spriteSize = lineHeight * 2
 
-        val groundLine = floor(lineY).toInt()
+        val groundLine = state.displayLine
         val groundY = editor.logicalPositionToXY(LogicalPosition(groundLine, 0)).y
 
         drawDebug(g2d, lineHeight, groundLine, groundY)
 
-        val frames = spriteRenderer.getFrames(animState.spriteTag, facingLeft)
+        val frames = spriteRenderer.getFrames(state.animState.spriteTag, state.facingLeft)
         if (frames.isEmpty()) return
-        val frame = frames[frameIndex % frames.size]
+        val idx = if (state.animState.loops) state.frameIndex % frames.size
+                  else state.frameIndex.coerceAtMost(frames.size - 1)
+        val frame = frames[idx]
 
-        val catLeft = floor(colX).toInt()
+        val catLeft = state.catLeft
         val hitboxX = logicalToX(groundLine, catLeft)
-        val hitboxEndX = logicalToX(groundLine, catLeft + GamePhysics.CAT_WIDTH)
+        val hitboxEndX = logicalToX(groundLine, catLeft + Physics.CAT_WIDTH)
         val hitboxCenterX = (hitboxX + hitboxEndX) / 2
         val pixelX = hitboxCenterX - spriteSize / 2
         val spriteY = groundY - spriteSize
@@ -73,7 +75,6 @@ class GameOverlayPanel(
         val map = tileMap ?: return
         val oldStroke = g2d.stroke
 
-        // platform extents — green
         g2d.stroke = BasicStroke(1f)
         map.forEachExtent { line, extent ->
             val y = editor.logicalPositionToXY(LogicalPosition(line, 0)).y
@@ -85,25 +86,21 @@ class GameOverlayPanel(
             g2d.drawRect(x, y, endX - x, lineHeight)
         }
 
-        // ground line — yellow stripe
         g2d.color = Color(255, 255, 0, 25)
         g2d.fillRect(0, groundY, width, lineHeight)
 
-        // cat hitbox on ground — red
-        val catLeft = floor(colX).toInt()
+        val catLeft = state.catLeft
         val hitboxX = logicalToX(groundLine, catLeft)
-        val hitboxEndX = logicalToX(groundLine, catLeft + GamePhysics.CAT_WIDTH)
-        g2d.color = if (isOnGround) Color(255, 0, 0, 180) else Color(255, 100, 0, 180)
+        val hitboxEndX = logicalToX(groundLine, catLeft + Physics.CAT_WIDTH)
+        g2d.color = if (state.isOnGround) Color(255, 0, 0, 180) else Color(255, 100, 0, 180)
         g2d.stroke = BasicStroke(2f)
         g2d.drawRect(hitboxX, groundY, hitboxEndX - hitboxX, lineHeight)
 
-        // body line extent — blue (where wall checks happen in air)
         val bodyLine = groundLine - 1
         if (bodyLine >= 0) {
             val bodyY = editor.logicalPositionToXY(LogicalPosition(bodyLine, 0)).y
             g2d.stroke = BasicStroke(1f)
             g2d.color = Color(0, 100, 255, 40)
-            // show only the extent of the body line, not full width
             val bodyExtent = map.getExtent(bodyLine)
             if (bodyExtent != null) {
                 val bx = logicalToX(bodyLine, bodyExtent.first)
