@@ -28,10 +28,9 @@ import dev.stillya.vpet.animation.transitions
 import dev.stillya.vpet.config.SpriteSheetAtlas
 import dev.stillya.vpet.graphics.AnimationContext
 import dev.stillya.vpet.graphics.AnimationTrigger
-import dev.stillya.vpet.graphics.SpriteSheet
+import dev.stillya.vpet.graphics.create
 import dev.stillya.vpet.service.ActivityTracker
 import java.awt.Image
-import java.awt.image.BufferedImage
 import java.util.concurrent.atomic.AtomicBoolean
 import javax.imageio.ImageIO
 import kotlin.random.Random
@@ -141,7 +140,7 @@ class PetAnimated(
 				Animation(
 					name = tag,
 					loop = step.loops,
-					sheet = createSpriteSheet(tag),
+					sheet = atlas.create(image, tag),
 					onFinish = onFinish,
 					context = context,
 					guard = step.guard,
@@ -463,20 +462,7 @@ class PetAnimated(
 		)
 	)
 
-	private fun createSpriteSheet(animationTag: String): SpriteSheet {
-		val frameTag = atlas.meta.frameTags.find { it.name == animationTag }
-			?: throw IllegalArgumentException("Animation tag not found: $animationTag")
-
-		return SpriteSheet(
-			image = image,
-			frames = atlas.frames.subList(frameTag.from, frameTag.to + 1)
-		)
-	}
-
-	private fun loadImage(path: String): BufferedImage {
-		val inputStream = SpriteSheet::class.java.getResourceAsStream(path)
-		return ImageIO.read(inputStream)
-	}
+	private fun loadImage(path: String): Image = ImageIO.read(javaClass.getResourceAsStream(path))
 
 	private fun SequenceRequirement.toEffect(): StateEffect {
 		return StateEffect(
