@@ -85,13 +85,13 @@ class PetAnimatedPresentation(
 	}
 
 	override fun paint(g: Graphics2D, attributes: TextAttributes) {
-		if (frameImages.isEmpty()) return
+		return
 
-		val frameIndex = currentFrameIndex.get()
-		if (frameIndex >= frameImages.size) return
-
-		val frame = frameImages[frameIndex]
-		g.drawImage(frame, 0, 0, width, height, null)
+//		val frameIndex = currentFrameIndex.get()
+//		if (frameIndex >= frameImages.size) return
+//
+//		val frame = frameImages[frameIndex]
+//		g.drawImage(frame, 0, 0, width, height, null)
 	}
 
 	override fun toString(): String = "VPet Animation"

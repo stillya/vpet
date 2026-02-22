@@ -13,6 +13,7 @@ import dev.stillya.vpet.animation.AnimationSequenceWithRequirement
 import dev.stillya.vpet.animation.AnimationState
 import dev.stillya.vpet.animation.Bridge
 import dev.stillya.vpet.animation.BridgeGuard
+import dev.stillya.vpet.animation.Direction
 import dev.stillya.vpet.animation.INFINITE
 import dev.stillya.vpet.animation.MEDIUM_LOOP
 import dev.stillya.vpet.animation.NO_SPEED
@@ -26,6 +27,18 @@ import dev.stillya.vpet.animation.WALKING_SPEED
 import dev.stillya.vpet.animation.sequence
 import dev.stillya.vpet.animation.transitions
 import dev.stillya.vpet.config.SpriteSheetAtlas
+import dev.stillya.vpet.game.AABB
+import dev.stillya.vpet.game.Character
+import dev.stillya.vpet.game.CharacterFrame
+import dev.stillya.vpet.game.GamePhase
+import dev.stillya.vpet.game.InputState
+import dev.stillya.vpet.game.Physics
+import dev.stillya.vpet.game.PhysicsBody
+import dev.stillya.vpet.game.PhysicsResult
+import dev.stillya.vpet.game.SpriteState
+import dev.stillya.vpet.game.TickContext
+import dev.stillya.vpet.game.Transform
+import dev.stillya.vpet.game.Velocity
 import dev.stillya.vpet.graphics.AnimationContext
 import dev.stillya.vpet.graphics.AnimationTrigger
 import dev.stillya.vpet.graphics.create
@@ -33,11 +46,13 @@ import dev.stillya.vpet.service.ActivityTracker
 import java.awt.Image
 import java.util.concurrent.atomic.AtomicBoolean
 import javax.imageio.ImageIO
+import kotlin.math.abs
+import kotlin.math.exp
 import kotlin.random.Random
 
 class PetAnimated(
 	private val project: Project,
-) : Animated {
+) : Animated, Character {
 	private val atlasLoader: AtlasLoader
 		get() = service<AtlasLoader>()
 	private val renderer: IconRenderer
@@ -67,14 +82,21 @@ class PetAnimated(
 	@Volatile
 	private var observingStartTimeMs: Long = 0L
 
+	private val physicsBody = PhysicsBody(AABB(width = 2, height = 2))
+
 	companion object {
 		private val log = logger<PetAnimated>()
-		private const val PIVOT_INTERVAL_MS = 30_000L // 30 seconds
-		private const val OBSERVING_DURATION_MS = 120_000L // 2 minutes
+		private const val PIVOT_INTERVAL_MS = 30_000L
+		private const val OBSERVING_DURATION_MS = 120_000L
 
-		@JvmStatic
-		fun getInstance(project: Project): PetAnimated = project.getService(PetAnimated::class.java)
+		private const val WALK_SPEED = 9.0f
+		private const val JUMP_VELOCITY = -15.6f
+		private const val GROUND_DAMPING = 18.0f
+		private const val AIR_DAMPING = 3.0f
+		private const val AIR_CONTROL = 0.3f
 	}
+
+	// --- Animated implementation (status bar) ---
 
 	override fun init(params: Animated.Params) {
 		log.trace("Initializing PetAnimated with atlas: ${params.atlasPath}, image: ${params.imgPath}")
@@ -226,7 +248,6 @@ class PetAnimated(
 			log.trace("Exiting OBSERVING mode")
 			observingStartTimeMs = 0L
 			renderer.setFlipped(false)
-			// Reset activity timer so we need fresh inactivity before re-entering observing
 			ActivityTracker.getInstance(project).notifyActivity()
 		}
 	}
@@ -287,6 +308,123 @@ class PetAnimated(
 		playTransition(pivotSequence to AnimationState.OBSERVING, context)
 	}
 
+	// --- Character implementation (game engine) ---
+
+	override fun update(input: InputState, ctx: TickContext, dt: Float): CharacterFrame {
+		val effectiveInput = if (ctx.phase == GamePhase.ENTRANCE) InputState() else input
+
+		val velocity = processMovement(effectiveInput, ctx, dt)
+		val jumped = effectiveInput.jumpJustPressed && ctx.isOnGround
+		val grounded = if (jumped) false else ctx.isOnGround
+
+		val result = physicsBody.moveAndSlide(
+			ctx.transform, velocity, grounded, ctx.tileMap, ctx.visibleRange, dt
+		)
+
+		var sprite = resolveSprite(result, ctx.sprite, dt)
+		var phase = resolvePhase(ctx.phase, result, ctx.sprite)
+
+		// Stop → Idle transition when Stop animation finishes
+		if (sprite.tag == "Stop" && result.isOnGround) {
+			val anim = getAnimation("Stop")
+			if (anim != null && sprite.frameIndex >= anim.frameCount) {
+				sprite = sprite.copy(tag = "Idle", frameIndex = 0, frameTimer = 0f)
+			}
+		}
+
+		// ENTRANCE → PLAYING on landing, reset to Idle
+		if (phase == GamePhase.PLAYING && ctx.phase == GamePhase.ENTRANCE) {
+			sprite = sprite.copy(tag = "Idle", frameIndex = 0, frameTimer = 0f)
+		}
+
+		return CharacterFrame(result.transform, result.velocity, result.isOnGround, sprite, phase)
+	}
+
+	override fun getAnimation(tag: String): Animation? {
+		return runCatching {
+			Animation(
+				name = tag,
+				sheet = atlas.create(image, tag),
+				onFinish = {},
+				state = AnimationState.IDLE
+			)
+		}.getOrNull()
+	}
+
+	override fun isLooping(tag: String) = tag == "Idle" || tag == "Walk"
+
+	override fun debugBounds(transform: Transform): IntRange = physicsBody.boundsAt(transform)
+
+	private fun processMovement(input: InputState, ctx: TickContext, dt: Float): Velocity {
+		var vx = ctx.velocity.x
+		var vy = ctx.velocity.y
+		var direction = ctx.sprite.direction
+
+		if (input.moveDirection != 0) {
+			direction = if (input.moveDirection < 0) Direction.LEFT else Direction.RIGHT
+		}
+
+		if (ctx.isOnGround) {
+			vx = if (input.moveDirection != 0) {
+				input.moveDirection.toFloat() * WALK_SPEED
+			} else {
+				val damped = vx * exp(-GROUND_DAMPING * dt)
+				if (abs(damped) < Physics.VELOCITY_EPSILON) 0f else damped
+			}
+		} else {
+			if (input.moveDirection != 0) {
+				vx += input.moveDirection.toFloat() * WALK_SPEED * AIR_CONTROL * dt
+			} else {
+				val damped = vx * exp(-AIR_DAMPING * dt)
+				if (abs(damped) < Physics.VELOCITY_EPSILON) 0f else damped
+			}
+		}
+
+		if (input.jumpJustPressed && ctx.isOnGround) {
+			vy = JUMP_VELOCITY
+		}
+
+		// Direction is tracked as part of SpriteState, but velocity is returned here.
+		// We stash direction update in a side channel — resolveSprite will pick it up from input.
+		// For now, velocity is what we return; direction is handled in resolveSprite.
+		return Velocity(vx, vy)
+	}
+
+	private fun resolveSprite(result: PhysicsResult, currentSprite: SpriteState, dt: Float): SpriteState {
+		val direction = if (result.velocity.x > Physics.VELOCITY_EPSILON) Direction.RIGHT
+		else if (result.velocity.x < -Physics.VELOCITY_EPSILON) Direction.LEFT
+		else currentSprite.direction
+
+		val newTag = resolveAnimationTag(result.isOnGround, result.velocity.x, result.velocity.y, currentSprite.tag)
+		val tagChanged = newTag != currentSprite.tag
+		val frameIndex = if (tagChanged) 0 else currentSprite.frameIndex
+		val frameTimer = if (tagChanged) 0f else currentSprite.frameTimer
+
+		val newTimer = frameTimer + dt
+		return if (newTimer >= Physics.FRAME_ADVANCE_INTERVAL) {
+			SpriteState(newTag, frameIndex + 1, newTimer - Physics.FRAME_ADVANCE_INTERVAL, direction)
+		} else {
+			SpriteState(newTag, frameIndex, newTimer, direction)
+		}
+	}
+
+	private fun resolveAnimationTag(isOnGround: Boolean, vx: Float, vy: Float, currentTag: String) = when {
+		!isOnGround && vy < 0 -> "J_1"
+		!isOnGround && vy >= 0 -> "J_U_D"
+		currentTag == "J_U_D" && isOnGround -> "Stop"
+		abs(vx) > Physics.VELOCITY_EPSILON -> "Walk"
+		else -> "Idle"
+	}
+
+	private fun resolvePhase(phase: GamePhase, result: PhysicsResult, sprite: SpriteState): GamePhase {
+		if (phase == GamePhase.ENTRANCE && result.isOnGround) {
+			return GamePhase.PLAYING
+		}
+		return phase
+	}
+
+	// --- Transition matrix ---
+
 	private fun buildTransitionMatrix(): TransitionMatrix = transitions(random) {
 		idle(
 			sequence {
@@ -341,7 +479,6 @@ class PetAnimated(
 		}
 
 		from(AnimationState.RUNNING) to AnimationState.FAILED via sequence {
-			// no require intended, can be from any running state
 			play("Dmg")
 			playRandom("Death_1", "Death_2")
 			play("Death_End", loops = MEDIUM_LOOP)
@@ -403,7 +540,6 @@ class PetAnimated(
 	}
 
 	private fun buildBridges(): List<Bridge> = listOf(
-		// Lying bridges
 		Bridge(
 			name = "Lie_to_Stand",
 			animationTag = "J_1",
@@ -416,7 +552,6 @@ class PetAnimated(
 			guard = BridgeGuard.requirePose(Pose.STAND),
 			effect = StateEffect.setPose(Pose.LIE)
 		),
-		// Sitting bridges
 		Bridge(
 			name = "Sit_to_Stand",
 			animationTag = "Sit_Up",
@@ -429,7 +564,6 @@ class PetAnimated(
 			guard = BridgeGuard.requirePose(Pose.STAND),
 			effect = StateEffect.setPose(Pose.SIT)
 		),
-		// Speed bridges
 		Bridge(
 			name = "NoSpeed_to_Walk",
 			animationTag = "Walk",

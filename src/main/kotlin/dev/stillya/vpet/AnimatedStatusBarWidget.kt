@@ -86,6 +86,13 @@ class AnimatedStatusBarWidget(
 
 	override fun icon(): Flow<Icon?> = flow {
 		while (true) {
+			val controller = dev.stillya.vpet.game.GameController.getInstance(project)
+			if (controller.isGameActive) {
+				emit(null)
+				delay(FRAME_RATE_MS)
+				continue
+			}
+
 			emit(curFrames[curFrameIdx])
 			delay(FRAME_RATE_MS)
 

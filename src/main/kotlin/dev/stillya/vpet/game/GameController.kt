@@ -8,6 +8,7 @@ import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.fileEditor.FileEditorManager
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.Disposer
+import dev.stillya.vpet.Animated
 import java.awt.event.ComponentAdapter
 import java.awt.event.ComponentEvent
 import java.awt.event.KeyEvent
@@ -17,21 +18,21 @@ import javax.swing.Timer
 class GameController(private val project: Project) {
 
 	private var editor: Editor? = null
-	private var overlay: GameOverlayPanel? = null
-	private var spriteRenderer: GameSpriteRenderer? = null
+	private var renderer: GameRenderer? = null
+	private var character: Character? = null
 	private var gameTimer: Timer? = null
 	private var gameDisposable: Disposable? = null
 	private val keysHeld = mutableSetOf<Int>()
 
-	private var state = GameState()
+	private var world = World()
 	private var lastTickNanos = 0L
 	private var jumpWasPressed = false
-	private val tileMap = GameTileMap()
+	private var tileMapSyncer: TileMapSyncer? = null
 
 	private val resizeListener = object : ComponentAdapter() {
 		override fun componentResized(e: ComponentEvent) {
 			val cc = e.component
-			overlay?.setBounds(0, 0, cc.width, cc.height)
+			renderer?.setBounds(0, 0, cc.width, cc.height)
 		}
 	}
 
@@ -53,18 +54,28 @@ class GameController(private val project: Project) {
 		val disposable = Disposer.newDisposable("vpet-game")
 		gameDisposable = disposable
 
-		val variant = dev.stillya.vpet.settings.VPetSettings.getInstance().catVariant
-		spriteRenderer = GameSpriteRenderer(variant)
+		val ch = project.service<Animated>() as Character
+		character = ch
+
+		val visibleArea = activeEditor.scrollingModel.visibleArea
+		val firstVisibleLine = activeEditor.xyToLogicalPosition(java.awt.Point(0, visibleArea.y)).line
 
 		val caretPos = activeEditor.caretModel.logicalPosition
-		state = GameState(
-			colX = caretPos.column.toFloat(),
-			lineY = caretPos.line.toFloat(),
-			isOnGround = true
+		world = World(
+			transform = Transform(caretPos.column.toFloat(), firstVisibleLine.toFloat()),
+			velocity = Velocity(0f, 0f),
+			isOnGround = false,
+			sprite = SpriteState(tag = "J_U_D"),
+			phase = GamePhase.ENTRANCE
 		)
 
-		val panel = GameOverlayPanel(activeEditor, spriteRenderer!!)
-		overlay = panel
+		val syncer = TileMapSyncer(activeEditor)
+		Disposer.register(disposable, syncer)
+		syncer.start()
+		tileMapSyncer = syncer
+
+		val panel = GameRenderer(activeEditor, ch)
+		renderer = panel
 		val cc = activeEditor.contentComponent
 		cc.add(panel)
 		panel.setBounds(0, 0, cc.width, cc.height)
@@ -84,19 +95,20 @@ class GameController(private val project: Project) {
 		gameTimer?.stop()
 		gameTimer = null
 		editor?.contentComponent?.let {
-			it.remove(overlay)
+			it.remove(renderer)
 			it.removeComponentListener(resizeListener)
 			it.repaint()
 		}
-		overlay = null
-		spriteRenderer = null
+		renderer = null
+		character = null
+		tileMapSyncer = null
 		keysHeld.clear()
 		jumpWasPressed = false
 		gameDisposable?.let { Disposer.dispose(it) }
 		gameDisposable = null
 		editor?.contentComponent?.requestFocusInWindow()
 		editor = null
-		state = GameState()
+		world = World()
 	}
 
 	private fun registerKeyDispatcher(disposable: Disposable) {
@@ -142,8 +154,9 @@ class GameController(private val project: Project) {
 
 	private fun gameTick() {
 		val activeEditor = editor ?: return
-		val panel = overlay ?: return
-		val renderer = spriteRenderer ?: return
+		val panel = renderer ?: return
+		val ch = character ?: return
+		val tileMap = tileMapSyncer?.tileMap ?: return
 
 		val now = System.nanoTime()
 		val dt = ((now - lastTickNanos) / 1_000_000_000f).coerceAtMost(0.05f)
@@ -157,17 +170,9 @@ class GameController(private val project: Project) {
 			java.awt.Point(0, visibleArea.y + visibleArea.height)
 		).line.coerceAtMost(activeEditor.document.lineCount - 1)
 
-		tileMap.rebuild(activeEditor, firstVisibleLine, lastVisibleLine)
-		state = GameUpdate.update(state, input, dt, tileMap, firstVisibleLine, lastVisibleLine)
+		world = WorldUpdate.tick(world, input, dt, ch, tileMap, firstVisibleLine..lastVisibleLine)
 
-		if (state.animState == GameAnimationState.LAND) {
-			val frames = renderer.getFrames("Stop", state.facingLeft)
-			if (frames.isNotEmpty() && state.frameIndex >= frames.size) {
-				state = state.copy(animState = GameAnimationState.IDLE, frameIndex = 0, frameTimer = 0f)
-			}
-		}
-
-		panel.update(state, tileMap)
+		panel.update(world, tileMap)
 		panel.repaint()
 	}
 }
