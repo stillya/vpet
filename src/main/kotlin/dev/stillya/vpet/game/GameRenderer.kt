@@ -2,6 +2,8 @@ package dev.stillya.vpet.game
 
 import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.editor.LogicalPosition
+import com.intellij.ui.JBColor
+import dev.stillya.vpet.animation.INFINITE
 import java.awt.BasicStroke
 import java.awt.Color
 import java.awt.Graphics
@@ -14,12 +16,13 @@ import javax.swing.JComponent
 import kotlin.math.floor
 
 class GameRenderer(
-	private val editor: Editor,
-	private val character: Character
+	private val editor: Editor
 ) : JComponent() {
 
 	private var world = World()
 	private var tileMap: VirtualTileMap? = null
+	private var currentBounds: IntRange = 0..0
+	private var currentAnimation: dev.stillya.vpet.animation.Animation? = null
 	private val frameCache = mutableMapOf<String, List<BufferedImage>>()
 	private val flippedFrameCache = mutableMapOf<String, List<BufferedImage>>()
 	private var frameCount = 0
@@ -30,9 +33,11 @@ class GameRenderer(
 		isOpaque = false
 	}
 
-	fun update(world: World, tileMap: VirtualTileMap) {
-		this.world = world
+	fun update(frame: GameFrame, tileMap: VirtualTileMap) {
+		this.world = frame.world
 		this.tileMap = tileMap
+		this.currentBounds = frame.bounds
+		this.currentAnimation = frame.animation
 	}
 
 	override fun contains(x: Int, y: Int): Boolean = false
@@ -65,25 +70,25 @@ class GameRenderer(
 
 		drawDebug(g2d, lineHeight, groundLine, groundY)
 
+		val animation = currentAnimation ?: return
 		val tag = world.sprite.tag
 		val frames = if (world.sprite.direction.isLeft()) {
 			flippedFrameCache.getOrPut(tag) {
-				val animation = character.getAnimation(tag) ?: return
 				animation.extractFrames().map { flipImage(it) }
 			}
 		} else {
 			frameCache.getOrPut(tag) {
-				val animation = character.getAnimation(tag) ?: return
 				animation.extractFrames()
 			}
 		}
 		if (frames.isEmpty()) return
 
-		val idx = if (character.isLooping(world.sprite.tag)) world.sprite.frameIndex % frames.size
+		val looping = animation.loop == INFINITE
+		val idx = if (looping) world.sprite.frameIndex % frames.size
 		else world.sprite.frameIndex.coerceAtMost(frames.size - 1)
 		val frame = frames[idx]
 
-		val bounds = character.debugBounds(world.transform)
+		val bounds = currentBounds
 		val hitboxX = logicalToX(groundLine, world.transform.x)
 		val hitboxEndX = logicalToX(groundLine, world.transform.x + (bounds.last - bounds.first + 1))
 		val hitboxCenterX = (hitboxX + hitboxEndX) / 2
@@ -99,7 +104,7 @@ class GameRenderer(
 			frameCount = 0
 			lastFpsTime = now
 		}
-		g2d.color = Color.WHITE
+		g2d.color = JBColor.WHITE
 		g2d.font = g2d.font.deriveFont(11f)
 		g2d.drawString("FPS: $fps", 4, 14)
 	}
@@ -128,7 +133,7 @@ class GameRenderer(
 		g2d.color = Color(255, 255, 0, 25)
 		g2d.fillRect(0, groundY, width, lineHeight)
 
-		val bounds = character.debugBounds(world.transform)
+		val bounds = currentBounds
 		val hitboxX = logicalToX(groundLine, bounds.first)
 		val hitboxEndX = logicalToX(groundLine, bounds.first + (bounds.last - bounds.first + 1))
 		g2d.color = if (world.isOnGround) Color(255, 0, 0, 180) else Color(255, 100, 0, 180)

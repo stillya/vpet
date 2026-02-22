@@ -16,6 +16,7 @@ enum class GamePhase { ENTRANCE, PLAYING }
 
 data class InputState(
 	val moveDirection: Int = 0,
+	// TODO: Make input state more robust, i wanna have like a union for buttons
 	val jumpJustPressed: Boolean = false
 )
 

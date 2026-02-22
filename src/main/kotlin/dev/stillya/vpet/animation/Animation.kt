@@ -22,8 +22,10 @@ data class Animation(
 		} else {
 			val tempImage = BufferedImage(f.width, f.height, BufferedImage.TYPE_INT_ARGB)
 			val g = tempImage.createGraphics()
-			g.drawImage(sourceImage, 0, 0, f.width, f.height,
-				f.x, f.y, f.x + f.width, f.y + f.height, null)
+			g.drawImage(
+				sourceImage, 0, 0, f.width, f.height,
+				f.x, f.y, f.x + f.width, f.y + f.height, null
+			)
 			g.dispose()
 			tempImage
 		}

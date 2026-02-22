@@ -11,13 +11,16 @@ import kotlin.math.exp
 class PhysicsBodyTest {
 
 	private lateinit var tileMap: VirtualTileMap
-	private val physicsBody = PhysicsBody(AABB(width = 2, height = 2))
 
 	private val testCharacter = object : Character {
 		val walkSpeed = 9.0f
 		val jumpVelocity = -15.6f
 
-		override fun update(input: InputState, ctx: TickContext, dt: Float): CharacterFrame {
+		override fun id() = EntityID("test")
+
+		override fun collider() = AABB(width = 2, height = 2)
+
+		override fun update(input: InputState, ctx: TickContext, dt: Float): CharacterIntent {
 			val effectiveInput = if (ctx.phase == GamePhase.ENTRANCE) InputState() else input
 
 			var vx = ctx.velocity.x
@@ -49,35 +52,19 @@ class PhysicsBodyTest {
 			}
 
 			val jumped = effectiveInput.jumpJustPressed && ctx.isOnGround
-			val grounded = if (jumped) false else ctx.isOnGround
+			val isGrounded = if (jumped) false else ctx.isOnGround
 
 			val velocity = Velocity(vx, vy)
-			val result = physicsBody.moveAndSlide(
-				ctx.transform, velocity, grounded, ctx.tileMap, ctx.visibleRange, dt
-			)
 
-			val newTag = resolveAnimTag(result.isOnGround, result.velocity.x, result.velocity.y, ctx.sprite.tag)
-			val tagChanged = newTag != ctx.sprite.tag
-			val frameIndex = if (tagChanged) 0 else ctx.sprite.frameIndex
-			val frameTimer = if (tagChanged) 0f else ctx.sprite.frameTimer
-			val newTimer = frameTimer + dt
-			val sprite = if (newTimer >= Physics.FRAME_ADVANCE_INTERVAL) {
-				SpriteState(newTag, frameIndex + 1, newTimer - Physics.FRAME_ADVANCE_INTERVAL, direction)
-			} else {
-				SpriteState(newTag, frameIndex, newTimer, direction)
-			}
+			val tag = resolveAnimTag(ctx.isOnGround, ctx.velocity.x, ctx.velocity.y, ctx.sprite.tag)
 
 			var phase = ctx.phase
-			if (phase == GamePhase.ENTRANCE && result.isOnGround) {
+			if (phase == GamePhase.ENTRANCE && ctx.isOnGround) {
 				phase = GamePhase.PLAYING
 			}
 
-			return CharacterFrame(result.transform, result.velocity, result.isOnGround, sprite, phase)
+			return CharacterIntent(velocity, isGrounded, Animation.empty(), direction, phase)
 		}
-
-		override fun getAnimation(tag: String): Animation? = null
-		override fun isLooping(tag: String) = tag == "Idle" || tag == "Walk"
-		override fun debugBounds(transform: Transform) = physicsBody.boundsAt(transform)
 
 		private fun resolveAnimTag(isOnGround: Boolean, vx: Float, vy: Float, currentTag: String) = when {
 			!isOnGround && vy < 0 -> "J_1"
@@ -110,7 +97,7 @@ class PhysicsBodyTest {
 		dt: Float = DT,
 		lastVisibleLine: Int = 20
 	): World =
-		WorldUpdate.tick(world, input, dt, testCharacter, tileMap, 0..lastVisibleLine)
+		WorldUpdate.tick(world, input, dt, testCharacter, tileMap, 0..lastVisibleLine).world
 
 	private fun ticks(
 		initial: World,

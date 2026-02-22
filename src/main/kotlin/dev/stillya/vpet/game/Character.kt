@@ -1,14 +1,10 @@
 package dev.stillya.vpet.game
 
 import dev.stillya.vpet.animation.Animation
+import dev.stillya.vpet.animation.Direction
 
-interface Character {
-	fun update(input: InputState, ctx: TickContext, dt: Float): CharacterFrame
-
-	fun getAnimation(tag: String): Animation?
-	fun isLooping(tag: String): Boolean
-
-	fun debugBounds(transform: Transform): IntRange
+interface Character : Spatial {
+	fun update(input: InputState, ctx: TickContext, dt: Float): CharacterIntent
 }
 
 data class TickContext(
@@ -16,15 +12,13 @@ data class TickContext(
 	val velocity: Velocity,
 	val isOnGround: Boolean,
 	val sprite: SpriteState,
-	val phase: GamePhase,
-	val tileMap: VirtualTileMap,
-	val visibleRange: IntRange
+	val phase: GamePhase
 )
 
-data class CharacterFrame(
-	val transform: Transform,
+data class CharacterIntent(
 	val velocity: Velocity,
-	val isOnGround: Boolean,
-	val sprite: SpriteState,
+	val isGrounded: Boolean,
+	val animation: Animation,
+	val direction: Direction,
 	val phase: GamePhase
 )

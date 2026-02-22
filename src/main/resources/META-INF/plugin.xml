@@ -54,9 +54,6 @@
 		<projectService
 				serviceImplementation="dev.stillya.vpet.game.GameController"/>
 
-		<codeInsight.inlayProvider
-				language="JAVA"
-				implementationClass="dev.stillya.vpet.editor.PetInlayHintsProvider"/>
 	</extensions>
 
 	<projectListeners>

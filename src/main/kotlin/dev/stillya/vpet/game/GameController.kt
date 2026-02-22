@@ -74,7 +74,7 @@ class GameController(private val project: Project) {
 		syncer.start()
 		tileMapSyncer = syncer
 
-		val panel = GameRenderer(activeEditor, ch)
+		val panel = GameRenderer(activeEditor)
 		renderer = panel
 		val cc = activeEditor.contentComponent
 		cc.add(panel)
@@ -127,6 +127,7 @@ class GameController(private val project: Project) {
 								keysHeld.add(event.keyCode)
 							}
 						}
+
 						KeyEvent.KEY_RELEASED -> {
 							keysHeld.remove(event.keyCode)
 						}
@@ -134,6 +135,7 @@ class GameController(private val project: Project) {
 					event.consume()
 					true
 				}
+
 				else -> false
 			}
 		}
@@ -170,9 +172,10 @@ class GameController(private val project: Project) {
 			java.awt.Point(0, visibleArea.y + visibleArea.height)
 		).line.coerceAtMost(activeEditor.document.lineCount - 1)
 
-		world = WorldUpdate.tick(world, input, dt, ch, tileMap, firstVisibleLine..lastVisibleLine)
+		val frame = WorldUpdate.tick(world, input, dt, ch, tileMap, firstVisibleLine..lastVisibleLine)
+		world = frame.world
 
-		panel.update(world, tileMap)
+		panel.update(frame, tileMap)
 		panel.repaint()
 	}
 }
