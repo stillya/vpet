@@ -9,6 +9,7 @@ import com.intellij.openapi.wm.StatusBarWidgetFactory
 import com.intellij.openapi.wm.WidgetPresentation
 import com.intellij.openapi.wm.WidgetPresentationDataContext
 import com.intellij.openapi.wm.WidgetPresentationFactory
+import dev.stillya.vpet.game.GameController
 import dev.stillya.vpet.service.ActivityListener
 import dev.stillya.vpet.service.ActivityTracker
 import dev.stillya.vpet.settings.VPetSettings
@@ -86,7 +87,7 @@ class AnimatedStatusBarWidget(
 
 	override fun icon(): Flow<Icon?> = flow {
 		while (true) {
-			val controller = dev.stillya.vpet.game.GameController.getInstance(project)
+			val controller = GameController.getInstance(project)
 			if (controller.isGameActive) {
 				emit(null)
 				delay(FRAME_RATE_MS)
@@ -120,7 +121,7 @@ class AnimatedStatusBarWidget(
 	override fun getClickConsumer(): (MouseEvent) -> Unit {
 		return { event ->
 			if (event.isMetaDown || event.isControlDown) {
-				val controller = dev.stillya.vpet.game.GameController.getInstance(project)
+				val controller = GameController.getInstance(project)
 				if (controller.isGameActive) controller.exitGameMode()
 				else controller.enterGameMode()
 			} else {
