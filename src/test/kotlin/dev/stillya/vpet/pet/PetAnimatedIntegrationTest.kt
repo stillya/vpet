@@ -6,6 +6,7 @@ import com.intellij.openapi.project.Project
 import com.intellij.testFramework.LightPlatform4TestCase
 import com.intellij.testFramework.registerServiceInstance
 import dev.stillya.vpet.Animated
+import dev.stillya.vpet.AtlasLoader
 import dev.stillya.vpet.IconRenderer
 import dev.stillya.vpet.animation.Animation
 import dev.stillya.vpet.config.AsepriteJsonAtlasLoader
@@ -27,7 +28,7 @@ class PetAnimatedIntegrationTest : LightPlatform4TestCase() {
 		rendererSpy = IconRendererSpy(project)
 
 		ApplicationManager.getApplication()
-			.registerServiceInstance(AsepriteJsonAtlasLoader::class.java, AsepriteJsonAtlasLoader())
+			.registerServiceInstance(AtlasLoader::class.java, AsepriteJsonAtlasLoader())
 		project.registerServiceInstance(IconRenderer::class.java, rendererSpy)
 		project.registerServiceInstance(Animated::class.java, PetAnimated(project))
 
