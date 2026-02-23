@@ -1,10 +1,11 @@
 package dev.stillya.vpet.game
 
+import dev.stillya.vpet.animation.Animation
 import dev.stillya.vpet.animation.Direction
 
 data class GameFrame(
 	val world: World,
-	val animation: dev.stillya.vpet.animation.Animation,
+	val animation: Animation,
 	val bounds: IntRange
 )
 

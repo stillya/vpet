@@ -40,7 +40,7 @@ class PhysicsBody(val collider: AABB) {
 
 	fun boundsAt(transform: Transform): IntRange {
 		val left = floor(transform.x).toInt()
-		return left..(left + collider.width - 1)
+		return left..<left + collider.width
 	}
 
 	private fun singleStep(
@@ -125,7 +125,7 @@ class PhysicsBody(val collider: AABB) {
 		val catRight = catLeft + collider.width - 1
 
 		if (vy >= 0) {
-			val sweepStart = ceil(transform.y).toInt()
+			val sweepStart = ceil(transform.y - SWEEP_EPSILON).toInt()
 			val sweepEnd = floor(newLineY).toInt()
 
 			if (sweepStart <= sweepEnd) {
@@ -139,9 +139,18 @@ class PhysicsBody(val collider: AABB) {
 				}
 			}
 		} else {
-			val ceilingLine = floor(newLineY).toInt() - 1
-			if (tileMap.hasCeilingAt(ceilingLine, catLeft, catRight)) {
-				return PhysicsResult(transform, Velocity(velocity.x, 0f), false)
+			val oldBodyLine = floor(transform.y).toInt() - 1
+			val newBodyLine = floor(newLineY).toInt() - 1
+
+			for (line in (oldBodyLine - 1) downTo newBodyLine) {
+				if (tileMap.hasCeilingAt(line, catLeft, catRight)) {
+					val resolvedY = (line + collider.height).toFloat()
+					return PhysicsResult(
+						Transform(transform.x, resolvedY),
+						Velocity(velocity.x, 0f),
+						false
+					)
+				}
 			}
 		}
 
@@ -204,5 +213,6 @@ class PhysicsBody(val collider: AABB) {
 
 	companion object {
 		private const val MAX_STEP_DISPLACEMENT = 0.5f
+		private const val SWEEP_EPSILON = 0.01f
 	}
 }

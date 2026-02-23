@@ -65,7 +65,6 @@ class GameController(private val project: Project) {
 			transform = Transform(caretPos.column.toFloat(), firstVisibleLine.toFloat()),
 			velocity = Velocity(0f, 0f),
 			isOnGround = false,
-			sprite = SpriteState(tag = "J_U_D"),
 			phase = GamePhase.ENTRANCE
 		)
 
@@ -166,13 +165,8 @@ class GameController(private val project: Project) {
 
 		val input = gatherInput()
 
-		val visibleArea = activeEditor.scrollingModel.visibleArea
-		val firstVisibleLine = activeEditor.xyToLogicalPosition(java.awt.Point(0, visibleArea.y)).line
-		val lastVisibleLine = activeEditor.xyToLogicalPosition(
-			java.awt.Point(0, visibleArea.y + visibleArea.height)
-		).line.coerceAtMost(activeEditor.document.lineCount - 1)
-
-		val frame = WorldUpdate.tick(world, input, dt, ch, tileMap, firstVisibleLine..lastVisibleLine)
+		val lastDocumentLine = (activeEditor.document.lineCount - 1).coerceAtLeast(0)
+		val frame = WorldUpdate.tick(world, input, dt, ch, tileMap, 0..lastDocumentLine)
 		world = frame.world
 
 		panel.update(frame, tileMap)

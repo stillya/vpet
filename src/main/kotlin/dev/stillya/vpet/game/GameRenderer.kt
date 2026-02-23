@@ -3,6 +3,7 @@ package dev.stillya.vpet.game
 import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.editor.LogicalPosition
 import com.intellij.ui.JBColor
+import dev.stillya.vpet.animation.Animation
 import dev.stillya.vpet.animation.INFINITE
 import java.awt.BasicStroke
 import java.awt.Color
@@ -22,7 +23,7 @@ class GameRenderer(
 	private var world = World()
 	private var tileMap: VirtualTileMap? = null
 	private var currentBounds: IntRange = 0..0
-	private var currentAnimation: dev.stillya.vpet.animation.Animation? = null
+	private var currentAnimation: Animation? = null
 	private val frameCache = mutableMapOf<String, List<BufferedImage>>()
 	private val flippedFrameCache = mutableMapOf<String, List<BufferedImage>>()
 	private var frameCount = 0
@@ -68,7 +69,8 @@ class GameRenderer(
 		val groundYBase = editor.logicalPositionToXY(LogicalPosition(groundLine, 0)).y
 		val groundY = groundYBase + (lineFrac * lineHeight).toInt()
 
-		drawDebug(g2d, lineHeight, groundLine, groundY)
+		// TODO: Enable debug render with a toggle
+//		drawDebug(g2d, lineHeight, groundLine, groundY)
 
 		val animation = currentAnimation ?: return
 		val tag = world.sprite.tag
@@ -104,7 +106,7 @@ class GameRenderer(
 			frameCount = 0
 			lastFpsTime = now
 		}
-		g2d.color = JBColor.WHITE
+		g2d.color = JBColor.BLACK
 		g2d.font = g2d.font.deriveFont(11f)
 		g2d.drawString("FPS: $fps", 4, 14)
 	}

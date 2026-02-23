@@ -68,8 +68,7 @@ class PetAnimated(
 		private const val WALK_SPEED = 9.0f
 		private const val JUMP_VELOCITY = -15.6f
 		private const val GROUND_DAMPING = 18.0f
-		private const val AIR_DAMPING = 3.0f
-		private const val AIR_CONTROL = 0.3f
+		private const val AIR_CONTROL = 0.6f // TODO: Looks not great, consider reworking how we handle air movement
 	}
 
 	override fun init(params: Animated.Params) {
@@ -353,9 +352,9 @@ class PetAnimated(
 	}
 
 	private fun resolveAnimationTag(isOnGround: Boolean, vx: Float, vy: Float, currentTag: String) = when {
-		!isOnGround && vy < 0 -> "J_1"
-		!isOnGround && vy >= 0 -> "J_U_D"
-		currentTag == "J_U_D" && isOnGround -> "Stop"
+		!isOnGround && vy < 0 -> "J_2"
+		!isOnGround && vy >= 0 -> "J_3"
+		currentTag == "J_3" && isOnGround -> "Stop"
 		abs(vx) > Physics.VELOCITY_EPSILON -> "Walk"
 		else -> "Idle"
 	}

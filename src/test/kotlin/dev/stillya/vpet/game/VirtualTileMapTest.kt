@@ -13,8 +13,6 @@ class VirtualTileMapTest {
 		tileMap = VirtualTileMap()
 	}
 
-	// --- computeExtent / hasGroundAt ---
-
 	@Test
 	fun `hasGroundAt returns false for empty line`() {
 		tileMap.rebuildFromLines(listOf(""))
@@ -69,8 +67,6 @@ class VirtualTileMapTest {
 		assertFalse(tileMap.hasGroundAt(5, 0, 1))
 	}
 
-	// --- isSolid (per-cell wall collision) ---
-
 	@Test
 	fun `isSolid returns true for non-whitespace character`() {
 		tileMap.rebuildFromLines(listOf("    fun foo()"))
@@ -112,8 +108,6 @@ class VirtualTileMapTest {
 		assertFalse(tileMap.isSolid(0, 0))
 	}
 
-	// --- findGroundBelow ---
-
 	@Test
 	fun `findGroundBelow finds first solid line scanning downward`() {
 		tileMap.rebuildFromLines(listOf(
@@ -154,8 +148,6 @@ class VirtualTileMapTest {
 		assertNull(tileMap.findGroundBelow(0, 0, 1, 1))
 	}
 
-	// --- hasCeilingAt ---
-
 	@Test
 	fun `hasCeilingAt detects solid line above`() {
 		tileMap.rebuildFromLines(listOf("    code here", ""))
@@ -167,8 +159,6 @@ class VirtualTileMapTest {
 		tileMap.rebuildFromLines(listOf("", "code"))
 		assertFalse(tileMap.hasCeilingAt(0, 0, 1))
 	}
-
-	// --- Multi-line realistic scenarios ---
 
 	@Test
 	fun `realistic code file - platform detection`() {
@@ -223,8 +213,6 @@ class VirtualTileMapTest {
 		assertFalse(tileMap.hasGroundAt(0, 0, 1))
 		assertTrue(tileMap.hasGroundAt(0, 1, 2))
 	}
-
-	// --- Per-cell wall tests ---
 
 	@Test
 	fun `isSolid detects wall at exact column in sparse line`() {
