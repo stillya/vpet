@@ -17,7 +17,6 @@ data class TickContext(
 
 data class CharacterIntent(
 	val velocity: Velocity,
-	val isGrounded: Boolean,
 	val animation: Animation,
 	val direction: Direction,
 	val phase: GamePhase

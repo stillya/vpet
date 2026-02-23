@@ -51,27 +51,14 @@ class PhysicsBodyTest {
 				vy = jumpVelocity
 			}
 
-			val jumped = effectiveInput.jumpJustPressed && ctx.isOnGround
-			val isGrounded = if (jumped) false else ctx.isOnGround
-
 			val velocity = Velocity(vx, vy)
-
-			val tag = resolveAnimTag(ctx.isOnGround, ctx.velocity.x, ctx.velocity.y, ctx.sprite.tag)
 
 			var phase = ctx.phase
 			if (phase == GamePhase.ENTRANCE && ctx.isOnGround) {
 				phase = GamePhase.PLAYING
 			}
 
-			return CharacterIntent(velocity, isGrounded, Animation.empty(), direction, phase)
-		}
-
-		private fun resolveAnimTag(isOnGround: Boolean, vx: Float, vy: Float, currentTag: String) = when {
-			!isOnGround && vy < 0 -> "J_1"
-			!isOnGround && vy >= 0 -> "J_U_D"
-			currentTag == "J_U_D" && isOnGround -> "Stop"
-			abs(vx) > Physics.VELOCITY_EPSILON -> "Walk"
-			else -> "Idle"
+			return CharacterIntent(velocity, Animation.empty(), direction, phase)
 		}
 	}
 
@@ -149,26 +136,34 @@ class PhysicsBodyTest {
 		assertTrue(result.isOnGround)
 	}
 
-	// --- Step-down ---
+	// --- Falling to next platform ---
 
 	@Test
-	fun `cat steps down to next line when current ground ends`() {
+	fun `cat falls to next line when current ground ends`() {
 		buildMap("short", "          long line here", "")
-		val w = worldAt(x = 10f, y = 0f)
-		val result = tick(w)
+		var w = worldAt(x = 10f, y = 0f)
 
-		assertEquals(1f, result.transform.y, 0.001f)
-		assertTrue(result.isOnGround)
+		for (i in 0..50) {
+			w = tick(w)
+			if (w.isOnGround) break
+		}
+
+		assertEquals(1f, w.transform.y, 0.001f)
+		assertTrue(w.isOnGround)
 	}
 
 	@Test
-	fun `cat steps down when walking off shorter platform onto longer one below`() {
+	fun `cat falls to longer platform below when walking off shorter one`() {
 		buildMap("  code", "  code with more stuff here", "")
-		val w = worldAt(x = 6f, y = 0f)
-		val result = tick(w)
+		var w = worldAt(x = 6f, y = 0f)
 
-		assertEquals(1f, result.transform.y, 0.001f)
-		assertTrue(result.isOnGround)
+		for (i in 0..50) {
+			w = tick(w)
+			if (w.isOnGround) break
+		}
+
+		assertEquals(1f, w.transform.y, 0.001f)
+		assertTrue(w.isOnGround)
 	}
 
 	@Test
@@ -303,7 +298,7 @@ class PhysicsBodyTest {
 	// --- Realistic scenario ---
 
 	@Test
-	fun `cat walks across short line and steps down to longer continuation line`() {
+	fun `cat walks across short line and falls to longer continuation line`() {
 		buildMap(
 			"props.put(\"key.serializer\",",
 			"        \"org.apache.kafka.common.serialization.StringSerializer\");",
@@ -355,12 +350,22 @@ class PhysicsBodyTest {
 	}
 
 	@Test
-	fun `lineY clamped to visible area`() {
+	fun `lineY clamped to visible area top boundary`() {
 		buildMap("", "", "")
 		val w = worldAt(x = 0f, y = 0f, isOnGround = false, vy = -20f)
 		val result = tick(w, lastVisibleLine = 2)
 
 		assertEquals(0f, result.transform.y, 0.001f)
+		assertFalse(result.isOnGround)
+	}
+
+	@Test
+	fun `lineY clamped to visible area bottom boundary grounds entity`() {
+		buildMap("", "", "")
+		val w = worldAt(x = 0f, y = 2f, isOnGround = false, vy = 20f)
+		val result = tick(w, lastVisibleLine = 2)
+
+		assertEquals(2f, result.transform.y, 0.001f)
 		assertTrue(result.isOnGround)
 	}
 
@@ -521,8 +526,6 @@ class PhysicsBodyTest {
 
 	@Test
 	fun `per-cell wall collision blocks cat at isolated solid column`() {
-		// Body line 1: solid only at cols 10-13 ("code"), rest is air
-		// Cat starts at x=7 (cols 7-8, air on body line), walks right
 		buildMap("", "          code", "xxxxxxxxxxxxxxxxxxxx")
 		var w = worldAt(x = 7f, y = 2f)
 		val input = InputState(moveDirection = 1)
@@ -531,8 +534,36 @@ class PhysicsBodyTest {
 			w = tick(w, input)
 		}
 
-		// Cat should be blocked before 'c' at col 10
 		val catRight = kotlin.math.floor(w.transform.x).toInt() + 2 - 1
 		assertTrue("Cat should be blocked by solid at col 10, catRight=$catRight", catRight < 10)
+	}
+
+	// --- Grounded derived from collision ---
+
+	@Test
+	fun `grounded state re-derived each frame from collision not carried over`() {
+		buildMap("ground", "")
+		var w = worldAt(x = 0f, y = 0f)
+
+		// Confirm grounded via collision on first tick
+		w = tick(w)
+		assertTrue(w.isOnGround)
+		assertEquals(0f, w.transform.y, 0.001f)
+
+		// Move cat off ground
+		w = w.copy(transform = Transform(10f, 0f))
+		w = tick(w)
+		assertFalse(w.isOnGround)
+	}
+
+	@Test
+	fun `gravity always applied - grounded entity has zero vy after collision`() {
+		buildMap("xxxxxxxxxxxxxxxxxxxx")
+		val w = worldAt(x = 5f, y = 0f)
+		val result = tick(w)
+
+		assertEquals(0f, result.transform.y, 0.001f)
+		assertTrue(result.isOnGround)
+		assertEquals(0f, result.velocity.y, 0.001f)
 	}
 }

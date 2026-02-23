@@ -29,7 +29,7 @@ object WorldUpdate {
 
 		val physics = PhysicsBody(character.collider())
 		val result = physics.moveAndSlide(
-			ctx.transform, intent.velocity, intent.isGrounded, tileMap, visibleRange, dt
+			ctx.transform, intent.velocity, tileMap, visibleRange, dt
 		)
 
 		val sprite = advanceFrame(intent.animation.name, intent.direction, world.sprite, dt)

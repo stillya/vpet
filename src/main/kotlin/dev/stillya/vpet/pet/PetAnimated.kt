@@ -290,8 +290,6 @@ class PetAnimated(
 		val effectiveInput = if (ctx.phase == GamePhase.ENTRANCE) InputState() else input
 
 		val velocity = processMovement(effectiveInput, ctx, dt)
-		val jumped = effectiveInput.jumpJustPressed && ctx.isOnGround
-		val isGrounded = if (jumped) false else ctx.isOnGround
 
 		val direction = if (velocity.x > Physics.VELOCITY_EPSILON) Direction.RIGHT
 		else if (velocity.x < -Physics.VELOCITY_EPSILON) Direction.LEFT
@@ -315,7 +313,7 @@ class PetAnimated(
 		val loop = if (tag == "Idle" || tag == "Walk") INFINITE else 0
 		val animation = createAnimation(tag, loop) ?: Animation.empty()
 
-		return CharacterIntent(velocity, isGrounded, animation, direction, phase)
+		return CharacterIntent(velocity, animation, direction, phase)
 	}
 
 	private fun createAnimation(tag: String, loop: Int = 0): Animation? {

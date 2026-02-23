@@ -19,7 +19,6 @@ class PhysicsBody(val collider: AABB) {
 	fun moveAndSlide(
 		transform: Transform,
 		velocity: Velocity,
-		isOnGround: Boolean,
 		tileMap: VirtualTileMap,
 		visibleRange: IntRange,
 		dt: Float
@@ -28,22 +27,15 @@ class PhysicsBody(val collider: AABB) {
 		val steps = max(1, ceil(displacement / MAX_STEP_DISPLACEMENT).toInt())
 
 		if (steps == 1) {
-			return singleStep(transform, velocity, isOnGround, tileMap, visibleRange, dt)
+			return singleStep(transform, velocity, tileMap, visibleRange, dt)
 		}
 
 		val subDt = dt / steps
-		var result = PhysicsResult(transform, velocity, isOnGround)
+		var result = PhysicsResult(transform, velocity, false)
 		for (i in 0 until steps) {
-			result = singleStep(result.transform, result.velocity, result.isOnGround, tileMap, visibleRange, subDt)
+			result = singleStep(result.transform, result.velocity, tileMap, visibleRange, subDt)
 		}
 		return result
-	}
-
-	fun isOnFloor(transform: Transform, tileMap: VirtualTileMap): Boolean {
-		val displayLine = floor(transform.y).toInt()
-		val catLeft = floor(transform.x).toInt()
-		val catRight = catLeft + collider.width - 1
-		return tileMap.hasGroundAt(displayLine, catLeft, catRight)
 	}
 
 	fun boundsAt(transform: Transform): IntRange {
@@ -54,38 +46,26 @@ class PhysicsBody(val collider: AABB) {
 	private fun singleStep(
 		transform: Transform,
 		velocity: Velocity,
-		isOnGround: Boolean,
 		tileMap: VirtualTileMap,
 		visibleRange: IntRange,
 		dt: Float
 	): PhysicsResult {
 		var t = transform
 		var v = velocity
-		var grounded = isOnGround
 
 		val xResult = moveAndResolveX(t, v, dt, tileMap)
 		t = xResult.first
 		v = xResult.second
 
 		val bodyLineBeforeY = floor(t.y).toInt() - 1
-		val yResult = moveAndResolveY(t, v, grounded, tileMap, visibleRange.last, dt)
+		val yResult = moveAndResolveY(t, v, tileMap, dt)
 		t = yResult.transform
 		v = yResult.velocity
-		grounded = yResult.isOnGround
+		val grounded = yResult.isOnGround
 
-		val pushResult1 = resolveNewBodyLine(t, v, bodyLineBeforeY, tileMap)
-		t = pushResult1.first
-		v = pushResult1.second
-
-		val bodyLineBeforeGround = floor(t.y).toInt() - 1
-		val groundResult = groundMaintenance(t, v, grounded, tileMap, visibleRange.last)
-		t = groundResult.transform
-		v = groundResult.velocity
-		grounded = groundResult.isOnGround
-
-		val pushResult2 = resolveNewBodyLine(t, v, bodyLineBeforeGround, tileMap)
-		t = pushResult2.first
-		v = pushResult2.second
+		val pushResult = resolveNewBodyLine(t, v, bodyLineBeforeY, tileMap)
+		t = pushResult.first
+		v = pushResult.second
 
 		return clampToVisibleArea(t, v, grounded, visibleRange)
 	}
@@ -133,34 +113,32 @@ class PhysicsBody(val collider: AABB) {
 	private fun moveAndResolveY(
 		transform: Transform,
 		velocity: Velocity,
-		isOnGround: Boolean,
 		tileMap: VirtualTileMap,
-		lastVisibleLine: Int,
 		dt: Float
 	): PhysicsResult {
-		if (isOnGround) return PhysicsResult(transform, velocity, true)
-
 		var vy = velocity.y + Physics.GRAVITY * dt
 		vy = vy.coerceAtMost(Physics.MAX_FALL_SPEED)
 
-		val oldLineY = transform.y
-		val newLineY = oldLineY + vy * dt
+		val newLineY = transform.y + vy * dt
 
 		val catLeft = floor(transform.x).toInt()
 		val catRight = catLeft + collider.width - 1
 
-		if (vy > 0) {
-			val scanStart = (floor(oldLineY).toInt() + 1).coerceAtLeast(0)
-			val landLine = tileMap.findGroundBelow(scanStart, catLeft, catRight, lastVisibleLine)
+		if (vy >= 0) {
+			val sweepStart = ceil(transform.y).toInt()
+			val sweepEnd = floor(newLineY).toInt()
 
-			if (landLine != null && newLineY >= landLine.toFloat()) {
-				return PhysicsResult(
-					Transform(transform.x, landLine.toFloat()),
-					Velocity(velocity.x, 0f),
-					true
-				)
+			if (sweepStart <= sweepEnd) {
+				val landLine = tileMap.findGroundBelow(sweepStart, catLeft, catRight, sweepEnd)
+				if (landLine != null) {
+					return PhysicsResult(
+						Transform(transform.x, landLine.toFloat()),
+						Velocity(velocity.x, 0f),
+						true
+					)
+				}
 			}
-		} else if (vy < 0) {
+		} else {
 			val ceilingLine = floor(newLineY).toInt() - 1
 			if (tileMap.hasCeilingAt(ceilingLine, catLeft, catRight)) {
 				return PhysicsResult(transform, Velocity(velocity.x, 0f), false)
@@ -186,7 +164,6 @@ class PhysicsBody(val collider: AABB) {
 		val catLeft = floor(transform.x).toInt()
 		val catRight = catLeft + collider.width - 1
 
-		// Check per-cell: is any solid cell overlapping the cat's horizontal range?
 		var solidLeft = Int.MAX_VALUE
 		var solidRight = Int.MIN_VALUE
 		for (col in catLeft..catRight) {
@@ -207,34 +184,6 @@ class PhysicsBody(val collider: AABB) {
 		return Transform(resolvedX.coerceAtLeast(0f), transform.y) to Velocity(0f, velocity.y)
 	}
 
-	private fun groundMaintenance(
-		transform: Transform,
-		velocity: Velocity,
-		isOnGround: Boolean,
-		tileMap: VirtualTileMap,
-		lastVisibleLine: Int
-	): PhysicsResult {
-		if (!isOnGround) return PhysicsResult(transform, velocity, false)
-
-		val displayLine = floor(transform.y).toInt()
-		val catLeft = floor(transform.x).toInt()
-		val catRight = catLeft + collider.width - 1
-
-		if (!tileMap.hasGroundAt(displayLine, catLeft, catRight)) {
-			val nextLine = displayLine + 1
-			if (nextLine <= lastVisibleLine && tileMap.hasGroundAt(nextLine, catLeft, catRight)) {
-				return PhysicsResult(
-					Transform(transform.x, nextLine.toFloat()),
-					velocity,
-					true
-				)
-			}
-			return PhysicsResult(transform, velocity, false)
-		}
-
-		return PhysicsResult(transform, velocity, true)
-	}
-
 	private fun clampToVisibleArea(
 		transform: Transform,
 		velocity: Velocity,
@@ -243,10 +192,11 @@ class PhysicsBody(val collider: AABB) {
 	): PhysicsResult {
 		val clampedY = transform.y.coerceIn(visibleRange.first.toFloat(), visibleRange.last.toFloat())
 		if (clampedY != transform.y) {
+			val hitBottom = transform.y > visibleRange.last.toFloat()
 			return PhysicsResult(
 				Transform(transform.x, clampedY),
 				Velocity(velocity.x, 0f),
-				true
+				hitBottom
 			)
 		}
 		return PhysicsResult(transform, velocity, isOnGround)
