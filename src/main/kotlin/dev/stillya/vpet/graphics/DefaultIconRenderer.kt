@@ -11,7 +11,6 @@ import dev.stillya.vpet.settings.VPetSettings
 import java.awt.Image
 import java.awt.geom.AffineTransform
 import java.awt.image.AffineTransformOp
-import java.awt.image.BufferedImage
 import java.util.*
 import java.util.concurrent.LinkedBlockingQueue
 import java.util.concurrent.atomic.AtomicInteger
@@ -102,7 +101,7 @@ class DefaultIconRenderer(project: Project) : IconRenderer {
 			}
 		}
 
-		return currentAnimation?.let { doRender(it.sheet) } ?: emptyList()
+		return currentAnimation?.let { doRender(it) } ?: emptyList()
 	}
 
 	override fun setFlipped(flipped: Boolean) {
@@ -168,56 +167,21 @@ class DefaultIconRenderer(project: Project) : IconRenderer {
 		return head ?: lastStableAnimation
 	}
 
-	private fun doRender(sheet: SpriteSheet): List<Icon> {
-		return sheet.frames.map {
-			val f = it.frame
-
-			val sourceImage = sheet.image
-
-			val frameImage = if (sourceImage is BufferedImage) {
-				sourceImage.getSubimage(f.x, f.y, f.width, f.height)
-			} else {
-				val tempImage =
-					BufferedImage(f.width, f.height, BufferedImage.TYPE_INT_ARGB)
-				val g = tempImage.createGraphics()
-				g.drawImage(
-					sourceImage,
-					0,
-					0,
-					f.width,
-					f.height,
-					f.x,
-					f.y,
-					f.x + f.width,
-					f.y + f.height,
-					null
-				)
-				g.dispose()
-				tempImage
-			}
-
-			val scaledWidth = (f.width * scaleValue).roundToInt()
-			val scaledHeight = (f.height * scaleValue).roundToInt()
+	private fun doRender(animation: Animation): List<Icon> {
+		return animation.extractFrames().map { frameImage ->
+			val scaledWidth = (frameImage.width * scaleValue).roundToInt()
+			val scaledHeight = (frameImage.height * scaleValue).roundToInt()
 
 			val processedImage = if (isFlipped) {
 				val tx = AffineTransform.getScaleInstance(-1.0, 1.0)
 				tx.translate(-frameImage.width.toDouble(), 0.0)
-				val op = AffineTransformOp(tx, AffineTransformOp.TYPE_NEAREST_NEIGHBOR)
-
-				val flippedImage = op.filter(frameImage, null)
-
-				flippedImage.getScaledInstance(
-					scaledWidth,
-					scaledHeight,
-					Image.SCALE_DEFAULT
-				)
+				val flippedImage = AffineTransformOp(tx, AffineTransformOp.TYPE_NEAREST_NEIGHBOR)
+					.filter(frameImage, null)
+				flippedImage.getScaledInstance(scaledWidth, scaledHeight, Image.SCALE_DEFAULT)
 			} else {
-				frameImage.getScaledInstance(
-					scaledWidth,
-					scaledHeight,
-					Image.SCALE_DEFAULT
-				)
+				frameImage.getScaledInstance(scaledWidth, scaledHeight, Image.SCALE_DEFAULT)
 			}
+
 			object : ImageIcon(processedImage) {
 				override fun paintIcon(
 					c: java.awt.Component?,
