@@ -54,8 +54,7 @@ class GameController(private val project: Project) {
 		val disposable = Disposer.newDisposable("vpet-game")
 		gameDisposable = disposable
 
-		val ch = project.service<Animated>() as Character
-		character = ch
+		character = project.service<Animated>() as Character
 
 		val visibleArea = activeEditor.scrollingModel.visibleArea
 		val firstVisibleLine = activeEditor.xyToLogicalPosition(java.awt.Point(0, visibleArea.y)).line
