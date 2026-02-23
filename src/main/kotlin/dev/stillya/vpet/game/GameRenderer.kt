@@ -99,16 +99,17 @@ class GameRenderer(
 
 		g2d.drawImage(frame, pixelX, spriteY, spriteSize, spriteSize, null)
 
-		frameCount++
-		val now = System.nanoTime()
-		if (now - lastFpsTime >= 1_000_000_000L) {
-			fps = frameCount
-			frameCount = 0
-			lastFpsTime = now
-		}
-		g2d.color = JBColor.BLACK
-		g2d.font = g2d.font.deriveFont(11f)
-		g2d.drawString("FPS: $fps", 4, 14)
+		// TODO: Make it part of debug render and toggleable
+//		frameCount++
+//		val now = System.nanoTime()
+//		if (now - lastFpsTime >= 1_000_000_000L) {
+//			fps = frameCount
+//			frameCount = 0
+//			lastFpsTime = now
+//		}
+//		g2d.color = JBColor.BLACK
+//		g2d.font = g2d.font.deriveFont(11f)
+//		g2d.drawString("FPS: $fps", 4, 14)
 	}
 
 	private fun flipImage(image: BufferedImage): BufferedImage {
