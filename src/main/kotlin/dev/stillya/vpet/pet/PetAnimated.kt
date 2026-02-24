@@ -65,8 +65,8 @@ class PetAnimated(
 		private const val PIVOT_INTERVAL_MS = 30_000L
 		private const val OBSERVING_DURATION_MS = 120_000L
 
-		private const val WALK_SPEED = 9.0f
-		private const val JUMP_VELOCITY = -15.6f
+		private const val WALK_SPEED = 8.0f
+		private const val JUMP_VELOCITY = -13.6f
 		private const val GROUND_DAMPING = 18.0f
 		private const val AIR_CONTROL = 0.6f // TODO: Looks not great, consider reworking how we handle air movement
 	}

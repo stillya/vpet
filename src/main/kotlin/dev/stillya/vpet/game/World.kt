@@ -21,7 +21,7 @@ data class InputState(
 )
 
 object Physics {
-	const val GRAVITY = 75.0f
+	const val GRAVITY = 70.0f
 	const val MAX_FALL_SPEED = 30.0f
 	const val VELOCITY_EPSILON = 0.1f
 	const val FRAME_ADVANCE_INTERVAL = 0.096f
