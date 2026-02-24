@@ -2,7 +2,6 @@ package dev.stillya.vpet.game
 
 import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.editor.LogicalPosition
-import com.intellij.ui.JBColor
 import dev.stillya.vpet.animation.Animation
 import dev.stillya.vpet.animation.INFINITE
 import java.awt.BasicStroke
@@ -14,18 +13,19 @@ import java.awt.geom.AffineTransform
 import java.awt.image.AffineTransformOp
 import java.awt.image.BufferedImage
 import javax.swing.JComponent
-import kotlin.math.floor
 
 class GameRenderer(
 	private val editor: Editor
 ) : JComponent() {
 
 	private var world = World()
+	private val columnMapper = VisualColumnMapper(editor)
 	private var tileMap: VirtualTileMap? = null
 	private var currentBounds: IntRange = 0..0
 	private var currentAnimation: Animation? = null
 	private val frameCache = mutableMapOf<String, List<BufferedImage>>()
 	private val flippedFrameCache = mutableMapOf<String, List<BufferedImage>>()
+
 	private var frameCount = 0
 	private var lastFpsTime = System.nanoTime()
 	private var fps = 0
@@ -42,17 +42,6 @@ class GameRenderer(
 	}
 
 	override fun contains(x: Int, y: Int): Boolean = false
-
-	private fun logicalToX(line: Int, col: Int): Int =
-		editor.logicalPositionToXY(LogicalPosition(line, col)).x
-
-	private fun logicalToX(line: Int, col: Float): Int {
-		val colInt = floor(col).toInt()
-		val frac = col - colInt
-		val x0 = logicalToX(line, colInt)
-		val x1 = logicalToX(line, colInt + 1)
-		return x0 + ((x1 - x0) * frac).toInt()
-	}
 
 	override fun paintComponent(g: Graphics) {
 		val g2d = g as Graphics2D
@@ -91,8 +80,8 @@ class GameRenderer(
 		val frame = frames[idx]
 
 		val bounds = currentBounds
-		val hitboxX = logicalToX(groundLine, world.transform.x)
-		val hitboxEndX = logicalToX(groundLine, world.transform.x + (bounds.last - bounds.first + 1))
+		val hitboxX = colToPixelX(world.transform.x)
+		val hitboxEndX = colToPixelX(world.transform.x + (bounds.last - bounds.first + 1))
 		val hitboxCenterX = (hitboxX + hitboxEndX) / 2
 		val pixelX = hitboxCenterX - spriteSize / 2
 		val spriteY = groundY - spriteSize
@@ -112,6 +101,10 @@ class GameRenderer(
 //		g2d.drawString("FPS: $fps", 4, 14)
 	}
 
+	private fun colToPixelX(col: Int): Int = columnMapper.toPixelX(col)
+
+	private fun colToPixelX(col: Float): Int = columnMapper.toPixelX(col)
+
 	private fun flipImage(image: BufferedImage): BufferedImage {
 		val tx = AffineTransform.getScaleInstance(-1.0, 1.0)
 		tx.translate(-image.width.toDouble(), 0.0)
@@ -125,8 +118,8 @@ class GameRenderer(
 		g2d.stroke = BasicStroke(1f)
 		map.forEachExtent { line, extent ->
 			val y = editor.logicalPositionToXY(LogicalPosition(line, 0)).y
-			val x = logicalToX(line, extent.first)
-			val endX = logicalToX(line, extent.last + 1)
+			val x = colToPixelX(extent.first)
+			val endX = colToPixelX(extent.last + 1)
 			g2d.color = Color(0, 255, 0, 30)
 			g2d.fillRect(x, y, endX - x, lineHeight)
 			g2d.color = Color(0, 255, 0, 120)
@@ -137,8 +130,8 @@ class GameRenderer(
 		g2d.fillRect(0, groundY, width, lineHeight)
 
 		val bounds = currentBounds
-		val hitboxX = logicalToX(groundLine, bounds.first)
-		val hitboxEndX = logicalToX(groundLine, bounds.first + (bounds.last - bounds.first + 1))
+		val hitboxX = colToPixelX(bounds.first)
+		val hitboxEndX = colToPixelX(bounds.first + (bounds.last - bounds.first + 1))
 		g2d.color = if (world.isOnGround) Color(255, 0, 0, 180) else Color(255, 100, 0, 180)
 		g2d.stroke = BasicStroke(2f)
 		g2d.drawRect(hitboxX, groundY, hitboxEndX - hitboxX, lineHeight)
@@ -150,8 +143,8 @@ class GameRenderer(
 			g2d.color = Color(0, 100, 255, 40)
 			val bodyExtent = map.getExtent(bodyLine)
 			if (bodyExtent != null) {
-				val bx = logicalToX(bodyLine, bodyExtent.first)
-				val bEndX = logicalToX(bodyLine, bodyExtent.last + 1)
+				val bx = colToPixelX(bodyExtent.first)
+				val bEndX = colToPixelX(bodyExtent.last + 1)
 				g2d.fillRect(bx, bodyY, bEndX - bx, lineHeight)
 				g2d.color = Color(0, 100, 255, 100)
 				g2d.drawRect(bx, bodyY, bEndX - bx, lineHeight)

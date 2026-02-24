@@ -5,6 +5,7 @@ import com.intellij.openapi.Disposable
 import com.intellij.openapi.components.Service
 import com.intellij.openapi.components.service
 import com.intellij.openapi.editor.Editor
+import com.intellij.openapi.editor.LogicalPosition
 import com.intellij.openapi.fileEditor.FileEditorManager
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.Disposer
@@ -60,8 +61,13 @@ class GameController(private val project: Project) {
 		val firstVisibleLine = activeEditor.xyToLogicalPosition(java.awt.Point(0, visibleArea.y)).line
 
 		val caretPos = activeEditor.caretModel.logicalPosition
+		val mapper = VisualColumnMapper(activeEditor)
+		val caretPixelX = activeEditor.logicalPositionToXY(
+			LogicalPosition(caretPos.line, caretPos.column)
+		).x
+		val visualCol = mapper.toVisualColF(caretPixelX)
 		world = World(
-			transform = Transform(caretPos.column.toFloat(), firstVisibleLine.toFloat()),
+			transform = Transform(visualCol, firstVisibleLine.toFloat()),
 			velocity = Velocity(0f, 0f),
 			isOnGround = false,
 			phase = GamePhase.ENTRANCE

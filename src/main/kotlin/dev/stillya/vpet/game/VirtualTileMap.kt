@@ -54,18 +54,20 @@ class VirtualTileMap {
 		}
 	}
 
-	fun rebuildFromDocument(lineCount: Int, lineText: (Int) -> String) {
+	fun rebuildFromDocument(lineCount: Int, lineText: (Int) -> String, colMapper: (Int, Int) -> Int) {
 		rows.clear()
 		extentCache.clear()
 		for (line in 0 until lineCount) {
 			val text = lineText(line)
-			if (text.isNotEmpty()) {
-				val cells = ByteArray(text.length)
-				for (i in text.indices) {
-					cells[i] = if (!text[i].isWhitespace()) Tile.SOLID else Tile.AIR
+			if (text.isEmpty()) continue
+			val lastVisualCol = colMapper(line, text.length - 1)
+			val cells = ByteArray(lastVisualCol + 1)
+			for (i in text.indices) {
+				if (!text[i].isWhitespace()) {
+					cells[colMapper(line, i)] = Tile.SOLID
 				}
-				rows[line] = cells
 			}
+			rows[line] = cells
 		}
 	}
 
