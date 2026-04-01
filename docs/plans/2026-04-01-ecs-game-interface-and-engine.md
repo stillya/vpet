@@ -181,12 +181,12 @@ the animation from `GameEngine` which holds the last `CharacterIntent`.
 
 ### Task 5: Verify acceptance criteria
 
-- [ ] Run `./gradlew test` — all tests pass
-- [ ] Run `./gradlew buildPlugin` — builds without errors
-- [ ] Confirm `AnimatedStatusBarWidget`, `DefaultIconRenderer`, `Animated`, `AnimationEventService` have zero changes (diff check)
-- [ ] `PetAnimated` implements `Animated`, `Character`, and `Game` — all three interfaces coexist cleanly
-- [ ] `GameEngine` is the readable single coordinator for all game-mode logic
-- [ ] `GameController` is a thin adapter (plugin.xml entry point only)
+- [x] Run `./gradlew test` — all tests pass
+- [x] Run `./gradlew buildPlugin` — builds without errors
+- [x] Confirm `AnimatedStatusBarWidget`, `DefaultIconRenderer`, `Animated`, `AnimationEventService` have zero changes (diff check)
+- [x] `PetAnimated` implements `Animated`, `Character`, and `Game` — all three interfaces coexist cleanly
+- [x] `GameEngine` is the readable single coordinator for all game-mode logic
+- [x] `GameController` is a thin adapter (plugin.xml entry point only)
 
 ### Task 6: Update documentation
 
