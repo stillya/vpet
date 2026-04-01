@@ -19,7 +19,8 @@ class EntityRegistry {
 	}
 
 	fun add(id: EntityID, component: Any) {
-		components[id]?.set(component::class, component)
+		require(id in components) { "Entity $id does not exist" }
+		components[id]!!.set(component::class, component)
 	}
 
 	inline fun <reified T : Any> get(id: EntityID): T? =

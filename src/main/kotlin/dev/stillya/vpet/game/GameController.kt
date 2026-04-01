@@ -59,6 +59,7 @@ class GameController(private val project: Project) {
 			gameEngine.start(world, disposable)
 			isGameActive = true
 		} catch (e: Exception) {
+			gameEngine.stop()
 			if (gameStarted) animated.onGameStop()
 			engine = null
 			activeGame = null
