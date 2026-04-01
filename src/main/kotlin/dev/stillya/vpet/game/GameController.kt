@@ -15,6 +15,7 @@ class GameController(private val project: Project) {
 
 	private var engine: GameEngine? = null
 	private var gameDisposable: Disposable? = null
+	private var activeGame: Game? = null
 
 	var isGameActive: Boolean = false
 		private set
@@ -31,7 +32,9 @@ class GameController(private val project: Project) {
 		val disposable = Disposer.newDisposable("vpet-game")
 		gameDisposable = disposable
 
-		val character = project.service<Animated>() as Character
+		val animated = project.service<Animated>()
+		val character = animated as Character
+		val game = animated as Game
 
 		val world = buildInitialWorld(activeEditor)
 
@@ -45,7 +48,9 @@ class GameController(private val project: Project) {
 		)
 
 		engine = gameEngine
+		activeGame = game
 		isGameActive = true
+		game.onGameStart()
 		gameEngine.start(world, disposable)
 	}
 
@@ -53,6 +58,8 @@ class GameController(private val project: Project) {
 		isGameActive = false
 		engine?.stop()
 		engine = null
+		activeGame?.onGameStop()
+		activeGame = null
 		gameDisposable?.let { Disposer.dispose(it) }
 		gameDisposable = null
 	}

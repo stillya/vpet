@@ -143,11 +143,11 @@ game.onGameStop()
 `PetAnimated.onGameStart()` can suspend idle animation scheduling if desired (or be a no-op
 initially). The key point is the contract exists and is called.
 
-- [ ] `GameController` resolves `Game` from the `Animated` service and calls `onGameStart()` / `onGameStop()`
-- [ ] `PetAnimated.onGameStart()` — initial implementation: no-op (hook exists, behavior can be added later)
-- [ ] `PetAnimated.onGameStop()` — initial implementation: no-op
-- [ ] Write tests: `PetAnimatedGameLifecycleTest` — mock setup calling `onGameStart` / `onGameStop`, verify no errors and state is consistent
-- [ ] Run test suite - must pass before Task 4
+- [x] `GameController` resolves `Game` from the `Animated` service and calls `onGameStart()` / `onGameStop()`
+- [x] `PetAnimated.onGameStart()` — initial implementation: no-op (hook exists, behavior can be added later)
+- [x] `PetAnimated.onGameStop()` — initial implementation: no-op
+- [x] Write tests: `PetAnimatedGameLifecycleTest` — mock setup calling `onGameStart` / `onGameStop`, verify no errors and state is consistent
+- [x] Run test suite - must pass before Task 4
 
 ### Task 4: Decouple `GameFrame` — remove `Animation` from physics output
 
