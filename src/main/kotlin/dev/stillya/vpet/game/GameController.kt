@@ -72,14 +72,19 @@ class GameController(private val project: Project) {
 	fun exitGameMode() {
 		if (!isGameActive) return
 		isGameActive = false
+		val engineToStop = engine
+		val gameToStop = activeGame
+		engine = null
+		activeGame = null
 		try {
-			engine?.stop()
-			engine = null
-			activeGame?.onGameStop()
-			activeGame = null
+			engineToStop?.stop()
 		} finally {
-			gameDisposable?.let { Disposer.dispose(it) }
-			gameDisposable = null
+			try {
+				gameToStop?.onGameStop()
+			} finally {
+				gameDisposable?.let { Disposer.dispose(it) }
+				gameDisposable = null
+			}
 		}
 	}
 
