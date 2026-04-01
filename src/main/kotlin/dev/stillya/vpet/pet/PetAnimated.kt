@@ -536,7 +536,10 @@ class PetAnimated(
 		)
 	)
 
-	private fun loadImage(path: String): Image = ImageIO.read(javaClass.getResourceAsStream(path))
+	private fun loadImage(path: String): Image {
+		val stream = requireNotNull(javaClass.getResourceAsStream(path)) { "Resource not found: $path" }
+		return stream.use { ImageIO.read(it) }
+	}
 
 	private fun SequenceRequirement.toEffect(): StateEffect {
 		return StateEffect(
