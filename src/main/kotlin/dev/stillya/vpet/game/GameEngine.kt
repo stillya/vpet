@@ -2,6 +2,7 @@ package dev.stillya.vpet.game
 
 import com.intellij.ide.IdeEventQueue
 import com.intellij.openapi.Disposable
+import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.util.Disposer
 import java.awt.event.ComponentAdapter
@@ -18,6 +19,7 @@ class GameEngine(
 	private var world: World = World()
 	private var timer: Timer? = null
 	private var tileMapSyncer: TileMapSyncer? = null
+
 	private var bugsSpawned = false
 	private var lastTickNanos = 0L
 	private var jumpWasPressed = false
@@ -32,6 +34,7 @@ class GameEngine(
 
 	companion object {
 		private const val TICK_MS = 16
+		private val LOG = logger<GameEngine>()
 	}
 
 	fun start(initialWorld: World, disposable: Disposable) {
@@ -89,11 +92,16 @@ class GameEngine(
 			bugsSpawned = true
 		}
 
-		val (frame, intent) = WorldUpdate.tick(world, input, dt, character ?: return, tileMap, visibleRange)
-		world = frame.world
+		try {
+			val (frame, intent) = WorldUpdate.tick(world, input, dt, character ?: return, tileMap, visibleRange)
+			world = frame.world
 
-		renderer?.update(frame, intent.animation, tileMap)
-		renderer?.repaint()
+			renderer?.update(frame, intent.animation, tileMap)
+			renderer?.repaint()
+		} catch (e: Exception) {
+			LOG.error("Game tick failed, stopping game loop", e)
+			onExit()
+		}
 	}
 
 	fun gatherInput(): InputState {
