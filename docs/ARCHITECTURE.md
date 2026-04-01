@@ -9,7 +9,7 @@ Core loop: **Input → Intent → Physics → Frame → Render**
 ## Data Flow
 
 ```
-GameController.gameTick() [every 16ms]
+GameEngine.tick() [every 16ms, via javax.swing.Timer]
     │
     ├── gatherInput() → InputState(moveDirection, jumpJustPressed)
     │
@@ -25,9 +25,9 @@ GameController.gameTick() [every 16ms]
             ├── 3. advanceFrame(tag, direction, sprite, dt) → SpriteState
             │       Advances animation frame every 96ms regardless of game FPS.
             │
-            └── 4. GameFrame(world, animation, bounds)
+            └── 4. GameFrame(world, bounds)
                     │
-                    └── GameRenderer.update(frame, tileMap) → paintComponent()
+                    └── GameRenderer.update(frame, animation, tileMap) → paintComponent()
                             Maps tile coordinates → editor pixels via logicalPositionToXY.
 ```
 
@@ -113,7 +113,8 @@ CharacterIntent
 
 ### PetAnimated (`PetAnimated.kt`)
 
-Concrete character implementation. Key behavior:
+Concrete character implementation. Implements three interfaces: `Animated` (status bar animation
+control), `Character` (game physics participant), and `Game` (game lifecycle hooks). Key behavior:
 
 **Movement:**
 - Ground: `vx = moveDirection * WALK_SPEED(9.0)`, with exponential friction (`damping=18.0`)
@@ -311,25 +312,56 @@ Listens to `DocumentListener` events. On any edit, rebuilds tile map asynchronou
 
 `logicalPositionToXY` accounts for inlay hints (parameter name hints, type hints). The tile map does not — it uses raw document columns. This means `logicalToX(lineA, col)` may produce different pixel X than `logicalToX(lineB, col)` if the lines have different inlay hints. Causes visual teleportation when the pet changes lines.
 
-## Game Controller
+## Game System
 
-### GameController (`GameController.kt`)
+### Game (`Game.kt`)
 
-Project-scoped service. Casey Muratori-style fixed-timestep loop via `javax.swing.Timer` at 16ms.
+Interface defining lifecycle hooks for game mode participants:
+
+```kotlin
+interface Game {
+    fun onGameStart()
+    fun onGameStop()
+}
+```
+
+`PetAnimated` implements `Game`. `onGameStart()` is called when game mode is entered;
+`onGameStop()` is called on exit. These hooks are purely additive — the status bar flow is
+untouched.
+
+### GameEngine (`GameEngine.kt`)
+
+Coordinator for all game-mode logic. Owns the game loop (`javax.swing.Timer` at 16ms),
+input gathering, world tick, and renderer updates.
 
 **Lifecycle:**
-1. `enterGameMode()` — spawns pet at caret position with `ENTRANCE` phase, overlays renderer, starts timer
-2. `gameTick()` — calculates dt, gathers input, calls `WorldUpdate.tick`, updates renderer
-3. `exitGameMode()` — stops timer, removes overlay, disposes resources
+1. `start(disposable)` — spawns pet at caret position with `ENTRANCE` phase, sets up key
+   dispatcher, starts timer
+2. `tick()` — calculates dt, gathers input, calls `WorldUpdate.tick`, updates renderer
+3. `stop()` — stops timer, removes key dispatcher, disposes resources
 
 **Input handling:**
 - `IdeEventQueue.EventDispatcher` intercepts keyboard events
 - Arrow keys → moveDirection, Space → jump, Escape → exit
 - Events consumed to prevent IDE shortcut interference
 
-**Visible range:**
-- Uses document bounds (`0..lastDocumentLine`), not viewport bounds
-- Prevents pet from being dragged when user scrolls
+### GameController (`GameController.kt`)
+
+Thin plugin.xml adapter. Project-scoped service that creates and delegates to `GameEngine`:
+
+```kotlin
+// enterGameMode():
+val game = animated as Game
+game.onGameStart()
+engine = GameEngine(project, editor, character, renderer)
+engine.start(disposable)
+
+// exitGameMode():
+engine.stop()
+game.onGameStop()
+```
+
+All game-loop logic lives in `GameEngine`. `GameController` is the IntelliJ entry point only.
 
 ## Math Reference
 

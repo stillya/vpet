@@ -43,7 +43,8 @@ Developer Activity → Event Listeners → Animation State Machine → Sprite Re
 
 **Graphics System**
 
-- `PetAnimated`: Main animation controller with state machine for pet behaviors
+- `PetAnimated`: Main animation controller with state machine for pet behaviors; implements
+  `Animated` (status bar), `Character` (game physics), and `Game` (game lifecycle hooks)
 - `DefaultIconRenderer`: Renders sprite sheet frames into Swing Icons with animation queue
   management
 - `Animation`: Data class representing animation sequences with looping and chaining
@@ -60,6 +61,16 @@ Developer Activity → Event Listeners → Animation State Machine → Sprite Re
 - `BuildEventListener`: Captures ProjectTaskListener and ExecutionListener events
 - `AnimationEventService`: Service broadcasting animation events to widgets
 - `AnimationEventListener`: Interface for animation state change listeners
+
+**Game System**
+
+- `Game`: Interface defining game lifecycle hooks (`onGameStart()`, `onGameStop()`) for
+  participants in game mode
+- `GameEngine`: Coordinator owning the game loop (Timer at 16ms), input gathering, world
+  tick (`WorldUpdate.tick()`), and renderer updates — replaces inline logic from
+  `GameController`
+- `GameController`: Thin plugin.xml adapter; creates and delegates to `GameEngine` on
+  `enterGameMode()` / `exitGameMode()`
 
 ### Animation State Machine
 

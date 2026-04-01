@@ -195,6 +195,6 @@ the animation from `GameEngine` which holds the last `CharacterIntent`.
 - Modify: `docs/ARCHITECTURE.md`
 - Move: this plan to `docs/plans/completed/`
 
-- [ ] Update `CLAUDE.md` Architecture section: `PetAnimated` implements `Animated + Character + Game`, `GameEngine` as coordinator, `Game` interface purpose
-- [ ] Update `docs/ARCHITECTURE.md` to reflect `Game` interface and `GameEngine` in the flow diagram
-- [ ] Move this plan file to `docs/plans/completed/`
+- [x] Update `CLAUDE.md` Architecture section: `PetAnimated` implements `Animated + Character + Game`, `GameEngine` as coordinator, `Game` interface purpose
+- [x] Update `docs/ARCHITECTURE.md` to reflect `Game` interface and `GameEngine` in the flow diagram
+- [x] Move this plan file to `docs/plans/completed/`
