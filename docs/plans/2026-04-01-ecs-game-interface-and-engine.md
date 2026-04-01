@@ -172,12 +172,12 @@ data class GameFrame(val world: World, val bounds: IntRange)
 `WorldUpdate.tick()` returns `GameFrame` (no animation), and `GameRenderer.update()` receives
 the animation from `GameEngine` which holds the last `CharacterIntent`.
 
-- [ ] Remove `animation: Animation` field from `GameFrame`
-- [ ] Update `WorldUpdate.tick()` return — `GameFrame` no longer carries animation
-- [ ] Update `GameEngine.tick()` to pass animation from `CharacterIntent` to `GameRenderer.update()`
-- [ ] Update `GameRenderer.update()` signature if needed to accept animation separately
-- [ ] Write tests: `WorldUpdateTest` — verify `GameFrame` no longer contains animation, world state transitions correct
-- [ ] Run test suite - must pass before Task 5
+- [x] Remove `animation: Animation` field from `GameFrame`
+- [x] Update `WorldUpdate.tick()` return — `GameFrame` no longer carries animation
+- [x] Update `GameEngine.tick()` to pass animation from `CharacterIntent` to `GameRenderer.update()`
+- [x] Update `GameRenderer.update()` signature if needed to accept animation separately
+- [x] Write tests: `WorldUpdateTest` — verify `GameFrame` no longer contains animation, world state transitions correct
+- [x] Run test suite - must pass before Task 5
 
 ### Task 5: Verify acceptance criteria
 

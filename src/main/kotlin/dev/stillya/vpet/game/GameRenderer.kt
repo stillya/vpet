@@ -34,11 +34,11 @@ class GameRenderer(
 		isOpaque = false
 	}
 
-	fun update(frame: GameFrame, tileMap: VirtualTileMap) {
+	fun update(frame: GameFrame, animation: Animation, tileMap: VirtualTileMap) {
 		this.world = frame.world
 		this.tileMap = tileMap
 		this.currentBounds = frame.bounds
-		this.currentAnimation = frame.animation
+		this.currentAnimation = animation
 	}
 
 	override fun contains(x: Int, y: Int): Boolean = false

@@ -85,10 +85,10 @@ class GameEngine(
 			bugsSpawned = true
 		}
 
-		val frame = WorldUpdate.tick(world, input, dt, character!!, tileMap, visibleRange)
+		val (frame, intent) = WorldUpdate.tick(world, input, dt, character!!, tileMap, visibleRange)
 		world = frame.world
 
-		renderer!!.update(frame, tileMap)
+		renderer!!.update(frame, intent.animation, tileMap)
 		renderer.repaint()
 	}
 

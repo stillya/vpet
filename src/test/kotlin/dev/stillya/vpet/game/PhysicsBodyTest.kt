@@ -82,7 +82,7 @@ class PhysicsBodyTest {
 		dt: Float = DT,
 		lastVisibleLine: Int = 20
 	): World =
-		WorldUpdate.tick(world, input, dt, testCharacter, tileMap, 0..lastVisibleLine).world
+		WorldUpdate.tick(world, input, dt, testCharacter, tileMap, 0..lastVisibleLine).first.world
 
 	private fun worldAt(
 		x: Float = 0f,

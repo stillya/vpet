@@ -1,11 +1,9 @@
 package dev.stillya.vpet.game
 
-import dev.stillya.vpet.animation.Animation
 import dev.stillya.vpet.animation.Direction
 
 data class GameFrame(
 	val world: World,
-	val animation: Animation,
 	val bounds: IntRange
 )
 
@@ -20,7 +18,7 @@ object WorldUpdate {
 		character: Character,
 		tileMap: VirtualTileMap,
 		visibleRange: IntRange
-	): GameFrame {
+	): Pair<GameFrame, CharacterIntent> {
 		val reg = world.registry
 		val playerId = world.player
 
@@ -63,7 +61,7 @@ object WorldUpdate {
 		reg.flushRemovals()
 
 		val newWorld = world.copy(score = world.score + scoreGain)
-		return GameFrame(newWorld, intent.animation, physics.boundsAt(result.transform))
+		return Pair(GameFrame(newWorld, physics.boundsAt(result.transform)), intent)
 	}
 
 	private fun advanceFrame(tag: String, direction: Direction, prev: SpriteState, dt: Float): SpriteState {
