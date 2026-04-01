@@ -49,9 +49,9 @@ class GameController(private val project: Project) {
 
 		engine = gameEngine
 		activeGame = game
-		game.onGameStart()
 		gameEngine.start(world, disposable)
 		isGameActive = true
+		game.onGameStart()
 	}
 
 	fun exitGameMode() {

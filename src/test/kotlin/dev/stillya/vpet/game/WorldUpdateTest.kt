@@ -146,5 +146,39 @@ class WorldUpdateTest {
 
 		assertEquals(0, frame.world.sprite.frameIndex)
 	}
+
+	@Test
+	fun `entrance phase transitions to playing when player lands on ground`() {
+		val reg = EntityRegistry()
+		val player = reg.create()
+		reg.add(player, Transform(0f, 0f))
+		reg.add(player, Velocity(0f, 0f))
+		reg.add(player, PhysicsState(isOnGround = true))
+		reg.add(player, SpriteState(tag = "Idle"))
+		reg.add(player, PhaseState(GamePhase.ENTRANCE))
+		reg.add(player, AABB(2, 2))
+		val world = World(registry = reg, player = player)
+
+		val (frame, _) = WorldUpdate.tick(world, InputState(), 0.016f, testCharacter, tileMap, 0..10)
+
+		assertEquals(GamePhase.PLAYING, frame.world.phase)
+	}
+
+	@Test
+	fun `entrance phase is preserved while player is airborne`() {
+		val reg = EntityRegistry()
+		val player = reg.create()
+		reg.add(player, Transform(0f, -5f))
+		reg.add(player, Velocity(0f, 5f))
+		reg.add(player, PhysicsState(isOnGround = false))
+		reg.add(player, SpriteState(tag = "Idle"))
+		reg.add(player, PhaseState(GamePhase.ENTRANCE))
+		reg.add(player, AABB(2, 2))
+		val world = World(registry = reg, player = player)
+
+		val (frame, _) = WorldUpdate.tick(world, InputState(), 0.016f, testCharacter, tileMap, 0..10)
+
+		assertEquals(GamePhase.ENTRANCE, frame.world.phase)
+	}
 }
 
