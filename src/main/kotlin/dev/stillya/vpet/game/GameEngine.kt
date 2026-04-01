@@ -38,6 +38,7 @@ class GameEngine(
 	}
 
 	fun start(initialWorld: World, disposable: Disposable) {
+		require(timer == null) { "GameEngine already started" }
 		requireNotNull(editor) { "GameEngine requires a non-null editor" }
 		requireNotNull(renderer) { "GameEngine requires a non-null renderer" }
 		requireNotNull(character) { "GameEngine requires a non-null character" }

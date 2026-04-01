@@ -16,6 +16,7 @@ class EntityRegistry {
 
 	fun destroy(id: EntityID) {
 		components.remove(id)
+		pendingRemovals.remove(id)
 	}
 
 	fun add(id: EntityID, component: Any) {
