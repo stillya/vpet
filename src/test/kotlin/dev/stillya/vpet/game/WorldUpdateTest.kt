@@ -15,7 +15,6 @@ class WorldUpdateTest {
 	private lateinit var tileMap: VirtualTileMap
 
 	private val testCharacter = object : Character {
-		override fun id() = EntityID("test")
 		override fun collider() = AABB(width = 2, height = 2)
 		override fun update(input: InputState, ctx: TickContext, dt: Float): CharacterIntent {
 			val vx = when {

@@ -25,7 +25,7 @@ object BugSpawner {
 
 		candidates.shuffled(Random).take(count).forEach { (col, groundLine) ->
 			val bug = registry.create()
-			registry.add(bug, Transform(col.toFloat(), groundLine.toFloat()))
+			registry.add(bug, Transform(col.toFloat(), (groundLine - 1).toFloat()))
 			registry.add(bug, AABB(1, 1))
 			registry.add(bug, Collectible())
 			registry.add(bug, BugVisual(BugColor.entries[Random.nextInt(BugColor.entries.size)]))

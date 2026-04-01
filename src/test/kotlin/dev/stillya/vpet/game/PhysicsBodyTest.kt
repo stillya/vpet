@@ -18,8 +18,6 @@ class PhysicsBodyTest {
 		val walkSpeed = 9.0f
 		val jumpVelocity = -15.6f
 
-		override fun id() = EntityID("test")
-
 		override fun collider() = AABB(width = 2, height = 2)
 
 		override fun update(input: InputState, ctx: TickContext, dt: Float): CharacterIntent {
