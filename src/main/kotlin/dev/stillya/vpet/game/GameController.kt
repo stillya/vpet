@@ -33,8 +33,11 @@ class GameController(private val project: Project) {
 		gameDisposable = disposable
 
 		val animated = project.service<Animated>()
-		val character = animated as Character
-		val game = animated as Game
+		if (animated !is Character || animated !is Game) {
+			Disposer.dispose(disposable)
+			gameDisposable = null
+			return
+		}
 
 		val world = buildInitialWorld(activeEditor)
 
@@ -42,16 +45,24 @@ class GameController(private val project: Project) {
 
 		val gameEngine = GameEngine(
 			editor = activeEditor,
-			character = character,
+			character = animated,
 			renderer = renderer,
 			onExit = { exitGameMode() },
 		)
 
 		engine = gameEngine
-		activeGame = game
-		gameEngine.start(world, disposable)
-		isGameActive = true
-		game.onGameStart()
+		activeGame = animated
+		try {
+			animated.onGameStart()
+			gameEngine.start(world, disposable)
+			isGameActive = true
+		} catch (e: Exception) {
+			engine = null
+			activeGame = null
+			Disposer.dispose(disposable)
+			gameDisposable = null
+			throw e
+		}
 	}
 
 	fun exitGameMode() {

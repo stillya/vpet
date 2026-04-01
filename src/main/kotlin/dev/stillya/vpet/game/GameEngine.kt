@@ -35,16 +35,20 @@ class GameEngine(
 	}
 
 	fun start(initialWorld: World, disposable: Disposable) {
+		requireNotNull(editor) { "GameEngine requires a non-null editor" }
+		requireNotNull(renderer) { "GameEngine requires a non-null renderer" }
+		requireNotNull(character) { "GameEngine requires a non-null character" }
+
 		world = initialWorld
 
-		val syncer = TileMapSyncer(editor!!)
+		val syncer = TileMapSyncer(editor)
 		Disposer.register(disposable, syncer)
 		syncer.start()
 		tileMapSyncer = syncer
 
 		val cc = editor.contentComponent
 		cc.add(renderer)
-		renderer!!.setBounds(0, 0, cc.width, cc.height)
+		renderer.setBounds(0, 0, cc.width, cc.height)
 		cc.addComponentListener(resizeListener)
 
 		registerKeyDispatcher(disposable)
@@ -77,7 +81,7 @@ class GameEngine(
 
 		val input = gatherInput()
 
-		val lastDocumentLine = (editor!!.document.lineCount - 1).coerceAtLeast(0)
+		val lastDocumentLine = ((editor?.document?.lineCount ?: 1) - 1).coerceAtLeast(0)
 		val visibleRange = 0..lastDocumentLine
 
 		if (!bugsSpawned) {
@@ -85,11 +89,11 @@ class GameEngine(
 			bugsSpawned = true
 		}
 
-		val (frame, intent) = WorldUpdate.tick(world, input, dt, character!!, tileMap, visibleRange)
+		val (frame, intent) = WorldUpdate.tick(world, input, dt, character ?: return, tileMap, visibleRange)
 		world = frame.world
 
-		renderer!!.update(frame, intent.animation, tileMap)
-		renderer.repaint()
+		renderer?.update(frame, intent.animation, tileMap)
+		renderer?.repaint()
 	}
 
 	fun gatherInput(): InputState {
