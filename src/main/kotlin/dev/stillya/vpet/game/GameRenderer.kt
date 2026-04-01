@@ -61,6 +61,8 @@ class GameRenderer(
 		// TODO: Enable debug render with a toggle
 //		drawDebug(g2d, lineHeight, groundLine, groundY)
 
+		renderBugs(g2d, lineHeight)
+
 		val animation = currentAnimation ?: return
 		val tag = world.sprite.tag
 		val frames = if (world.sprite.direction.isLeft()) {
@@ -109,6 +111,43 @@ class GameRenderer(
 		val tx = AffineTransform.getScaleInstance(-1.0, 1.0)
 		tx.translate(-image.width.toDouble(), 0.0)
 		return AffineTransformOp(tx, AffineTransformOp.TYPE_NEAREST_NEIGHBOR).filter(image, null)
+	}
+
+	private fun renderBugs(g2d: Graphics2D, lineHeight: Int) {
+		val reg = world.registry
+		val bugs = reg.allWith(BugVisual::class, Transform::class)
+
+		for (id in bugs) {
+			val t = reg.get<Transform>(id) ?: continue
+			val visual = reg.get<BugVisual>(id) ?: continue
+
+			val bugLine = kotlin.math.floor(t.y).toInt()
+			val lineFrac = t.y - bugLine
+			val baseY = editor.logicalPositionToXY(LogicalPosition(bugLine, 0)).y
+			val pixelY = baseY + (lineFrac * lineHeight).toInt()
+			val pixelX = colToPixelX(t.x)
+			val cellW = colToPixelX(t.x + 1) - pixelX
+
+			val color = when (visual.color) {
+				BugColor.RED -> Color(220, 50, 50)
+				BugColor.BLUE -> Color(50, 100, 220)
+				BugColor.GREEN -> Color(50, 200, 80)
+			}
+
+			val cx = pixelX + cellW / 2
+			val cy = pixelY + lineHeight / 2
+			val r = (lineHeight.coerceAtMost(cellW) / 2 - 1).coerceAtLeast(2)
+
+			val diamond = java.awt.Polygon(
+				intArrayOf(cx, cx + r, cx, cx - r),
+				intArrayOf(cy - r, cy, cy + r, cy),
+				4
+			)
+			g2d.color = color
+			g2d.fillPolygon(diamond)
+			g2d.color = color.darker()
+			g2d.drawPolygon(diamond)
+		}
 	}
 
 	private fun drawDebug(g2d: Graphics2D, lineHeight: Int, groundLine: Int, groundY: Int) {

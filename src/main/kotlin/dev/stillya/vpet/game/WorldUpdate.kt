@@ -11,6 +11,8 @@ data class GameFrame(
 
 object WorldUpdate {
 
+	private val spatialGrid = SpatialGrid()
+
 	fun tick(
 		world: World,
 		input: InputState,
@@ -19,29 +21,48 @@ object WorldUpdate {
 		tileMap: VirtualTileMap,
 		visibleRange: IntRange
 	): GameFrame {
+		val reg = world.registry
+		val playerId = world.player
+
+		val transform = reg.get<Transform>(playerId) ?: Transform()
+		val velocity = reg.get<Velocity>(playerId) ?: Velocity()
+		val physState = reg.get<PhysicsState>(playerId) ?: PhysicsState()
+		val sprite = reg.get<SpriteState>(playerId) ?: SpriteState()
+		val phaseState = reg.get<PhaseState>(playerId) ?: PhaseState()
+
 		val ctx = TickContext(
-			transform = world.transform,
-			velocity = world.velocity,
-			isOnGround = world.isOnGround,
-			sprite = world.sprite,
-			phase = world.phase
+			transform = transform,
+			velocity = velocity,
+			isOnGround = physState.isOnGround,
+			sprite = sprite,
+			phase = phaseState.phase
 		)
 		val intent = character.update(input, ctx, dt)
 
 		val physics = PhysicsBody(character.collider())
 		val result = physics.moveAndSlide(
-			ctx.transform, intent.velocity, tileMap, visibleRange, dt
+			transform, intent.velocity, tileMap, visibleRange, dt
 		)
 
-		val sprite = advanceFrame(intent.animation.name, intent.direction, world.sprite, dt)
+		val newSprite = advanceFrame(intent.animation.name, intent.direction, sprite, dt)
 
-		val newWorld = World(
-			transform = result.transform,
-			velocity = result.velocity,
-			isOnGround = result.isOnGround,
-			sprite = sprite,
-			phase = intent.phase
-		)
+		reg.add(playerId, result.transform)
+		reg.add(playerId, result.velocity)
+		reg.add(playerId, PhysicsState(result.isOnGround))
+		reg.add(playerId, newSprite)
+		reg.add(playerId, PhaseState(intent.phase))
+
+		spatialGrid.rebuild(reg)
+		val collected = CollisionSystem.detectCollections(reg, playerId, spatialGrid)
+		var scoreGain = 0
+		for (id in collected) {
+			val collectible = reg.get<Collectible>(id)
+			if (collectible != null) scoreGain += collectible.value
+			reg.markForRemoval(id)
+		}
+		reg.flushRemovals()
+
+		val newWorld = world.copy(score = world.score + scoreGain)
 		return GameFrame(newWorld, intent.animation, physics.boundsAt(result.transform))
 	}
 

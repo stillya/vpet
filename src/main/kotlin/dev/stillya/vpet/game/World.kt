@@ -3,14 +3,32 @@ package dev.stillya.vpet.game
 import kotlin.math.floor
 
 data class World(
-	val transform: Transform = Transform(),
-	val velocity: Velocity = Velocity(),
-	val isOnGround: Boolean = true,
-	val sprite: SpriteState = SpriteState(),
-	val phase: GamePhase = GamePhase.PLAYING
+	val registry: EntityRegistry = EntityRegistry(),
+	val player: EntityID = EntityID(""),
+	val score: Int = 0
 ) {
+	val transform: Transform get() = playerTransform()
+	val velocity: Velocity get() = playerVelocity()
+	val isOnGround: Boolean get() = playerPhysicsState().isOnGround
+	val sprite: SpriteState get() = playerSprite()
+	val phase: GamePhase get() = playerPhaseState().phase
 	val displayLine: Int get() = floor(transform.y).toInt()
 }
+
+fun World.playerTransform(): Transform =
+	registry.get<Transform>(player) ?: Transform()
+
+fun World.playerVelocity(): Velocity =
+	registry.get<Velocity>(player) ?: Velocity()
+
+fun World.playerSprite(): SpriteState =
+	registry.get<SpriteState>(player) ?: SpriteState()
+
+fun World.playerPhysicsState(): PhysicsState =
+	registry.get<PhysicsState>(player) ?: PhysicsState()
+
+fun World.playerPhaseState(): PhaseState =
+	registry.get<PhaseState>(player) ?: PhaseState()
 
 enum class GamePhase { ENTRANCE, PLAYING }
 

@@ -109,13 +109,13 @@ readable function — no statefulness beyond `world`, `lastTickNanos`, `keysHeld
 `GameController.enterGameMode()` becomes: instantiate `GameEngine`, call `engine.start()`.
 `exitGameMode()` calls `engine.stop()`. All 100+ lines of logic move out of `GameController`.
 
-- [ ] Create `GameEngine.kt` with `start()`, `stop()`, `tick()`, `gatherInput()`, key dispatcher setup
-- [ ] Move `gameTick()` logic verbatim into `GameEngine.tick()` (no behavior change)
-- [ ] Move `gatherInput()` and key dispatcher into `GameEngine`
-- [ ] Move `resizeListener`, `TileMapSyncer`, `BugSpawner` usage into `GameEngine`
-- [ ] `GameController.enterGameMode()` creates and starts a `GameEngine`; `exitGameMode()` stops it
-- [ ] Write tests: `GameEngineTest` — verify `start()`/`stop()` lifecycle, `gatherInput()` with mocked key state
-- [ ] Run test suite - must pass before Task 3
+- [x] Create `GameEngine.kt` with `start()`, `stop()`, `tick()`, `gatherInput()`, key dispatcher setup
+- [x] Move `gameTick()` logic verbatim into `GameEngine.tick()` (no behavior change)
+- [x] Move `gatherInput()` and key dispatcher into `GameEngine`
+- [x] Move `resizeListener`, `TileMapSyncer`, `BugSpawner` usage into `GameEngine`
+- [x] `GameController.enterGameMode()` creates and starts a `GameEngine`; `exitGameMode()` stops it
+- [x] Write tests: `GameEngineTest` — verify `start()`/`stop()` lifecycle, `gatherInput()` with mocked key state
+- [x] Run test suite - must pass before Task 3
 
 ### Task 3: Wire `PetAnimated` as `Game` into `GameController`/`GameEngine`
 
