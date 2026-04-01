@@ -155,6 +155,6 @@ build/distributions/vpet-{version}.zip
 
 - **No Documentation Changes**: Do not modify README.md unless explicitly requested
 - **No Asset Creation**: Focus on code, not creating new sprite sheets
-- **No Direct Timer Usage**: Always use Flow/coroutines for animation timing
+- **No Direct Timer Usage in Status Bar**: Use Flow/coroutines for animation timing in the status bar widget path. `GameEngine` uses `javax.swing.Timer` for its game loop — this is intentional and confined to `GameEngine`.
 - **No Manual Service Registration**: Services auto-discovered via annotations and
   plugin.xml

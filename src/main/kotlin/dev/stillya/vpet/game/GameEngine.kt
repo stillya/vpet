@@ -57,14 +57,14 @@ class GameEngine(
 	fun stop() {
 		timer?.stop()
 		timer = null
-		val cc = editor!!.contentComponent
+		keysHeld.clear()
+		jumpWasPressed = false
+		bugsSpawned = false
+		tileMapSyncer = null
+		val cc = editor?.contentComponent ?: return
 		cc.remove(renderer)
 		cc.removeComponentListener(resizeListener)
 		cc.repaint()
-		tileMapSyncer = null
-		bugsSpawned = false
-		keysHeld.clear()
-		jumpWasPressed = false
 		cc.requestFocusInWindow()
 	}
 

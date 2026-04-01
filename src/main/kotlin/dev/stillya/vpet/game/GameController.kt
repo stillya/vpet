@@ -49,19 +49,23 @@ class GameController(private val project: Project) {
 
 		engine = gameEngine
 		activeGame = game
-		isGameActive = true
 		game.onGameStart()
 		gameEngine.start(world, disposable)
+		isGameActive = true
 	}
 
 	fun exitGameMode() {
+		if (!isGameActive) return
 		isGameActive = false
-		engine?.stop()
-		engine = null
-		activeGame?.onGameStop()
-		activeGame = null
-		gameDisposable?.let { Disposer.dispose(it) }
-		gameDisposable = null
+		try {
+			engine?.stop()
+			engine = null
+			activeGame?.onGameStop()
+			activeGame = null
+		} finally {
+			gameDisposable?.let { Disposer.dispose(it) }
+			gameDisposable = null
+		}
 	}
 
 	private fun buildInitialWorld(editor: Editor): World {

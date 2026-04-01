@@ -1,11 +1,10 @@
 package dev.stillya.vpet.game
 
-import java.util.concurrent.ConcurrentHashMap
 import kotlin.math.floor
 
 class SpatialGrid(private val cellSize: Int = 4) {
 
-	private val cells = ConcurrentHashMap<Long, ConcurrentHashMap.KeySetView<EntityID, Boolean>>()
+	private val cells = HashMap<Long, MutableSet<EntityID>>()
 
 	fun rebuild(registry: EntityRegistry) {
 		cells.clear()
@@ -45,7 +44,7 @@ class SpatialGrid(private val cellSize: Int = 4) {
 
 		for (cx in minCx..maxCx) {
 			for (cy in minCy..maxCy) {
-				cells.computeIfAbsent(key(cx, cy)) { ConcurrentHashMap.newKeySet() }.add(id)
+				cells.computeIfAbsent(key(cx, cy)) { mutableSetOf() }.add(id)
 			}
 		}
 	}

@@ -9,8 +9,6 @@ data class GameFrame(
 
 object WorldUpdate {
 
-	private val spatialGrid = SpatialGrid()
-
 	fun tick(
 		world: World,
 		input: InputState,
@@ -22,11 +20,11 @@ object WorldUpdate {
 		val reg = world.registry
 		val playerId = world.player
 
-		val transform = reg.get<Transform>(playerId) ?: Transform()
-		val velocity = reg.get<Velocity>(playerId) ?: Velocity()
-		val physState = reg.get<PhysicsState>(playerId) ?: PhysicsState()
-		val sprite = reg.get<SpriteState>(playerId) ?: SpriteState()
-		val phaseState = reg.get<PhaseState>(playerId) ?: PhaseState()
+		val transform = reg.get<Transform>(playerId) ?: error("player missing Transform")
+		val velocity = reg.get<Velocity>(playerId) ?: error("player missing Velocity")
+		val physState = reg.get<PhysicsState>(playerId) ?: error("player missing PhysicsState")
+		val sprite = reg.get<SpriteState>(playerId) ?: error("player missing SpriteState")
+		val phaseState = reg.get<PhaseState>(playerId) ?: error("player missing PhaseState")
 
 		val ctx = TickContext(
 			transform = transform,
@@ -50,6 +48,7 @@ object WorldUpdate {
 		reg.add(playerId, newSprite)
 		reg.add(playerId, PhaseState(intent.phase))
 
+		val spatialGrid = SpatialGrid()
 		spatialGrid.rebuild(reg)
 		val collected = CollisionSystem.detectCollections(reg, playerId, spatialGrid)
 		var scoreGain = 0
