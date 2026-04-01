@@ -9,6 +9,8 @@ data class GameFrame(
 
 object WorldUpdate {
 
+	private val spatialGrid = SpatialGrid()
+
 	fun tick(
 		world: World,
 		input: InputState,
@@ -48,7 +50,6 @@ object WorldUpdate {
 		reg.add(playerId, newSprite)
 		reg.add(playerId, PhaseState(intent.phase))
 
-		val spatialGrid = SpatialGrid()
 		spatialGrid.rebuild(reg)
 		val collected = CollisionSystem.detectCollections(reg, playerId, spatialGrid)
 		var scoreGain = 0

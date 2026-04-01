@@ -53,12 +53,13 @@ class GameController(private val project: Project) {
 		engine = gameEngine
 		activeGame = animated
 		var gameStarted = false
+		isGameActive = true
 		try {
 			animated.onGameStart()
 			gameStarted = true
 			gameEngine.start(world, disposable)
-			isGameActive = true
 		} catch (e: Exception) {
+			isGameActive = false
 			gameEngine.stop()
 			if (gameStarted) animated.onGameStop()
 			engine = null
