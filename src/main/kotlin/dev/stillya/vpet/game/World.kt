@@ -4,7 +4,7 @@ import kotlin.math.floor
 
 data class World(
 	val registry: EntityRegistry = EntityRegistry(),
-	val player: EntityID = EntityID(""),
+	val player: EntityID = registry.create(),
 	val score: Int = 0
 ) {
 	val transform: Transform get() = playerTransform()

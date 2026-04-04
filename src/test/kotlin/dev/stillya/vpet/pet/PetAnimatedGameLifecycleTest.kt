@@ -10,6 +10,7 @@ import dev.stillya.vpet.IconRenderer
 import dev.stillya.vpet.config.AsepriteJsonAtlasLoader
 import dev.stillya.vpet.game.Character
 import dev.stillya.vpet.game.Game
+import dev.stillya.vpet.game.GameCharacter
 import org.junit.Test
 
 class PetAnimatedGameLifecycleTest : LightPlatform4TestCase() {
@@ -38,6 +39,7 @@ class PetAnimatedGameLifecycleTest : LightPlatform4TestCase() {
         val animated: Animated = project.service<Animated>()
         assertTrue("PetAnimated should implement Character", animated is Character)
         assertTrue("PetAnimated should implement Game", animated is Game)
+        assertTrue("PetAnimated should implement GameCharacter", animated is GameCharacter)
     }
 
     @Test

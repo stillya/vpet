@@ -34,9 +34,9 @@ class GameController(private val project: Project) {
 		val disposable = Disposer.newDisposable("vpet-game")
 		gameDisposable = disposable
 
-		val animated = project.service<Animated>()
-		if (animated !is Character || animated !is Game) {
-			thisLogger().warn("Cannot enter game mode: Animated service must implement both Character and Game interfaces")
+		val animated = project.service<Animated>() as? GameCharacter
+		if (animated == null) {
+			thisLogger().warn("Cannot enter game mode: Animated service must implement GameCharacter")
 			Disposer.dispose(disposable)
 			gameDisposable = null
 			return

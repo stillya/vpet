@@ -8,18 +8,6 @@ import kotlin.math.sqrt
 
 data class AABB(val width: Int, val height: Int = 2)
 
-fun overlaps(aPos: Transform, a: AABB, bPos: Transform, b: AABB): Boolean {
-	val ax = floor(aPos.x).toInt()
-	val ay = floor(aPos.y).toInt() - (a.height - 1)
-	val bx = floor(bPos.x).toInt()
-	val by = floor(bPos.y).toInt() - (b.height - 1)
-
-	return ax < bx + b.width &&
-		ax + a.width > bx &&
-		ay < by + b.height &&
-		ay + a.height > by
-}
-
 data class PhysicsResult(
 	val transform: Transform,
 	val velocity: Velocity,

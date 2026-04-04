@@ -8,8 +8,8 @@ import dev.stillya.vpet.Animated
 import dev.stillya.vpet.AtlasLoader
 import dev.stillya.vpet.IconRenderer
 import dev.stillya.vpet.config.AsepriteJsonAtlasLoader
-import dev.stillya.vpet.pet.IconRendererSpy
 import dev.stillya.vpet.pet.PetAnimated
+import dev.stillya.vpet.pet.IconRendererSpy
 import org.junit.Test
 
 class GameInterfaceTest : LightPlatform4TestCase() {
@@ -37,6 +37,12 @@ class GameInterfaceTest : LightPlatform4TestCase() {
     fun `PetAnimated can be cast to Game`() {
         val animated: Animated = project.service<Animated>()
         assertTrue("PetAnimated should implement Game", animated is Game)
+    }
+
+    @Test
+    fun `Animated service can be resolved as GameCharacter`() {
+        val animated = project.service<Animated>()
+        assertTrue("PetAnimated should implement GameCharacter", animated is GameCharacter)
     }
 
     @Test

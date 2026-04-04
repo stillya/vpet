@@ -12,6 +12,7 @@ import dev.stillya.vpet.game.AABB
 import dev.stillya.vpet.game.Character
 import dev.stillya.vpet.game.CharacterIntent
 import dev.stillya.vpet.game.Game
+import dev.stillya.vpet.game.GameCharacter
 import dev.stillya.vpet.game.GamePhase
 import dev.stillya.vpet.game.InputState
 import dev.stillya.vpet.game.Physics
@@ -30,7 +31,7 @@ import kotlin.random.Random
 
 class PetAnimated(
 	private val project: Project,
-) : Animated, Character, Game {
+) : GameCharacter {
 	private val atlasLoader: AtlasLoader
 		get() = service<AtlasLoader>()
 	private val renderer: IconRenderer
