@@ -65,13 +65,13 @@ Replace the existing diamond-placeholder collectible bugs with animated coin col
 **Files:**
 - Modify: `src/main/kotlin/dev/stillya/vpet/game/GameRenderer.kt`
 
-- [ ] Add lazily-initialized `coinFrames: List<BufferedImage>` that loads coin sprite via `AsepriteJsonAtlasLoader` + `SpriteSheet`, extracting the `"coin"` tag frames
-- [ ] Replace `renderBugs()` with `renderCoins()`: draw coin sprite frame scaled to `lineHeight` at each coin's world position
-- [ ] Use a simple frame counter for animation cycling if multiple frames; otherwise use frame 0
-- [ ] Remove all `BugVisual`, `BugColor`, and diamond polygon rendering code
-- [ ] Keep a fallback colored square if `coinFrames` is empty (defensive)
-- [ ] Write test verifying `coinFrames` loads non-empty from the atlas
-- [ ] Run `./gradlew test` — must pass
+- [x] Add lazily-initialized `coinFrames: List<BufferedImage>` that loads coin sprite via `AsepriteJsonAtlasLoader` + `SpriteSheet`, extracting the `"coin"` tag frames
+- [x] Replace `renderBugs()` with `renderCoins()`: draw coin sprite frame scaled to `lineHeight` at each coin's world position
+- [x] Use a simple frame counter for animation cycling if multiple frames; otherwise use frame 0
+- [x] Remove all `BugVisual`, `BugColor`, and diamond polygon rendering code
+- [x] Keep a fallback colored square if `coinFrames` is empty (defensive)
+- [x] Write test verifying `coinFrames` loads non-empty from the atlas
+- [x] Run `./gradlew test` — must pass
 
 ### Task 4: Create CoinCollectedListener Topic and Expose Score on Game Exit
 

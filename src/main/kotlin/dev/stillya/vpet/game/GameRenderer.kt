@@ -4,6 +4,8 @@ import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.editor.LogicalPosition
 import dev.stillya.vpet.animation.Animation
 import dev.stillya.vpet.animation.INFINITE
+import dev.stillya.vpet.config.AsepriteJsonAtlasLoader
+import dev.stillya.vpet.graphics.create
 import java.awt.BasicStroke
 import java.awt.Color
 import java.awt.Graphics
@@ -12,6 +14,7 @@ import java.awt.RenderingHints
 import java.awt.geom.AffineTransform
 import java.awt.image.AffineTransformOp
 import java.awt.image.BufferedImage
+import javax.imageio.ImageIO
 import javax.swing.JComponent
 
 class GameRenderer(
@@ -26,6 +29,23 @@ class GameRenderer(
 	private val frameCache = mutableMapOf<String, List<BufferedImage>>()
 	private val flippedFrameCache = mutableMapOf<String, List<BufferedImage>>()
 
+	private val coinFrames: List<BufferedImage> by lazy {
+		try {
+			val atlasLoader = AsepriteJsonAtlasLoader.getInstance()
+			val atlas = atlasLoader.load("/META-INF/spritesheets/coin/atlas.json") ?: return@lazy emptyList()
+			val imgStream = javaClass.getResourceAsStream("/META-INF/spritesheets/coin/sprite.png") ?: return@lazy emptyList()
+			val image = imgStream.use { ImageIO.read(it) }
+			val spriteSheet = atlas.create(image, "coin")
+			spriteSheet.frames.map { frame ->
+				val f = frame.frame
+				image.getSubimage(f.x, f.y, f.width, f.height)
+			}
+		} catch (e: Exception) {
+			emptyList()
+		}
+	}
+
+	private var coinFrameCounter = 0
 	private var frameCount = 0
 	private var lastFpsTime = System.nanoTime()
 	private var fps = 0
@@ -61,7 +81,7 @@ class GameRenderer(
 		// TODO: Enable debug render with a toggle
 //		drawDebug(g2d, lineHeight, groundLine, groundY)
 
-		renderBugs(g2d, lineHeight)
+		renderCoins(g2d, lineHeight)
 
 		val animation = currentAnimation ?: return
 		val tag = world.sprite.tag
@@ -113,7 +133,7 @@ class GameRenderer(
 		return AffineTransformOp(tx, AffineTransformOp.TYPE_NEAREST_NEIGHBOR).filter(image, null)
 	}
 
-	private fun renderBugs(g2d: Graphics2D, lineHeight: Int) {
+	private fun renderCoins(g2d: Graphics2D, lineHeight: Int) {
 		val reg = world.registry
 		val coins = reg.allWith(CoinVisual::class, Transform::class)
 
@@ -128,22 +148,28 @@ class GameRenderer(
 			val pixelX = colToPixelX(t.x)
 			val cellW = colToPixelX(t.x + 1) - pixelX
 
-			val color = Color(255, 215, 0)
-
-			val cx = pixelX + cellW / 2
-			val cy = pixelY + lineHeight / 2
-			val r = (lineHeight.coerceAtMost(cellW) / 2 - 1).coerceAtLeast(2)
-
-			val diamond = java.awt.Polygon(
-				intArrayOf(cx, cx + r, cx, cx - r),
-				intArrayOf(cy - r, cy, cy + r, cy),
-				4
-			)
-			g2d.color = color
-			g2d.fillPolygon(diamond)
-			g2d.color = color.darker()
-			g2d.drawPolygon(diamond)
+			if (coinFrames.isNotEmpty()) {
+				val frameIndex = if (coinFrames.size > 1) {
+					coinFrameCounter % coinFrames.size
+				} else {
+					0
+				}
+				val frame = coinFrames[frameIndex]
+				val size = lineHeight
+				val cx = pixelX + cellW / 2 - size / 2
+				val cy = pixelY + lineHeight / 2 - size / 2
+				g2d.drawImage(frame, cx, cy, size, size, null)
+			} else {
+				val color = Color(255, 215, 0)
+				val cx = pixelX + cellW / 2
+				val cy = pixelY + lineHeight / 2
+				val r = (lineHeight.coerceAtMost(cellW) / 2 - 1).coerceAtLeast(2)
+				g2d.color = color
+				g2d.fillRect(cx - r, cy - r, r * 2, r * 2)
+			}
 		}
+
+		coinFrameCounter++
 	}
 
 	private fun drawDebug(g2d: Graphics2D, lineHeight: Int, groundLine: Int, groundY: Int) {
