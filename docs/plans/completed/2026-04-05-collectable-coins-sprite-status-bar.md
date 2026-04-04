@@ -107,5 +107,5 @@ Replace the existing diamond-placeholder collectible bugs with animated coin col
 
 ### Task 7: Update Documentation
 
-- [ ] Update `CLAUDE.md` if new patterns introduced (CoinCollectedListener topic pattern)
-- [ ] Move this plan to `docs/plans/completed/`
+- [x] Update `CLAUDE.md` if new patterns introduced (CoinCollectedListener topic pattern)
+- [x] Move this plan to `docs/plans/completed/`

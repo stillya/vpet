@@ -61,6 +61,8 @@ Developer Activity → Event Listeners → Animation State Machine → Sprite Re
 - `BuildEventListener`: Captures ProjectTaskListener and ExecutionListener events
 - `AnimationEventService`: Service broadcasting animation events to widgets
 - `AnimationEventListener`: Interface for animation state change listeners
+- `CoinCollectedListener`: Message bus topic for broadcasting coin collection events from
+  game mode to status bar widget
 
 **Game System**
 
@@ -135,6 +137,10 @@ build/distributions/vpet-{version}.zip
 - **Random Behavior**: Use `kotlin.random.Random` for variant selection
 - **Service Lifecycle**: Services are application/project scoped, managed by platform
 - **Resource Loading**: Always use classpath-relative paths with leading slash
+- **Message Bus Topics**: Define custom topics via `Topic.create("TopicName",
+  ListenerInterface::class.java)` in listener companion objects; subscribe via
+  `project.messageBus.connect(disposable).subscribe(TOPIC, listener)` or
+  `ApplicationManager.getApplication().messageBus.syncPublisher(TOPIC)` for broadcasting
 
 ## Key Constraints
 
