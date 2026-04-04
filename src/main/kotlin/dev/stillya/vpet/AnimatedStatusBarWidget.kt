@@ -9,6 +9,7 @@ import com.intellij.openapi.wm.StatusBarWidgetFactory
 import com.intellij.openapi.wm.WidgetPresentation
 import com.intellij.openapi.wm.WidgetPresentationDataContext
 import com.intellij.openapi.wm.WidgetPresentationFactory
+import dev.stillya.vpet.game.CoinCollectedListener
 import dev.stillya.vpet.game.GameController
 import dev.stillya.vpet.service.ActivityListener
 import dev.stillya.vpet.service.ActivityTracker
@@ -50,7 +51,7 @@ class AnimatedStatusBarWidgetFactory : StatusBarWidgetFactory, WidgetPresentatio
 class AnimatedStatusBarWidget(
 	private val project: Project,
 	private val scope: CoroutineScope
-) : IconWidgetPresentation, ActivityListener, VPetSettingsListener, Disposable {
+) : IconWidgetPresentation, ActivityListener, VPetSettingsListener, CoinCollectedListener, Disposable {
 
 	private val animation: Animated
 		get() = project.service<Animated>()
@@ -68,6 +69,8 @@ class AnimatedStatusBarWidget(
 	@Volatile
 	private var lastActivityTimeMs: Long = System.currentTimeMillis()
 
+	private val totalCoinsCollected = AtomicInteger(0)
+
 	companion object {
 		const val COUNTER_LIMIT = 10
 		const val FRAME_RATE_MS = 100L
@@ -78,7 +81,9 @@ class AnimatedStatusBarWidget(
 
 	init {
 		ActivityTracker.getInstance(project).registerListener(this)
-		project.messageBus.connect(this).subscribe(VPetSettings.TOPIC, this)
+		val connection = project.messageBus.connect(this)
+		connection.subscribe(VPetSettings.TOPIC, this)
+		connection.subscribe(CoinCollectedListener.TOPIC, this)
 		initAnimation()
 		curFrames = iconRenderer.render()
 		startCursorTracking()
@@ -187,6 +192,14 @@ class AnimatedStatusBarWidget(
 
 	override fun onActivity() {
 		lastActivityTimeMs = System.currentTimeMillis()
+	}
+
+	override fun onCoinsCollected(count: Int) {
+		totalCoinsCollected.addAndGet(count)
+	}
+
+	override suspend fun getTooltipText(): String {
+		return "Coins collected: ${totalCoinsCollected.get()}"
 	}
 
 	override fun dispose() {

@@ -91,11 +91,11 @@ Replace the existing diamond-placeholder collectible bugs with animated coin col
 **Files:**
 - Modify: `src/main/kotlin/dev/stillya/vpet/AnimatedStatusBarWidget.kt`
 
-- [ ] Subscribe `AnimatedStatusBarWidget` to `CoinCollectedListener.TOPIC` via `project.messageBus.connect(this).subscribe(CoinCollectedListener.TOPIC, ...)`
-- [ ] In the listener callback: accumulate a local `totalCoinsCollected` counter and trigger a status bar update
-- [ ] Override `getTooltipText()` on `AnimatedStatusBarWidget` to return `"Coins collected: $totalCoinsCollected"`
-- [ ] Write test verifying tooltip text updates after receiving a topic event
-- [ ] Run `./gradlew test` — must pass
+- [x] Subscribe `AnimatedStatusBarWidget` to `CoinCollectedListener.TOPIC` via `project.messageBus.connect(this).subscribe(CoinCollectedListener.TOPIC, ...)`
+- [x] In the listener callback: accumulate a local `totalCoinsCollected` counter and trigger a status bar update
+- [x] Override `getTooltipText()` on `AnimatedStatusBarWidget` to return `"Coins collected: $totalCoinsCollected"`
+- [x] Write test verifying tooltip text updates after receiving a topic event
+- [x] Run `./gradlew test` — must pass
 
 ### Task 6: Verify Acceptance Criteria
 
