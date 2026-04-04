@@ -1,6 +1,7 @@
 package dev.stillya.vpet.game
 
 import com.intellij.openapi.Disposable
+import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.components.Service
 import com.intellij.openapi.components.service
 import com.intellij.openapi.editor.Editor
@@ -79,6 +80,8 @@ class GameController(private val project: Project) {
 		activeGame = null
 		try {
 			engineToStop?.stop()
+			val finalScore = engineToStop?.finalScore ?: 0
+			ApplicationManager.getApplication().messageBus.syncPublisher(CoinCollectedListener.TOPIC).onCoinsCollected(finalScore)
 		} finally {
 			try {
 				gameToStop?.onGameStop()

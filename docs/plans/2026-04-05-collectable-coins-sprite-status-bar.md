@@ -80,11 +80,11 @@ Replace the existing diamond-placeholder collectible bugs with animated coin col
 - Modify: `src/main/kotlin/dev/stillya/vpet/game/GameEngine.kt`
 - Modify: `src/main/kotlin/dev/stillya/vpet/game/GameController.kt`
 
-- [ ] Create `CoinCollectedListener.kt`: define `interface CoinCollectedListener { fun onCoinsCollected(count: Int) }` and a companion object with `val TOPIC = Topic.create("CoinCollected", CoinCollectedListener::class.java)`
-- [ ] In `GameEngine`, add `val finalScore: Int get() = world.score`
-- [ ] In `GameController.exitGameMode()`, after `engineToStop?.stop()`, publish to `CoinCollectedListener.TOPIC` via `ApplicationManager.getApplication().messageBus.syncPublisher(CoinCollectedListener.TOPIC).onCoinsCollected(engineToStop?.finalScore ?: 0)`
-- [ ] Write unit test verifying topic fires with the correct score on game exit
-- [ ] Run `./gradlew test` — must pass
+- [x] Create `CoinCollectedListener.kt`: define `interface CoinCollectedListener { fun onCoinsCollected(count: Int) }` and a companion object with `val TOPIC = Topic.create("CoinCollected", CoinCollectedListener::class.java)`
+- [x] In `GameEngine`, add `val finalScore: Int get() = world.score`
+- [x] In `GameController.exitGameMode()`, after `engineToStop?.stop()`, publish to `CoinCollectedListener.TOPIC` via `ApplicationManager.getApplication().messageBus.syncPublisher(CoinCollectedListener.TOPIC).onCoinsCollected(engineToStop?.finalScore ?: 0)`
+- [x] Write unit test verifying topic fires with the correct score on game exit
+- [x] Run `./gradlew test` — must pass
 
 ### Task 5: Display Coin Count in Status Bar Widget
 

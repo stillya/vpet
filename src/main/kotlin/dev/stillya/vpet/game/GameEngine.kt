@@ -25,6 +25,8 @@ class GameEngine(
 	private var jumpWasPressed = false
 	private val keysHeld = mutableSetOf<Int>()
 
+	val finalScore: Int get() = world.score
+
 	private val resizeListener = object : ComponentAdapter() {
 		override fun componentResized(e: ComponentEvent) {
 			val cc = e.component
