@@ -31,4 +31,19 @@ class AsepriteJsonAtlasLoaderTest {
 		assertTrue("Should have Walk animation", tagNames.contains("Walk"))
 		assertTrue("Should have Sit animation", tagNames.contains("Sit"))
 	}
+
+	@Test
+	fun testCoinAtlasLoadsSuccessfully() {
+		val atlas = loader.load("/META-INF/spritesheets/coin/atlas.json")
+
+		assertNotNull("Coin atlas should be loaded", atlas)
+		assertTrue(
+			"Coin atlas should have at least one frame",
+			atlas!!.frames.isNotEmpty()
+		)
+
+		val tagNames = atlas.meta.frameTags.map { it.name }
+
+		assertTrue("Should have coin animation", tagNames.contains("coin"))
+	}
 }

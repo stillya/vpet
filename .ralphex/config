@@ -14,7 +14,7 @@
 
 # claude_command: the command to run claude code
 # default: "claude"
-claude_command = /Users/stillya/code/stilya/vpet/.ralphex/scripts/opencode-as-claude.sh
+#claude_command = /Users/stillya/code/stilya/vpet/.ralphex/scripts/opencode-as-claude.sh
 
 # claude_args: arguments passed to claude command
 # --dangerously-skip-permissions: bypass permission prompts for autonomous execution

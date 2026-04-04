@@ -98,6 +98,9 @@ Contributions are welcome! Feel free to submit a pull request or open an issue.
 Pixel art sprites by [bowpixel](https://bowpixel.itch.io/one-cat) - thank you for the
 amazing artwork!
 
+Coin sprite from [glycin/intellij25](https://github.com/glycin/intellij25) (MIT License) -
+thank you for the pixel art coin!
+
 ## License
 
 This project is licensed under the [MIT License](LICENSE).

@@ -1,0 +1,22 @@
+{
+  "frames": [
+    {
+      "frame": {
+        "x": 0,
+        "y": 0,
+        "w": 512,
+        "h": 512
+      }
+    }
+  ],
+  "meta": {
+    "frameTags": [
+      {
+        "name": "coin",
+        "from": 0,
+        "to": 0,
+        "duration": 100
+      }
+    ]
+  }
+}
