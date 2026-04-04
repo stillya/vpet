@@ -4,6 +4,7 @@ import com.intellij.openapi.Disposable
 import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.components.Service
 import com.intellij.openapi.components.service
+import com.intellij.openapi.diagnostic.thisLogger
 import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.editor.LogicalPosition
 import com.intellij.openapi.fileEditor.FileEditorManager
@@ -35,6 +36,7 @@ class GameController(private val project: Project) {
 
 		val animated = project.service<Animated>()
 		if (animated !is Character || animated !is Game) {
+			thisLogger().warn("Cannot enter game mode: Animated service must implement both Character and Game interfaces")
 			Disposer.dispose(disposable)
 			gameDisposable = null
 			return
@@ -81,7 +83,7 @@ class GameController(private val project: Project) {
 		try {
 			engineToStop?.stop()
 			val finalScore = engineToStop?.finalScore ?: 0
-			ApplicationManager.getApplication().messageBus.syncPublisher(CoinCollectedListener.TOPIC).onCoinsCollected(finalScore)
+			project.messageBus.syncPublisher(CoinCollectedListener.TOPIC).onCoinsCollected(finalScore)
 		} finally {
 			try {
 				gameToStop?.onGameStop()

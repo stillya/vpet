@@ -1,5 +1,6 @@
 package dev.stillya.vpet.game
 
+import com.intellij.openapi.diagnostic.thisLogger
 import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.editor.LogicalPosition
 import dev.stillya.vpet.animation.Animation
@@ -41,6 +42,7 @@ class GameRenderer(
 				image.getSubimage(f.x, f.y, f.width, f.height)
 			}
 		} catch (e: Exception) {
+			thisLogger().error("Failed to load coin sprite frames, falling back to colored squares", e)
 			emptyList()
 		}
 	}

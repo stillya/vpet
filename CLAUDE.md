@@ -74,6 +74,32 @@ Developer Activity → Event Listeners → Animation State Machine → Sprite Re
 - `GameController`: Thin plugin.xml adapter; creates and delegates to `GameEngine` on
   `enterGameMode()` / `exitGameMode()`
 
+**ECS System**
+
+- `EntityRegistry`: Component-based entity storage with entity lifecycle management;
+  supports create/destroy entities, add/get/has components by type, query entities by
+  component signature (`allWith(vararg types)`), and deferred removal via mark/flush
+  pattern
+- `SpatialGrid`: Hash-based spatial partitioning (4-tile cells) for collision detection;
+  rebuilds from registry each frame, queries entities by AABB overlap
+- `CollisionSystem`: Detects collectible-player collisions using spatial grid; filters
+  candidates by Collectible component and AABB overlap test
+- Components: `Transform`, `Velocity`, `SpriteState`, `PhysicsState`, `PhaseState`
+  (player); `Collectible`, `CoinVisual`, `AABB` (entities)
+- `World.registry: EntityRegistry` — holds all entities/components; `World.player:
+  EntityID` — player entity ID; `World.score: Int` — accumulated collectible score
+
+**Collectible System**
+
+- `CoinSpawner`: Spawns coins on solid tiles within visible range; finds valid spawn
+  points (solid ground with empty space above), shuffles and places N coins, creates
+  entities with Transform, AABB, Collectible, and CoinVisual components
+- Collision detection: `WorldUpdate.tick()` rebuilds spatial grid, calls
+  `CollisionSystem.detectCollections()`, accumulates score from collected coins, marks
+  entities for removal
+- Score persistence: Game mode tracks `World.score`; on exit, `GameController` publishes
+  score via `CoinCollectedListener.TOPIC` (project message bus)
+
 ### Animation State Machine
 
 The `PetAnimated` class implements a behavior-driven state machine:
@@ -140,7 +166,9 @@ build/distributions/vpet-{version}.zip
 - **Message Bus Topics**: Define custom topics via `Topic.create("TopicName",
   ListenerInterface::class.java)` in listener companion objects; subscribe via
   `project.messageBus.connect(disposable).subscribe(TOPIC, listener)` or
-  `ApplicationManager.getApplication().messageBus.syncPublisher(TOPIC)` for broadcasting
+  `project.messageBus.syncPublisher(TOPIC)` for broadcasting (use project bus for
+  project-scoped communication). Example: `CoinCollectedListener.TOPIC` broadcasts coin
+  collection events from game mode to status bar widget
 
 ## Key Constraints
 
