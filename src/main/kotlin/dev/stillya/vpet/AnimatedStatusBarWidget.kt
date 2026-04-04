@@ -110,6 +110,8 @@ class AnimatedStatusBarWidget(
 		}
 	}
 
+	override suspend fun getTooltipText(): String = "Coins collected: ${totalCoinsCollected.get()}"
+
 	private suspend fun awaitNonEmptyFrames(): List<Icon> {
 		while (true) {
 			try {

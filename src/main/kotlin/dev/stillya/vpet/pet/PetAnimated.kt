@@ -11,8 +11,8 @@ import dev.stillya.vpet.config.SpriteSheetAtlas
 import dev.stillya.vpet.game.AABB
 import dev.stillya.vpet.game.Character
 import dev.stillya.vpet.game.CharacterIntent
+import dev.stillya.vpet.game.EntityID
 import dev.stillya.vpet.game.Game
-import dev.stillya.vpet.game.GameCharacter
 import dev.stillya.vpet.game.GamePhase
 import dev.stillya.vpet.game.InputState
 import dev.stillya.vpet.game.Physics
@@ -31,7 +31,7 @@ import kotlin.random.Random
 
 class PetAnimated(
 	private val project: Project,
-) : GameCharacter {
+) : Animated, Character, Game {
 	private val atlasLoader: AtlasLoader
 		get() = service<AtlasLoader>()
 	private val renderer: IconRenderer
@@ -289,6 +289,8 @@ class PetAnimated(
 		val context = renderer.createAnimationContext(AnimationTrigger.IDLE_BEHAVIOR)
 		playTransition(pivotSequence to AnimationState.OBSERVING, context)
 	}
+
+	override fun id() = EntityID("pet")
 
 	override fun collider() = AABB(width = 2, height = 2)
 

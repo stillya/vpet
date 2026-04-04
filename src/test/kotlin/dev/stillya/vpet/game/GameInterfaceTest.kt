@@ -40,12 +40,6 @@ class GameInterfaceTest : LightPlatform4TestCase() {
     }
 
     @Test
-    fun `Animated service can be resolved as GameCharacter`() {
-        val animated = project.service<Animated>()
-        assertTrue("PetAnimated should implement GameCharacter", animated is GameCharacter)
-    }
-
-    @Test
     fun `onGameStart is callable without error`() {
         val game = petAnimated as Game
         game.onGameStart()
