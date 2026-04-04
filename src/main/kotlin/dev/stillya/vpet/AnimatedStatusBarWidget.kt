@@ -198,10 +198,6 @@ class AnimatedStatusBarWidget(
 		totalCoinsCollected.addAndGet(count)
 	}
 
-	override suspend fun getTooltipText(): String {
-		return "Coins collected: ${totalCoinsCollected.get()}"
-	}
-
 	override fun dispose() {
 		ActivityTracker.getInstance(project).unregisterListener(this)
 	}
