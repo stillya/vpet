@@ -34,7 +34,8 @@ class GameRenderer(
 	private val coinFrames: List<BufferedImage> by lazy {
 		try {
 			val atlas = atlasLoader.load("/META-INF/spritesheets/coin/atlas.json") ?: return@lazy emptyList()
-			val imgStream = javaClass.getResourceAsStream("/META-INF/spritesheets/coin/sprite.png") ?: return@lazy emptyList()
+			val imgStream =
+				javaClass.getResourceAsStream("/META-INF/spritesheets/coin/sprite.png") ?: return@lazy emptyList()
 			val image = imgStream.use { ImageIO.read(it) }
 			val spriteSheet = atlas.create(image, "coin")
 			spriteSheet.frames.map { frame ->

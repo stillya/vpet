@@ -15,12 +15,12 @@ object CollisionSystem {
 		val candidates = spatialGrid.query(playerPos, playerCol)
 		return candidates.filter { id ->
 			id != playerEntity &&
-				registry.has<Collectible>(id) &&
-				run {
-					val pos = registry.get<Transform>(id) ?: return@filter false
-					val col = registry.get<AABB>(id) ?: return@filter false
-					aabbsOverlap(playerPos, playerCol, pos, col)
-				}
+					registry.has<Collectible>(id) &&
+					run {
+						val pos = registry.get<Transform>(id) ?: return@filter false
+						val col = registry.get<AABB>(id) ?: return@filter false
+						aabbsOverlap(playerPos, playerCol, pos, col)
+					}
 		}
 	}
 
@@ -31,8 +31,8 @@ object CollisionSystem {
 		val by = floor(bPos.y).toInt() - (b.height - 1)
 
 		return ax < bx + b.width &&
-			ax + a.width > bx &&
-			ay < by + b.height &&
-			ay + a.height > by
+				ax + a.width > bx &&
+				ay < by + b.height &&
+				ay + a.height > by
 	}
 }
