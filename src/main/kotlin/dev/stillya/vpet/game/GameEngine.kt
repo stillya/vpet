@@ -20,7 +20,7 @@ class GameEngine(
 	private var timer: Timer? = null
 	private var tileMapSyncer: TileMapSyncer? = null
 
-	private var bugsSpawned = false
+	private var coinsSpawned = false
 	private var lastTickNanos = 0L
 	private var jumpWasPressed = false
 	private val keysHeld = mutableSetOf<Int>()
@@ -67,7 +67,7 @@ class GameEngine(
 		timer = null
 		keysHeld.clear()
 		jumpWasPressed = false
-		bugsSpawned = false
+		coinsSpawned = false
 		tileMapSyncer = null
 		val cc = editor?.contentComponent ?: return
 		cc.remove(renderer)
@@ -88,9 +88,9 @@ class GameEngine(
 		val lastDocumentLine = ((editor?.document?.lineCount ?: 1) - 1).coerceAtLeast(0)
 		val visibleRange = 0..lastDocumentLine
 
-		if (!bugsSpawned) {
-			BugSpawner.spawnBugs(world.registry, tileMap, visibleRange)
-			bugsSpawned = true
+		if (!coinsSpawned) {
+			CoinSpawner.spawnCoins(world.registry, tileMap, visibleRange)
+			coinsSpawned = true
 		}
 
 		try {

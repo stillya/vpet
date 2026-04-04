@@ -53,12 +53,12 @@ Replace the existing diamond-placeholder collectible bugs with animated coin col
 - Create: `src/main/kotlin/dev/stillya/vpet/game/CoinSpawner.kt`
 - Delete: `src/main/kotlin/dev/stillya/vpet/game/BugSpawner.kt`
 
-- [ ] In `CollectibleComponents.kt`: remove `BugVisual` and `BugColor`; add `data class CoinVisual()`
-- [ ] Create `CoinSpawner.kt` mirroring `BugSpawner` logic but spawning `CoinVisual()` instead of `BugVisual(BugColor.*)`
-- [ ] Delete `BugSpawner.kt`
-- [ ] Update `GameEngine.kt`: replace `BugSpawner` reference with `CoinSpawner`
-- [ ] Write unit tests for `CoinSpawner` (coins spawn on solid tiles, count matches requested count)
-- [ ] Run `./gradlew test` — must pass
+- [x] In `CollectibleComponents.kt`: remove `BugVisual` and `BugColor`; add `data class CoinVisual()`
+- [x] Create `CoinSpawner.kt` mirroring `BugSpawner` logic but spawning `CoinVisual()` instead of `BugVisual(BugColor.*)`
+- [x] Delete `BugSpawner.kt`
+- [x] Update `GameEngine.kt`: replace `BugSpawner` reference with `CoinSpawner`
+- [x] Write unit tests for `CoinSpawner` (coins spawn on solid tiles, count matches requested count)
+- [x] Run `./gradlew test` — must pass
 
 ### Task 3: Render Coins as Sprites in GameRenderer
 

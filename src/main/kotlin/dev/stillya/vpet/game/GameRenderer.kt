@@ -115,24 +115,20 @@ class GameRenderer(
 
 	private fun renderBugs(g2d: Graphics2D, lineHeight: Int) {
 		val reg = world.registry
-		val bugs = reg.allWith(BugVisual::class, Transform::class)
+		val coins = reg.allWith(CoinVisual::class, Transform::class)
 
-		for (id in bugs) {
+		for (id in coins) {
 			val t = reg.get<Transform>(id) ?: continue
-			val visual = reg.get<BugVisual>(id) ?: continue
+			val visual = reg.get<CoinVisual>(id) ?: continue
 
-			val bugLine = kotlin.math.floor(t.y).toInt()
-			val lineFrac = t.y - bugLine
-			val baseY = editor.logicalPositionToXY(LogicalPosition(bugLine, 0)).y
+			val coinLine = kotlin.math.floor(t.y).toInt()
+			val lineFrac = t.y - coinLine
+			val baseY = editor.logicalPositionToXY(LogicalPosition(coinLine, 0)).y
 			val pixelY = baseY + (lineFrac * lineHeight).toInt()
 			val pixelX = colToPixelX(t.x)
 			val cellW = colToPixelX(t.x + 1) - pixelX
 
-			val color = when (visual.color) {
-				BugColor.RED -> Color(220, 50, 50)
-				BugColor.BLUE -> Color(50, 100, 220)
-				BugColor.GREEN -> Color(50, 200, 80)
-			}
+			val color = Color(255, 215, 0)
 
 			val cx = pixelX + cellW / 2
 			val cy = pixelY + lineHeight / 2

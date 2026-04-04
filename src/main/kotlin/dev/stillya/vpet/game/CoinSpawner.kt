@@ -2,9 +2,9 @@ package dev.stillya.vpet.game
 
 import kotlin.random.Random
 
-object BugSpawner {
+object CoinSpawner {
 
-	fun spawnBugs(
+	fun spawnCoins(
 		registry: EntityRegistry,
 		tileMap: VirtualTileMap,
 		visibleRange: IntRange,
@@ -24,11 +24,11 @@ object BugSpawner {
 		}
 
 		candidates.shuffled(Random).take(count).forEach { (col, groundLine) ->
-			val bug = registry.create()
-			registry.add(bug, Transform(col.toFloat(), (groundLine - 1).toFloat()))
-			registry.add(bug, AABB(1, 1))
-			registry.add(bug, Collectible())
-			registry.add(bug, BugVisual(BugColor.entries[Random.nextInt(BugColor.entries.size)]))
+			val coin = registry.create()
+			registry.add(coin, Transform(col.toFloat(), (groundLine - 1).toFloat()))
+			registry.add(coin, AABB(1, 1))
+			registry.add(coin, Collectible())
+			registry.add(coin, CoinVisual())
 		}
 	}
 }
