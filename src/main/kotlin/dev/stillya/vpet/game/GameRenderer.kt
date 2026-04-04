@@ -29,10 +29,10 @@ class GameRenderer(
 	private var currentAnimation: Animation? = null
 	private val frameCache = mutableMapOf<String, List<BufferedImage>>()
 	private val flippedFrameCache = mutableMapOf<String, List<BufferedImage>>()
+	private val atlasLoader = AsepriteJsonAtlasLoader()
 
 	private val coinFrames: List<BufferedImage> by lazy {
 		try {
-			val atlasLoader = AsepriteJsonAtlasLoader.getInstance()
 			val atlas = atlasLoader.load("/META-INF/spritesheets/coin/atlas.json") ?: return@lazy emptyList()
 			val imgStream = javaClass.getResourceAsStream("/META-INF/spritesheets/coin/sprite.png") ?: return@lazy emptyList()
 			val image = imgStream.use { ImageIO.read(it) }
