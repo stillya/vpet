@@ -43,7 +43,8 @@ Developer Activity → Event Listeners → Animation State Machine → Sprite Re
 
 **Graphics System**
 
-- `PetAnimated`: Main animation controller with state machine for pet behaviors; implements
+- `PetAnimated`: Main animation controller with state machine for pet behaviors;
+  implements
   `Animated` (status bar), `Character` (game physics), and `Game` (game lifecycle hooks)
 - `DefaultIconRenderer`: Renders sprite sheet frames into Swing Icons with animation queue
   management
@@ -189,6 +190,8 @@ build/distributions/vpet-{version}.zip
 
 - **No Documentation Changes**: Do not modify README.md unless explicitly requested
 - **No Asset Creation**: Focus on code, not creating new sprite sheets
-- **No Direct Timer Usage in Status Bar**: Use Flow/coroutines for animation timing in the status bar widget path. `GameEngine` uses `javax.swing.Timer` for its game loop — this is intentional and confined to `GameEngine`.
+- **No Direct Timer Usage in Status Bar**: Use Flow/coroutines for animation timing in the
+  status bar widget path. `GameEngine` uses `javax.swing.Timer` for its game loop — this
+  is intentional and confined to `GameEngine`.
 - **No Manual Service Registration**: Services auto-discovered via annotations and
   plugin.xml
