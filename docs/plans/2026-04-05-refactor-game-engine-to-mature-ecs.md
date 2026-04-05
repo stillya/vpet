@@ -91,14 +91,14 @@ Refactor the game engine from a single flat package to a well-structured ECS arc
 - Create: game/ecs/systems/AnimationSystem.kt
 - Modify: game/WorldUpdate.kt
 
-- [ ] Create AnimationSystem with updateAnimations(registry: EntityRegistry, dt: Float)
-- [ ] AnimationSystem queries all entities with AnimationComponent
-- [ ] For each entity, advance elapsed time and update currentFrame based on AnimationResource.animation.sheet frame duration
-- [ ] Lookup AnimationResource from AnimationCache using component.resourceId
-- [ ] Call AnimationSystem.updateAnimations() in WorldUpdate.tick() after physics, before rendering
-- [ ] write tests for AnimationSystem frame advancement with multiple entities
-- [ ] write integration test verifying AnimationSystem works in tick()
-- [ ] run project test suite - must pass before task 6
+- [x] Create AnimationSystem with updateAnimations(registry: EntityRegistry, dt: Float)
+- [x] AnimationSystem queries all entities with AnimationComponent
+- [x] For each entity, advance elapsed time and update currentFrame based on AnimationResource.animation.sheet frame duration
+- [x] Lookup AnimationResource from AnimationCache using component.resourceId
+- [x] Call AnimationSystem.updateAnimations() in WorldUpdate.tick() after physics, before rendering
+- [x] write tests for AnimationSystem frame advancement with multiple entities
+- [x] write integration test verifying AnimationSystem works in tick()
+- [x] run project test suite - must pass before task 6
 
 ### Task 6: Fix DIP violations in atlas loading
 

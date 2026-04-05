@@ -10,6 +10,7 @@ import dev.stillya.vpet.game.ecs.components.PhysicsState
 import dev.stillya.vpet.game.ecs.components.SpriteState
 import dev.stillya.vpet.game.ecs.components.Transform
 import dev.stillya.vpet.game.ecs.components.Velocity
+import dev.stillya.vpet.game.ecs.systems.AnimationSystem
 import dev.stillya.vpet.game.ecs.systems.CollisionSystem
 import dev.stillya.vpet.game.input.InputState
 import dev.stillya.vpet.game.physics.PhysicsBody
@@ -71,6 +72,8 @@ object WorldUpdate {
 			reg.markForRemoval(id)
 		}
 		reg.flushRemovals()
+
+		AnimationSystem.updateAnimations(reg, dt)
 
 		val newWorld = world.copy(score = world.score + scoreGain)
 		return Pair(GameFrame(newWorld, physics.boundsAt(result.transform)), intent)

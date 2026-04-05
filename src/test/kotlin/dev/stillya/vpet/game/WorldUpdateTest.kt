@@ -7,6 +7,8 @@ import dev.stillya.vpet.game.ecs.EntityRegistry
 import dev.stillya.vpet.game.ecs.GamePhase
 import dev.stillya.vpet.game.ecs.Physics
 import dev.stillya.vpet.game.ecs.World
+import dev.stillya.vpet.config.AsepriteJsonAtlasLoader
+import dev.stillya.vpet.game.ecs.components.AnimationComponent
 import dev.stillya.vpet.game.ecs.components.Collectible
 import dev.stillya.vpet.game.ecs.components.PhaseState
 import dev.stillya.vpet.game.ecs.components.PhysicsState
@@ -15,6 +17,8 @@ import dev.stillya.vpet.game.ecs.components.Transform
 import dev.stillya.vpet.game.ecs.components.Velocity
 import dev.stillya.vpet.game.input.InputState
 import dev.stillya.vpet.game.physics.AABB
+import dev.stillya.vpet.game.resources.AnimationCache
+import org.junit.After
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertTrue
@@ -52,6 +56,12 @@ class WorldUpdateTest {
 	fun setup() {
 		tileMap = VirtualTileMap()
 		tileMap.rebuildFromLines(listOf("code here", ""))
+		AnimationCache.clear()
+	}
+
+	@After
+	fun cleanup() {
+		AnimationCache.clear()
 	}
 
 	private fun worldAt(x: Float = 0f, y: Float = 0f): World {
@@ -193,6 +203,30 @@ class WorldUpdateTest {
 		val (frame, _) = WorldUpdate.tick(world, InputState(), 0.016f, testCharacter, tileMap, 0..10)
 
 		assertEquals(GamePhase.ENTRANCE, frame.world.phase)
+	}
+
+	@Test
+	fun `tick advances AnimationComponent frames for entities`() {
+		val loader = AsepriteJsonAtlasLoader()
+		AnimationCache.loadCoinAnimation(loader)
+
+		val world = worldAt(x = 0f, y = 0f)
+		val reg = world.registry
+
+		val coin = reg.create()
+		reg.add(coin, Transform(5f, 0f))
+		reg.add(coin, AABB(1, 1))
+		reg.add(coin, AnimationComponent(AnimationCache.COIN_IDLE, currentFrame = 0, elapsed = 0f))
+
+		val dt = Physics.FRAME_ADVANCE_INTERVAL + 0.001f
+		val (frame, _) = WorldUpdate.tick(world, InputState(), dt, testCharacter, tileMap, 0..10)
+
+		val updatedComponent = frame.world.registry.get<AnimationComponent>(coin)
+		assertNotNull(updatedComponent)
+		val resource = AnimationCache.get(AnimationCache.COIN_IDLE)!!
+		val expectedFrame = (0 + 1) % resource.animation.frameCount
+		assertEquals(expectedFrame, updatedComponent!!.currentFrame)
+		assertTrue(updatedComponent.elapsed < Physics.FRAME_ADVANCE_INTERVAL)
 	}
 }
 
