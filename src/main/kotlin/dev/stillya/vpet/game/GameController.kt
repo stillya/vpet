@@ -52,7 +52,7 @@ class GameController(private val project: Project) {
 			return
 		}
 
-		val world = buildInitialWorld(activeEditor)
+		val world = buildInitialWorld(activeEditor, animated)
 
 		val renderer = GameRenderer(activeEditor)
 
@@ -104,7 +104,7 @@ class GameController(private val project: Project) {
 		}
 	}
 
-	private fun buildInitialWorld(editor: Editor): World {
+	private fun buildInitialWorld(editor: Editor, character: Character): World {
 		val visibleArea = editor.scrollingModel.visibleArea
 		val firstVisibleLine = editor.xyToLogicalPosition(java.awt.Point(0, visibleArea.y)).line
 
@@ -123,6 +123,11 @@ class GameController(private val project: Project) {
 		registry.add(player, SpriteState())
 		registry.add(player, PhaseState(GamePhase.ENTRANCE))
 		registry.add(player, AABB(2, 2))
+
+		if (character is dev.stillya.vpet.pet.PetAnimated) {
+			character.setEntityId(player)
+		}
+
 		return World(registry = registry, player = player)
 	}
 }

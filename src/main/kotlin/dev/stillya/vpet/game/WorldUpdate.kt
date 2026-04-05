@@ -33,7 +33,7 @@ object WorldUpdate {
 		visibleRange: IntRange
 	): Pair<GameFrame, CharacterIntent> {
 		val reg = world.registry
-		val playerId = world.player
+		val playerId = character.id()
 
 		val transform = reg.get<Transform>(playerId) ?: error("player missing Transform")
 		val velocity = reg.get<Velocity>(playerId) ?: error("player missing Velocity")

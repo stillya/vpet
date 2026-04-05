@@ -9,6 +9,13 @@ import dev.stillya.vpet.game.ecs.components.Transform
 import dev.stillya.vpet.game.ecs.components.Velocity
 import dev.stillya.vpet.game.input.InputState
 
+/**
+ * Character represents a controllable entity in the game.
+ *
+ * The EntityID returned by [Spatial.id] MUST match the player EntityID in [World.registry]
+ * for proper component lookups. WorldUpdate queries the registry using this ID to retrieve
+ * Transform, Velocity, PhysicsState, SpriteState, and PhaseState components.
+ */
 interface Character : Spatial {
 	fun update(input: InputState, ctx: TickContext, dt: Float): CharacterIntent
 }

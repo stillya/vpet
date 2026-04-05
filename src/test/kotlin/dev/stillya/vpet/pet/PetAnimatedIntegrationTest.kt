@@ -10,6 +10,7 @@ import dev.stillya.vpet.AtlasLoader
 import dev.stillya.vpet.IconRenderer
 import dev.stillya.vpet.animation.Animation
 import dev.stillya.vpet.config.AsepriteJsonAtlasLoader
+import dev.stillya.vpet.game.ecs.EntityID
 import dev.stillya.vpet.graphics.AnimationContext
 import dev.stillya.vpet.graphics.AnimationEpochManager
 import dev.stillya.vpet.graphics.AnimationTrigger
@@ -276,6 +277,22 @@ class PetAnimatedIntegrationTest : LightPlatform4TestCase() {
 		if (!rendererSpy.isFlipped) flippedRight = true
 
 		assertTrue("Should flip when cursor moves to different sides", flippedLeft || flippedRight)
+	}
+
+	@Test
+	fun testEntityIdCanBeSetAndRetrieved() {
+		val defaultId = petAnimated.id()
+		assertNotNull("PetAnimated should have a default EntityID", defaultId)
+
+		val newId = EntityID("player_123")
+		petAnimated.setEntityId(newId)
+
+		assertEquals("EntityID should be updated after setEntityId call", newId, petAnimated.id())
+	}
+
+	@Test
+	fun testDefaultEntityIdIsPet() {
+		assertEquals("Default EntityID should be 'pet'", EntityID("pet"), petAnimated.id())
 	}
 }
 

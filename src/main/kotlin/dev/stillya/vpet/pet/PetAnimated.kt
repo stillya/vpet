@@ -37,6 +37,8 @@ class PetAnimated(
 	private val renderer: IconRenderer
 		get() = project.service<IconRenderer>()
 
+	private var entityId: EntityID = EntityID("pet")
+
 	var random: Random = Random
 		set(value) {
 			field = value
@@ -290,7 +292,11 @@ class PetAnimated(
 		playTransition(pivotSequence to AnimationState.OBSERVING, context)
 	}
 
-	override fun id() = EntityID("pet")
+	override fun id() = entityId
+
+	fun setEntityId(id: EntityID) {
+		entityId = id
+	}
 
 	override fun collider() = AABB(width = 2, height = 2)
 

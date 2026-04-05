@@ -122,13 +122,13 @@ Refactor the game engine from a single flat package to a well-structured ECS arc
 - Modify: game/ecs/EntityRegistry.kt
 - Modify: game/WorldUpdate.kt
 
-- [ ] Ensure Spatial.id() returns EntityID that is the primary key in EntityRegistry
-- [ ] Update Character interface documentation to clarify it uses Spatial.id() for registry lookups
-- [ ] Verify PetAnimated stores and returns EntityID consistently via Spatial.id()
-- [ ] Ensure WorldUpdate uses character.id() when querying registry for components
-- [ ] Add validation test that Character's EntityID matches player EntityID in World.registry
-- [ ] Add test verifying components can be retrieved from registry using character.id()
-- [ ] run project test suite - must pass before task 8
+- [x] Ensure Spatial.id() returns EntityID that is the primary key in EntityRegistry
+- [x] Update Character interface documentation to clarify it uses Spatial.id() for registry lookups
+- [x] Verify PetAnimated stores and returns EntityID consistently via Spatial.id()
+- [x] Ensure WorldUpdate uses character.id() when querying registry for components
+- [x] Add validation test that Character's EntityID matches player EntityID in World.registry
+- [x] Add test verifying components can be retrieved from registry using character.id()
+- [x] run project test suite - must pass before task 8
 
 ### Task 8: Verify acceptance criteria
 

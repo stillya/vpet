@@ -29,50 +29,52 @@ import kotlin.math.exp
 class PhysicsBodyTest {
 
 	private lateinit var tileMap: VirtualTileMap
+	private lateinit var currentWorld: World
 
-	private val testCharacter = object : Character {
-		val walkSpeed = 9.0f
-		val jumpVelocity = -15.6f
-		override fun id(): EntityID = EntityID("test_character")
+	private fun makeTestCharacter(world: World): Character {
+		currentWorld = world
+		return object : Character {
+			override fun id(): EntityID = currentWorld.player
 
-		override fun collider() = AABB(width = 2, height = 2)
+			override fun collider() = AABB(width = 2, height = 2)
 
-		override fun update(input: InputState, ctx: TickContext, dt: Float): CharacterIntent {
-			val effectiveInput = if (ctx.phase == GamePhase.ENTRANCE) InputState() else input
+			override fun update(input: InputState, ctx: TickContext, dt: Float): CharacterIntent {
+				val effectiveInput = if (ctx.phase == GamePhase.ENTRANCE) InputState() else input
 
-			var vx = ctx.velocity.x
-			var vy = ctx.velocity.y
-			var direction = ctx.sprite.direction
+				var vx = ctx.velocity.x
+				var vy = ctx.velocity.y
+				var direction = ctx.sprite.direction
 
-			if (effectiveInput.moveDirection != 0) {
-				direction = if (effectiveInput.moveDirection < 0) Direction.LEFT else Direction.RIGHT
-			}
-
-			if (ctx.isOnGround) {
-				vx = if (effectiveInput.moveDirection != 0) {
-					effectiveInput.moveDirection.toFloat() * walkSpeed
-				} else {
-					val damped = vx * exp(-GROUND_DAMPING * dt)
-					if (abs(damped) < Physics.VELOCITY_EPSILON) 0f else damped
-				}
-			} else {
 				if (effectiveInput.moveDirection != 0) {
-					vx += effectiveInput.moveDirection.toFloat() * walkSpeed * AIR_CONTROL * dt
+					direction = if (effectiveInput.moveDirection < 0) Direction.LEFT else Direction.RIGHT
 				}
+
+				if (ctx.isOnGround) {
+					vx = if (effectiveInput.moveDirection != 0) {
+						effectiveInput.moveDirection.toFloat() * WALK_SPEED
+					} else {
+						val damped = vx * exp(-GROUND_DAMPING * dt)
+						if (abs(damped) < Physics.VELOCITY_EPSILON) 0f else damped
+					}
+				} else {
+					if (effectiveInput.moveDirection != 0) {
+						vx += effectiveInput.moveDirection.toFloat() * WALK_SPEED * AIR_CONTROL * dt
+					}
+				}
+
+				if (effectiveInput.jumpJustPressed && ctx.isOnGround) {
+					vy = JUMP_VELOCITY
+				}
+
+				val velocity = Velocity(vx, vy)
+
+				var phase = ctx.phase
+				if (phase == GamePhase.ENTRANCE && ctx.isOnGround) {
+					phase = GamePhase.PLAYING
+				}
+
+				return CharacterIntent(velocity, Animation.empty(), direction, phase)
 			}
-
-			if (effectiveInput.jumpJustPressed && ctx.isOnGround) {
-				vy = jumpVelocity
-			}
-
-			val velocity = Velocity(vx, vy)
-
-			var phase = ctx.phase
-			if (phase == GamePhase.ENTRANCE && ctx.isOnGround) {
-				phase = GamePhase.PLAYING
-			}
-
-			return CharacterIntent(velocity, Animation.empty(), direction, phase)
 		}
 	}
 
@@ -80,6 +82,8 @@ class PhysicsBodyTest {
 		private const val DT = 0.016f
 		private const val GROUND_DAMPING = 18.0f
 		private const val AIR_CONTROL = 0.3f
+		private const val WALK_SPEED = 9.0f
+		private const val JUMP_VELOCITY = -15.6f
 	}
 
 	@Before
@@ -96,8 +100,10 @@ class PhysicsBodyTest {
 		input: InputState = InputState(),
 		dt: Float = DT,
 		lastVisibleLine: Int = 20
-	): World =
-		WorldUpdate.tick(world, input, dt, testCharacter, tileMap, 0..lastVisibleLine).first.world
+	): World {
+		val character = makeTestCharacter(world)
+		return WorldUpdate.tick(world, input, dt, character, tileMap, 0..lastVisibleLine).first.world
+	}
 
 	private fun worldAt(
 		x: Float = 0f,
@@ -218,7 +224,7 @@ class PhysicsBodyTest {
 		val jumpInput = InputState(moveDirection = 0, jumpJustPressed = true)
 		w = tick(w, jumpInput)
 		assertFalse(w.isOnGround)
-		assertTrue(w.velocity.x > testCharacter.walkSpeed * 0.5f)
+		assertTrue(w.velocity.x > WALK_SPEED * 0.5f)
 	}
 
 	@Test
