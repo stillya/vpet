@@ -60,12 +60,12 @@ Refactor the game engine from a single flat package to a well-structured ECS arc
 - Modify: game/ecs/systems/CoinSpawner.kt
 - Modify: game/ecs/components/CollectibleComponents.kt
 
-- [ ] Pre-load coin animation resource in AnimationCache before spawning (singleton, loaded once)
-- [ ] Remove CoinVisual marker component entirely
-- [ ] Update CoinSpawner to add AnimationComponent(resourceId="coin_idle") to spawned coins
-- [ ] All coins share the same animation resource via the "coin_idle" ID
-- [ ] write tests for updated CoinSpawner with AnimationComponent
-- [ ] run project test suite - must pass before task 4
+- [x] Pre-load coin animation resource in AnimationCache before spawning (singleton, loaded once)
+- [x] Remove CoinVisual marker component entirely
+- [x] Update CoinSpawner to add AnimationComponent(resourceId="coin_idle") to spawned coins
+- [x] All coins share the same animation resource via the "coin_idle" ID
+- [x] write tests for updated CoinSpawner with AnimationComponent
+- [x] run project test suite - must pass before task 4
 
 ### Task 4: Create RenderSystem separate from JComponent
 

@@ -2,13 +2,16 @@ package dev.stillya.vpet.game
 
 import com.intellij.ide.IdeEventQueue
 import com.intellij.openapi.Disposable
+import com.intellij.openapi.components.service
 import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.util.Disposer
+import dev.stillya.vpet.AtlasLoader
 import dev.stillya.vpet.game.ecs.World
 import dev.stillya.vpet.game.ecs.systems.CoinSpawner
 import dev.stillya.vpet.game.input.InputState
 import dev.stillya.vpet.game.rendering.GameRenderer
+import dev.stillya.vpet.game.resources.AnimationCache
 import java.awt.event.ComponentAdapter
 import java.awt.event.ComponentEvent
 import java.awt.event.KeyEvent
@@ -95,6 +98,7 @@ class GameEngine(
 		val visibleRange = 0..lastDocumentLine
 
 		if (!coinsSpawned) {
+			AnimationCache.loadCoinAnimation(service<AtlasLoader>())
 			CoinSpawner.spawnCoins(world.registry, tileMap, visibleRange)
 			coinsSpawned = true
 		}

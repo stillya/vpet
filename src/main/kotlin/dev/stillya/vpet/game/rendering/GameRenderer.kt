@@ -9,7 +9,7 @@ import dev.stillya.vpet.config.AsepriteJsonAtlasLoader
 import dev.stillya.vpet.game.GameFrame
 import dev.stillya.vpet.game.VirtualTileMap
 import dev.stillya.vpet.game.ecs.World
-import dev.stillya.vpet.game.ecs.components.CoinVisual
+import dev.stillya.vpet.game.ecs.components.AnimationComponent
 import dev.stillya.vpet.game.ecs.components.Transform
 import dev.stillya.vpet.graphics.create
 import java.awt.BasicStroke
@@ -143,11 +143,11 @@ class GameRenderer(
 
 	private fun renderCoins(g2d: Graphics2D, lineHeight: Int) {
 		val reg = world.registry
-		val coins = reg.allWith(CoinVisual::class, Transform::class)
+		val coins = reg.allWith(AnimationComponent::class, Transform::class)
 
 		for (id in coins) {
 			val t = reg.get<Transform>(id) ?: continue
-			val visual = reg.get<CoinVisual>(id) ?: continue
+			val animComp = reg.get<AnimationComponent>(id) ?: continue
 
 			val coinLine = kotlin.math.floor(t.y).toInt()
 			val lineFrac = t.y - coinLine
