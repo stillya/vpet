@@ -30,7 +30,7 @@ class GameEngine(
 	private var coinsSpawned = false
 	private var lastTickNanos = 0L
 	private var jumpWasPressed = false
-	private val keysHeld = mutableSetOf<Int>()
+	private val keysHeld = mutableSetOf<Int>() // TODO: replace with proper input handling
 
 	val finalScore: Int get() = world.score
 
