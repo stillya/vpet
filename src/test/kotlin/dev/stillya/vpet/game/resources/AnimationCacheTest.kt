@@ -1,5 +1,6 @@
 package dev.stillya.vpet.game.resources
 
+import dev.stillya.vpet.AtlasLoader
 import dev.stillya.vpet.config.AsepriteJsonAtlasLoader
 import org.junit.After
 import org.junit.Assert.*
@@ -8,7 +9,7 @@ import org.junit.Test
 
 class AnimationCacheTest {
 
-    private lateinit var loader: AsepriteJsonAtlasLoader
+    private lateinit var loader: AtlasLoader
 
     @Before
     fun setup() {

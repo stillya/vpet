@@ -1,5 +1,6 @@
 package dev.stillya.vpet.game.rendering
 
+import dev.stillya.vpet.AtlasLoader
 import dev.stillya.vpet.config.AsepriteJsonAtlasLoader
 import dev.stillya.vpet.graphics.create
 import org.junit.Assert.*
@@ -10,7 +11,7 @@ import javax.imageio.ImageIO
 
 class GameRendererTest {
 
-	private lateinit var atlasLoader: AsepriteJsonAtlasLoader
+	private lateinit var atlasLoader: AtlasLoader
 
 	@Before
 	fun setup() {

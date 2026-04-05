@@ -1,5 +1,6 @@
 package dev.stillya.vpet.game
 
+import dev.stillya.vpet.AtlasLoader
 import dev.stillya.vpet.animation.Animation
 import dev.stillya.vpet.animation.Direction
 import dev.stillya.vpet.game.ecs.EntityID
@@ -207,7 +208,7 @@ class WorldUpdateTest {
 
 	@Test
 	fun `tick advances AnimationComponent frames for entities`() {
-		val loader = AsepriteJsonAtlasLoader()
+		val loader: AtlasLoader = AsepriteJsonAtlasLoader()
 		AnimationCache.loadCoinAnimation(loader)
 
 		val world = worldAt(x = 0f, y = 0f)

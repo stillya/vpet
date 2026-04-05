@@ -1,5 +1,6 @@
 package dev.stillya.vpet.game.ecs.systems
 
+import dev.stillya.vpet.AtlasLoader
 import dev.stillya.vpet.config.AsepriteJsonAtlasLoader
 import dev.stillya.vpet.game.ecs.EntityRegistry
 import dev.stillya.vpet.game.ecs.Physics
@@ -13,7 +14,7 @@ import org.junit.Test
 
 class AnimationSystemTest {
 
-    private lateinit var loader: AsepriteJsonAtlasLoader
+    private lateinit var loader: AtlasLoader
     private lateinit var registry: EntityRegistry
 
     @Before

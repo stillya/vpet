@@ -1,5 +1,6 @@
 package dev.stillya.vpet.game.rendering
 
+import dev.stillya.vpet.AtlasLoader
 import dev.stillya.vpet.config.AsepriteJsonAtlasLoader
 import dev.stillya.vpet.game.ecs.World
 import dev.stillya.vpet.game.ecs.components.AnimationComponent
@@ -16,7 +17,7 @@ import org.junit.Test
 
 class RenderSystemTest {
 
-	private lateinit var loader: AsepriteJsonAtlasLoader
+	private lateinit var loader: AtlasLoader
 
 	@Before
 	fun setup() {

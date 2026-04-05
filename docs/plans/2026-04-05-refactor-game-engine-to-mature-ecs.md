@@ -106,12 +106,12 @@ Refactor the game engine from a single flat package to a well-structured ECS arc
 - Modify: game/resources/AnimationCache.kt
 - Modify: game/GameEngine.kt
 
-- [ ] Add AtlasLoader parameter to AnimationCache.loadAnimation or make AnimationCache configurable with AtlasLoader
-- [ ] Remove direct AsepriteJsonAtlasLoader() instantiation from AnimationCache
-- [ ] Inject service<AtlasLoader>() from GameEngine or pass as parameter
-- [ ] Ensure all resource loading goes through injected AtlasLoader, not hardcoded implementation
-- [ ] Update tests to inject mock/test AtlasLoader into AnimationCache
-- [ ] run project test suite - must pass before task 7
+- [x] Add AtlasLoader parameter to AnimationCache.loadAnimation or make AnimationCache configurable with AtlasLoader
+- [x] Remove direct AsepriteJsonAtlasLoader() instantiation from AnimationCache
+- [x] Inject service<AtlasLoader>() from GameEngine or pass as parameter
+- [x] Ensure all resource loading goes through injected AtlasLoader, not hardcoded implementation
+- [x] Update tests to inject mock/test AtlasLoader into AnimationCache
+- [x] run project test suite - must pass before task 7
 
 ### Task 7: Improve EntityID integration with registry
 
