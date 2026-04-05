@@ -12,6 +12,7 @@ import dev.stillya.vpet.game.AABB
 import dev.stillya.vpet.game.Character
 import dev.stillya.vpet.game.CharacterIntent
 import dev.stillya.vpet.game.EntityID
+import dev.stillya.vpet.game.Game
 import dev.stillya.vpet.game.GamePhase
 import dev.stillya.vpet.game.InputState
 import dev.stillya.vpet.game.Physics
@@ -30,7 +31,7 @@ import kotlin.random.Random
 
 class PetAnimated(
 	private val project: Project,
-) : Animated, Character {
+) : Animated, Character, Game {
 	private val atlasLoader: AtlasLoader
 		get() = service<AtlasLoader>()
 	private val renderer: IconRenderer
@@ -84,6 +85,14 @@ class PetAnimated(
 		animationPlayer.setInitialEffect(idleSequence.first.requirement.toEffect())
 
 		playTransition(idleSequence, context)
+	}
+
+	override fun onGameStart() {
+		log.trace("Game started")
+	}
+
+	override fun onGameStop() {
+		log.trace("Game stopped")
 	}
 
 	private fun playTransition(
@@ -281,7 +290,7 @@ class PetAnimated(
 		playTransition(pivotSequence to AnimationState.OBSERVING, context)
 	}
 
-	override fun id() = EntityID("cat")
+	override fun id() = EntityID("pet")
 
 	override fun collider() = AABB(width = 2, height = 2)
 
@@ -530,7 +539,10 @@ class PetAnimated(
 		)
 	)
 
-	private fun loadImage(path: String): Image = ImageIO.read(javaClass.getResourceAsStream(path))
+	private fun loadImage(path: String): Image {
+		val stream = requireNotNull(javaClass.getResourceAsStream(path)) { "Resource not found: $path" }
+		return stream.use { ImageIO.read(it) }
+	}
 
 	private fun SequenceRequirement.toEffect(): StateEffect {
 		return StateEffect(

@@ -1,15 +1,15 @@
 package dev.stillya.vpet.game
 
-import dev.stillya.vpet.animation.Animation
 import dev.stillya.vpet.animation.Direction
 
 data class GameFrame(
 	val world: World,
-	val animation: Animation,
 	val bounds: IntRange
 )
 
 object WorldUpdate {
+
+	private val spatialGrid = SpatialGrid()
 
 	fun tick(
 		world: World,
@@ -18,31 +18,50 @@ object WorldUpdate {
 		character: Character,
 		tileMap: VirtualTileMap,
 		visibleRange: IntRange
-	): GameFrame {
+	): Pair<GameFrame, CharacterIntent> {
+		val reg = world.registry
+		val playerId = world.player
+
+		val transform = reg.get<Transform>(playerId) ?: error("player missing Transform")
+		val velocity = reg.get<Velocity>(playerId) ?: error("player missing Velocity")
+		val physState = reg.get<PhysicsState>(playerId) ?: error("player missing PhysicsState")
+		val sprite = reg.get<SpriteState>(playerId) ?: error("player missing SpriteState")
+		val phaseState = reg.get<PhaseState>(playerId) ?: error("player missing PhaseState")
+
 		val ctx = TickContext(
-			transform = world.transform,
-			velocity = world.velocity,
-			isOnGround = world.isOnGround,
-			sprite = world.sprite,
-			phase = world.phase
+			transform = transform,
+			velocity = velocity,
+			isOnGround = physState.isOnGround,
+			sprite = sprite,
+			phase = phaseState.phase
 		)
 		val intent = character.update(input, ctx, dt)
 
 		val physics = PhysicsBody(character.collider())
 		val result = physics.moveAndSlide(
-			ctx.transform, intent.velocity, tileMap, visibleRange, dt
+			transform, intent.velocity, tileMap, visibleRange, dt
 		)
 
-		val sprite = advanceFrame(intent.animation.name, intent.direction, world.sprite, dt)
+		val newSprite = advanceFrame(intent.animation.name, intent.direction, sprite, dt)
 
-		val newWorld = World(
-			transform = result.transform,
-			velocity = result.velocity,
-			isOnGround = result.isOnGround,
-			sprite = sprite,
-			phase = intent.phase
-		)
-		return GameFrame(newWorld, intent.animation, physics.boundsAt(result.transform))
+		reg.add(playerId, result.transform)
+		reg.add(playerId, result.velocity)
+		reg.add(playerId, PhysicsState(result.isOnGround))
+		reg.add(playerId, newSprite)
+		reg.add(playerId, PhaseState(intent.phase))
+
+		spatialGrid.rebuild(reg)
+		val collected = CollisionSystem.detectCollections(reg, playerId, spatialGrid)
+		var scoreGain = 0
+		for (id in collected) {
+			val collectible = reg.get<Collectible>(id)
+			if (collectible != null) scoreGain += collectible.value
+			reg.markForRemoval(id)
+		}
+		reg.flushRemovals()
+
+		val newWorld = world.copy(score = world.score + scoreGain)
+		return Pair(GameFrame(newWorld, physics.boundsAt(result.transform)), intent)
 	}
 
 	private fun advanceFrame(tag: String, direction: Direction, prev: SpriteState, dt: Float): SpriteState {

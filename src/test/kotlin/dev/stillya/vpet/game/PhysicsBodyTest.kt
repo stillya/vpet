@@ -17,8 +17,7 @@ class PhysicsBodyTest {
 	private val testCharacter = object : Character {
 		val walkSpeed = 9.0f
 		val jumpVelocity = -15.6f
-
-		override fun id() = EntityID("test")
+		override fun id(): EntityID = EntityID("test_character")
 
 		override fun collider() = AABB(width = 2, height = 2)
 
@@ -82,7 +81,7 @@ class PhysicsBodyTest {
 		dt: Float = DT,
 		lastVisibleLine: Int = 20
 	): World =
-		WorldUpdate.tick(world, input, dt, testCharacter, tileMap, 0..lastVisibleLine).world
+		WorldUpdate.tick(world, input, dt, testCharacter, tileMap, 0..lastVisibleLine).first.world
 
 	private fun worldAt(
 		x: Float = 0f,
@@ -91,12 +90,22 @@ class PhysicsBodyTest {
 		vy: Float = 0f,
 		isOnGround: Boolean = true,
 		tag: String = "Idle"
-	) = World(
-		transform = Transform(x, y),
-		velocity = Velocity(vx, vy),
-		isOnGround = isOnGround,
-		sprite = SpriteState(tag = tag)
-	)
+	): World {
+		val reg = EntityRegistry()
+		val player = reg.create()
+		reg.add(player, Transform(x, y))
+		reg.add(player, Velocity(vx, vy))
+		reg.add(player, PhysicsState(isOnGround))
+		reg.add(player, SpriteState(tag = tag))
+		reg.add(player, PhaseState())
+		reg.add(player, AABB(2, 2))
+		return World(registry = reg, player = player)
+	}
+
+	private fun withTransform(world: World, transform: Transform): World {
+		world.registry.add(world.player, transform)
+		return world
+	}
 
 	@Test
 	fun `standing on code line stays grounded`() {
@@ -137,7 +146,7 @@ class PhysicsBodyTest {
 		w = tick(w)
 		assertTrue(w.isOnGround)
 
-		w = w.copy(transform = Transform(10f, 0f))
+		w = withTransform(w, Transform(10f, 0f))
 		w = tick(w)
 		assertFalse(w.isOnGround)
 	}

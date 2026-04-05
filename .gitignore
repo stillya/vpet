@@ -29,6 +29,7 @@ pwru
 
 # Claude
 .claude
+.ralphex
 
 # Golang
 *.out

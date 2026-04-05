@@ -1,9 +1,12 @@
 package dev.stillya.vpet.game
 
+import com.intellij.openapi.diagnostic.thisLogger
 import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.editor.LogicalPosition
 import dev.stillya.vpet.animation.Animation
 import dev.stillya.vpet.animation.INFINITE
+import dev.stillya.vpet.config.AsepriteJsonAtlasLoader
+import dev.stillya.vpet.graphics.create
 import java.awt.BasicStroke
 import java.awt.Color
 import java.awt.Graphics
@@ -12,6 +15,7 @@ import java.awt.RenderingHints
 import java.awt.geom.AffineTransform
 import java.awt.image.AffineTransformOp
 import java.awt.image.BufferedImage
+import javax.imageio.ImageIO
 import javax.swing.JComponent
 
 class GameRenderer(
@@ -25,7 +29,26 @@ class GameRenderer(
 	private var currentAnimation: Animation? = null
 	private val frameCache = mutableMapOf<String, List<BufferedImage>>()
 	private val flippedFrameCache = mutableMapOf<String, List<BufferedImage>>()
+	private val atlasLoader = AsepriteJsonAtlasLoader()
 
+	private val coinFrames: List<BufferedImage> by lazy {
+		try {
+			val atlas = atlasLoader.load("/META-INF/spritesheets/coin/atlas.json") ?: return@lazy emptyList()
+			val imgStream =
+				javaClass.getResourceAsStream("/META-INF/spritesheets/coin/sprite.png") ?: return@lazy emptyList()
+			val image = imgStream.use { ImageIO.read(it) }
+			val spriteSheet = atlas.create(image, "coin")
+			spriteSheet.frames.map { frame ->
+				val f = frame.frame
+				image.getSubimage(f.x, f.y, f.width, f.height)
+			}
+		} catch (e: Exception) {
+			thisLogger().error("Failed to load coin sprite frames, falling back to colored squares", e)
+			emptyList()
+		}
+	}
+
+	private var coinFrameCounter = 0
 	private var frameCount = 0
 	private var lastFpsTime = System.nanoTime()
 	private var fps = 0
@@ -34,11 +57,11 @@ class GameRenderer(
 		isOpaque = false
 	}
 
-	fun update(frame: GameFrame, tileMap: VirtualTileMap) {
+	fun update(frame: GameFrame, animation: Animation, tileMap: VirtualTileMap) {
 		this.world = frame.world
 		this.tileMap = tileMap
 		this.currentBounds = frame.bounds
-		this.currentAnimation = frame.animation
+		this.currentAnimation = animation
 	}
 
 	override fun contains(x: Int, y: Int): Boolean = false
@@ -60,6 +83,8 @@ class GameRenderer(
 
 		// TODO: Enable debug render with a toggle
 //		drawDebug(g2d, lineHeight, groundLine, groundY)
+
+		renderCoins(g2d, lineHeight)
 
 		val animation = currentAnimation ?: return
 		val tag = world.sprite.tag
@@ -109,6 +134,45 @@ class GameRenderer(
 		val tx = AffineTransform.getScaleInstance(-1.0, 1.0)
 		tx.translate(-image.width.toDouble(), 0.0)
 		return AffineTransformOp(tx, AffineTransformOp.TYPE_NEAREST_NEIGHBOR).filter(image, null)
+	}
+
+	private fun renderCoins(g2d: Graphics2D, lineHeight: Int) {
+		val reg = world.registry
+		val coins = reg.allWith(CoinVisual::class, Transform::class)
+
+		for (id in coins) {
+			val t = reg.get<Transform>(id) ?: continue
+			val visual = reg.get<CoinVisual>(id) ?: continue
+
+			val coinLine = kotlin.math.floor(t.y).toInt()
+			val lineFrac = t.y - coinLine
+			val baseY = editor.logicalPositionToXY(LogicalPosition(coinLine, 0)).y
+			val pixelY = baseY + (lineFrac * lineHeight).toInt()
+			val pixelX = colToPixelX(t.x)
+			val cellW = colToPixelX(t.x + 1) - pixelX
+
+			if (coinFrames.isNotEmpty()) {
+				val frameIndex = if (coinFrames.size > 1) {
+					coinFrameCounter % coinFrames.size
+				} else {
+					0
+				}
+				val frame = coinFrames[frameIndex]
+				val size = lineHeight
+				val cx = pixelX + cellW / 2 - size / 2
+				val cy = pixelY + lineHeight / 2 - size / 2
+				g2d.drawImage(frame, cx, cy, size, size, null)
+			} else {
+				val color = Color(255, 215, 0)
+				val cx = pixelX + cellW / 2
+				val cy = pixelY + lineHeight / 2
+				val r = (lineHeight.coerceAtMost(cellW) / 2 - 1).coerceAtLeast(2)
+				g2d.color = color
+				g2d.fillRect(cx - r, cy - r, r * 2, r * 2)
+			}
+		}
+
+		coinFrameCounter++
 	}
 
 	private fun drawDebug(g2d: Graphics2D, lineHeight: Int, groundLine: Int, groundY: Int) {

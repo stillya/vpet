@@ -12,3 +12,7 @@ data class SpriteState(
 	val frameTimer: Float = 0f,
 	val direction: Direction = Direction.RIGHT
 )
+
+data class PhysicsState(val isOnGround: Boolean = false)
+
+data class PhaseState(val phase: GamePhase = GamePhase.PLAYING)
