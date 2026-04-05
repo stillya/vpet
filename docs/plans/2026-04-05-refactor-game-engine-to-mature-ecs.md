@@ -74,16 +74,16 @@ Refactor the game engine from a single flat package to a well-structured ECS arc
 - Modify: game/rendering/GameRenderer.kt
 - Modify: game/GameEngine.kt
 
-- [ ] Create RenderSystem class with render(g2d: Graphics2D, world: World, animation: Animation, tileMap: VirtualTileMap, editor: Editor, bounds: IntRange)
-- [ ] Move all rendering logic from GameRenderer.paintComponent to RenderSystem.render
-- [ ] RenderSystem queries AnimationComponent entities and renders them using AnimationCache.get(resourceId)
-- [ ] RenderSystem renders player using passed Animation (Character/OOP path) and AnimationComponent entities (ECS path)
-- [ ] Keep GameRenderer as lightweight JComponent wrapper that calls renderSystem.render(g2d, ...) in paintComponent
-- [ ] GameRenderer holds state (world, animation, tileMap, bounds) and passes to RenderSystem
-- [ ] Remove all lazy coinFrames loading from GameRenderer (now in AnimationCache)
-- [ ] Remove frameCache/flippedFrameCache from GameRenderer (now in AnimationResource)
-- [ ] write tests for RenderSystem render logic
-- [ ] run project test suite - must pass before task 5
+- [x] Create RenderSystem class with render(g2d: Graphics2D, world: World, animation: Animation, tileMap: VirtualTileMap, editor: Editor, bounds: IntRange)
+- [x] Move all rendering logic from GameRenderer.paintComponent to RenderSystem.render
+- [x] RenderSystem queries AnimationComponent entities and renders them using AnimationCache.get(resourceId)
+- [x] RenderSystem renders player using passed Animation (Character/OOP path) and AnimationComponent entities (ECS path)
+- [x] Keep GameRenderer as lightweight JComponent wrapper that calls renderSystem.render(g2d, ...) in paintComponent
+- [x] GameRenderer holds state (world, animation, tileMap, bounds) and passes to RenderSystem
+- [x] Remove all lazy coinFrames loading from GameRenderer (now in AnimationCache)
+- [x] Remove frameCache/flippedFrameCache from GameRenderer (now in AnimationResource)
+- [x] write tests for RenderSystem render logic
+- [x] run project test suite - must pass before task 5
 
 ### Task 5: Create AnimationSystem for entity animation updates
 
