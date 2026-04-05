@@ -15,7 +15,9 @@ development activities, and add a touch of joy to your coding sessions.
 
 - 🐱 Adorable pixel art companions animated in your status bar
 - 🎮 Interactive pet responds to clicks
-- 🎮 Game Mode - Click the pet to enter an interactive platformer game with collectible coins
+- 🎮 Game Mode - Click the pet to enter an interactive platformer game with collectible
+  coins
+- 🖥️ Inline pet appears inside the editor and uses your code as the level during game mode
 - 💻 Reacts to build and execution events
 - 🎉 Displays different animations based on success or failure
 - 🚀 Lightweight with minimal impact on IDE performance
@@ -28,6 +30,10 @@ development activities, and add a touch of joy to your coding sessions.
 _And here it is **zoooommed** in:_
 
 ![VPet Zoomed In](docs/preview.png)
+
+_And here it is running inline inside the editor:_
+
+![VPet Inline In Editor](docs/vpet_inline.png)
 
 ## Installation
 
@@ -63,9 +69,11 @@ additional configuration is required!
 ### Game Mode
 
 Click on your pet companion to enter Game Mode - an interactive platformer where you can:
-- Control the pet with arrow keys or WASD
+
+- Control the pet with arrow keys
 - Collect coins to increase your score
-- Explore your code editor as a game world
+- See the pet rendered inline inside the editor
+- Explore your code editor as a platformer level built from your source code
 - Press ESC to exit Game Mode and return to normal pet behavior
 
 ### Settings
