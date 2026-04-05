@@ -15,6 +15,7 @@ class WorldUpdateTest {
 	private lateinit var tileMap: VirtualTileMap
 
 	private val testCharacter = object : Character {
+		override fun id(): EntityID = EntityID("test_character")
 		override fun collider() = AABB(width = 2, height = 2)
 		override fun update(input: InputState, ctx: TickContext, dt: Float): CharacterIntent {
 			val vx = when {
@@ -23,6 +24,7 @@ class WorldUpdateTest {
 					val damped = ctx.velocity.x * exp(-18f * dt)
 					if (abs(damped) < Physics.VELOCITY_EPSILON) 0f else damped
 				}
+
 				else -> ctx.velocity.x
 			}
 			val vy = if (input.jumpJustPressed && ctx.isOnGround) -15.6f else ctx.velocity.y
