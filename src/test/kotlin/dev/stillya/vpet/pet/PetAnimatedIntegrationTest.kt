@@ -281,9 +281,6 @@ class PetAnimatedIntegrationTest : LightPlatform4TestCase() {
 
 	@Test
 	fun testEntityIdCanBeSetAndRetrieved() {
-		val defaultId = petAnimated.id()
-		assertNotNull("PetAnimated should have a default EntityID", defaultId)
-
 		val newId = EntityID("player_123")
 		petAnimated.setEntityId(newId)
 
@@ -291,8 +288,14 @@ class PetAnimatedIntegrationTest : LightPlatform4TestCase() {
 	}
 
 	@Test
-	fun testDefaultEntityIdIsPet() {
-		assertEquals("Default EntityID should be 'pet'", EntityID("pet"), petAnimated.id())
+	fun testEntityIdRequiresInitialization() {
+		val freshPet = PetAnimated(project)
+		try {
+			freshPet.id()
+			fail("Expected IllegalStateException when accessing uninitialized EntityID")
+		} catch (e: IllegalStateException) {
+			assertTrue("Error message should mention initialization", e.message?.contains("not initialized") == true)
+		}
 	}
 }
 

@@ -85,6 +85,8 @@ class PetAnimatedGameLifecycleTest : LightPlatform4TestCase() {
     @Test
     fun `PetAnimated exposes stable spatial id`() {
         val character = project.service<Animated>() as Character
-        assertEquals(EntityID("pet"), character.id())
+        val testId = EntityID("test_player")
+        (character as PetAnimated).setEntityId(testId)
+        assertEquals(testId, character.id())
     }
 }

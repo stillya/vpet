@@ -37,7 +37,7 @@ class PetAnimated(
 	private val renderer: IconRenderer
 		get() = project.service<IconRenderer>()
 
-	private var entityId: EntityID = EntityID("pet")
+	private var entityId: EntityID? = null
 
 	var random: Random = Random
 		set(value) {
@@ -292,7 +292,7 @@ class PetAnimated(
 		playTransition(pivotSequence to AnimationState.OBSERVING, context)
 	}
 
-	override fun id() = entityId
+	override fun id() = entityId ?: error("EntityID not initialized - call setEntityId first")
 
 	fun setEntityId(id: EntityID) {
 		entityId = id

@@ -103,8 +103,10 @@ class GameEngine(
 			coinsSpawned = true
 		}
 
+		val currentCharacter = character ?: return
+
 		try {
-			val (frame, intent) = WorldUpdate.tick(world, input, dt, character ?: return, tileMap, visibleRange)
+			val (frame, intent) = WorldUpdate.tick(world, input, dt, currentCharacter, tileMap, visibleRange)
 			world = frame.world
 
 			renderer?.update(frame, intent.animation, tileMap)

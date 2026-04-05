@@ -3,10 +3,11 @@ package dev.stillya.vpet.game.resources
 import dev.stillya.vpet.AtlasLoader
 import dev.stillya.vpet.animation.Animation
 import dev.stillya.vpet.graphics.create
+import java.util.concurrent.ConcurrentHashMap
 import javax.imageio.ImageIO
 
 object AnimationCache {
-    private val cache = mutableMapOf<String, AnimationResource>()
+    private val cache = ConcurrentHashMap<String, AnimationResource>()
 
     const val COIN_IDLE = "coin_idle"
 

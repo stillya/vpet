@@ -29,6 +29,7 @@ class GameController(private val project: Project) {
 	private var gameDisposable: Disposable? = null
 	private var activeGame: Game? = null
 
+	@Volatile
 	var isGameActive: Boolean = false
 		private set
 
