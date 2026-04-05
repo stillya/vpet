@@ -199,6 +199,13 @@ build/distributions/vpet-{version}.zip
   `project.messageBus.syncPublisher(TOPIC)` for broadcasting (use project bus for
   project-scoped communication). Example: `CoinCollectedListener.TOPIC` broadcasts coin
   collection events from game mode to status bar widget
+- **Resource Loading with DIP**: AnimationCache accepts injected AtlasLoader to avoid
+  dependency inversion violations. Pass `service<AtlasLoader>()` when calling
+  `AnimationCache.loadAnimation()` rather than hardcoding implementation dependencies
+- **Character EntityID Binding**: Characters implementing the `Character` interface must
+  have their EntityID assigned via `setEntityId()` after entity creation in the registry.
+  GameController handles this binding during world initialization. This ensures the
+  Character's `id()` method returns the actual registry entity ID
 
 ## Key Constraints
 
@@ -214,6 +221,9 @@ build/distributions/vpet-{version}.zip
 - **Distribution**: Plugin ZIP built via `buildPlugin` task
 - **Versioning**: Uses SemVer, configured in `gradle.properties`
 - **Icon Format**: 16x16 pixel sprites, rendered at status bar size
+- **AnimationCache Testing**: Tests must inject mock AtlasLoader implementations into
+  AnimationCache. Use `AnimationCache.clear()` between tests to reset singleton state. See
+  MockAtlasLoaderTest.kt for pattern
 
 ## No-Go Zones
 

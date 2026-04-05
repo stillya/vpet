@@ -23,7 +23,6 @@ class RenderSystem(
 	private val columnMapper = VisualColumnMapper(editor)
 	private val frameCache = mutableMapOf<String, List<BufferedImage>>()
 	private val flippedFrameCache = mutableMapOf<String, List<BufferedImage>>()
-	private var coinFrameCounter = 0
 
 	fun render(
 		g2d: Graphics2D,
@@ -102,19 +101,13 @@ class RenderSystem(
 			val pixelX = colToPixelX(t.x)
 			val cellW = colToPixelX(t.x + 1) - pixelX
 
-			val frameIndex = if (frames.size > 1) {
-				coinFrameCounter % frames.size
-			} else {
-				0
-			}
+			val frameIndex = animComp.currentFrame.coerceIn(0, frames.size - 1)
 			val frame = frames[frameIndex]
 			val size = lineHeight
 			val cx = pixelX + cellW / 2 - size / 2
 			val cy = pixelY + lineHeight / 2 - size / 2
 			g2d.drawImage(frame, cx, cy, size, size, null)
 		}
-
-		coinFrameCounter++
 	}
 
 	fun renderDebug(

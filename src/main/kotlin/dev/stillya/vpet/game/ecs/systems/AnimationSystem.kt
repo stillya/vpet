@@ -13,10 +13,13 @@ object AnimationSystem {
             val component = registry.get<AnimationComponent>(entityId) ?: continue
             val resource = AnimationCache.get(component.resourceId) ?: continue
 
+            val frameCount = resource.animation.frameCount
+            if (frameCount == 0) continue
+
             val newElapsed = component.elapsed + dt
 
             if (newElapsed >= Physics.FRAME_ADVANCE_INTERVAL) {
-                val nextFrame = (component.currentFrame + 1) % resource.animation.frameCount
+                val nextFrame = (component.currentFrame + 1) % frameCount
                 val updatedComponent = AnimationComponent(
                     resourceId = component.resourceId,
                     currentFrame = nextFrame,
