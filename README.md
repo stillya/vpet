@@ -15,9 +15,11 @@ development activities, and add a touch of joy to your coding sessions.
 
 - 🐱 Adorable pixel art companions animated in your status bar
 - 🎮 Interactive pet responds to clicks
-- 🎮 Game Mode - Click the pet to enter an interactive platformer game with collectible
+- 🎮 Game Mode - cmd + click on the pet to enter an interactive platformer game with
+  collectible
   coins
-- 🖥️ Inline pet appears inside the editor and uses your code as the level during game mode
+- 🖥️ Inline pet appears inside the editor and uses your code as the level during game
+  mode(even modify it while playing!)
 - 💻 Reacts to build and execution events
 - 🎉 Displays different animations based on success or failure
 - 🚀 Lightweight with minimal impact on IDE performance
