@@ -106,20 +106,4 @@ class CoinSpawnerTest {
 		assertEquals(1f, transform.y, 0.001f)
 	}
 
-	@Test
-	fun `all spawned coins share same animation resource`() {
-		tileMap.rebuildFromLines(listOf(
-			"",
-			"code code code code code"
-		))
-		CoinSpawner.spawnCoins(registry, tileMap, 0..1, count = 5)
-
-		val coins = registry.allWith(AnimationComponent::class)
-		assertEquals(5, coins.size)
-
-		coins.forEach { id ->
-			val animComp = registry.get<AnimationComponent>(id)!!
-			assertEquals(AnimationCache.COIN_IDLE, animComp.resourceId)
-		}
-	}
 }

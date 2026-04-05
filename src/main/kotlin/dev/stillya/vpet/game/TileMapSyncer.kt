@@ -53,7 +53,7 @@ class TileMapSyncer(private val editor: Editor) : Disposable {
 		map.rebuildFromDocument(lineCount, lineText = { line ->
 			val start = doc.getLineStartOffset(line)
 			val end = doc.getLineEndOffset(line)
-			chars.subSequence(start, end).toString().replace("\t", "    ") // TODO: Handle tabs properly
+			chars.subSequence(start, end).toString()
 		}) { line, col ->
 			mapper.toVisualCol(editor.logicalPositionToXY(LogicalPosition(line, col)).x)
 		}
