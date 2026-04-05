@@ -142,6 +142,6 @@ Refactor the game engine from a single flat package to a well-structured ECS arc
 
 ### Task 9: Update documentation
 
-- [ ] update MEMORY.md with new package structure, AnimationCache pattern, RenderSystem approach
-- [ ] update CLAUDE.md with new architecture (shared resources, AnimationComponent, RenderSystem)
-- [ ] move this plan to docs/plans/completed/
+- [x] update MEMORY.md with new package structure, AnimationCache pattern, RenderSystem approach
+- [x] update CLAUDE.md with new architecture (shared resources, AnimationComponent, RenderSystem)
+- [x] move this plan to docs/plans/completed/
