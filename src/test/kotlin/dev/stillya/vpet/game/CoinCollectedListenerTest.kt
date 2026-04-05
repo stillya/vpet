@@ -2,6 +2,7 @@ package dev.stillya.vpet.game
 
 import com.intellij.openapi.application.ApplicationManager
 import com.intellij.testFramework.LightPlatform4TestCase
+import dev.stillya.vpet.game.ecs.World
 import org.junit.Test
 
 class CoinCollectedListenerTest : LightPlatform4TestCase() {

@@ -10,6 +10,17 @@ import com.intellij.openapi.fileEditor.FileEditorManager
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.Disposer
 import dev.stillya.vpet.Animated
+import dev.stillya.vpet.game.ecs.EntityRegistry
+import dev.stillya.vpet.game.ecs.GamePhase
+import dev.stillya.vpet.game.ecs.World
+import dev.stillya.vpet.game.ecs.components.PhaseState
+import dev.stillya.vpet.game.ecs.components.PhysicsState
+import dev.stillya.vpet.game.ecs.components.SpriteState
+import dev.stillya.vpet.game.ecs.components.Transform
+import dev.stillya.vpet.game.ecs.components.Velocity
+import dev.stillya.vpet.game.physics.AABB
+import dev.stillya.vpet.game.rendering.GameRenderer
+import dev.stillya.vpet.game.rendering.VisualColumnMapper
 
 @Service(Service.Level.PROJECT)
 class GameController(private val project: Project) {

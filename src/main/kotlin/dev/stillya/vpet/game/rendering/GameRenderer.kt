@@ -1,4 +1,4 @@
-package dev.stillya.vpet.game
+package dev.stillya.vpet.game.rendering
 
 import com.intellij.openapi.diagnostic.thisLogger
 import com.intellij.openapi.editor.Editor
@@ -6,6 +6,11 @@ import com.intellij.openapi.editor.LogicalPosition
 import dev.stillya.vpet.animation.Animation
 import dev.stillya.vpet.animation.INFINITE
 import dev.stillya.vpet.config.AsepriteJsonAtlasLoader
+import dev.stillya.vpet.game.GameFrame
+import dev.stillya.vpet.game.VirtualTileMap
+import dev.stillya.vpet.game.ecs.World
+import dev.stillya.vpet.game.ecs.components.CoinVisual
+import dev.stillya.vpet.game.ecs.components.Transform
 import dev.stillya.vpet.graphics.create
 import java.awt.BasicStroke
 import java.awt.Color

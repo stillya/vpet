@@ -2,6 +2,19 @@ package dev.stillya.vpet.game
 
 import dev.stillya.vpet.animation.Animation
 import dev.stillya.vpet.animation.Direction
+import dev.stillya.vpet.game.ecs.EntityID
+import dev.stillya.vpet.game.ecs.EntityRegistry
+import dev.stillya.vpet.game.ecs.GamePhase
+import dev.stillya.vpet.game.ecs.Physics
+import dev.stillya.vpet.game.ecs.World
+import dev.stillya.vpet.game.ecs.components.Collectible
+import dev.stillya.vpet.game.ecs.components.PhaseState
+import dev.stillya.vpet.game.ecs.components.PhysicsState
+import dev.stillya.vpet.game.ecs.components.SpriteState
+import dev.stillya.vpet.game.ecs.components.Transform
+import dev.stillya.vpet.game.ecs.components.Velocity
+import dev.stillya.vpet.game.input.InputState
+import dev.stillya.vpet.game.physics.AABB
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertTrue

@@ -1,7 +1,23 @@
-package dev.stillya.vpet.game
+package dev.stillya.vpet.game.physics
 
 import dev.stillya.vpet.animation.Animation
 import dev.stillya.vpet.animation.Direction
+import dev.stillya.vpet.game.Character
+import dev.stillya.vpet.game.CharacterIntent
+import dev.stillya.vpet.game.TickContext
+import dev.stillya.vpet.game.VirtualTileMap
+import dev.stillya.vpet.game.WorldUpdate
+import dev.stillya.vpet.game.ecs.EntityID
+import dev.stillya.vpet.game.ecs.EntityRegistry
+import dev.stillya.vpet.game.ecs.GamePhase
+import dev.stillya.vpet.game.ecs.Physics
+import dev.stillya.vpet.game.ecs.World
+import dev.stillya.vpet.game.ecs.components.PhaseState
+import dev.stillya.vpet.game.ecs.components.PhysicsState
+import dev.stillya.vpet.game.ecs.components.SpriteState
+import dev.stillya.vpet.game.ecs.components.Transform
+import dev.stillya.vpet.game.ecs.components.Velocity
+import dev.stillya.vpet.game.input.InputState
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue

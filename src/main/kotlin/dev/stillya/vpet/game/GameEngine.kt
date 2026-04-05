@@ -5,6 +5,10 @@ import com.intellij.openapi.Disposable
 import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.util.Disposer
+import dev.stillya.vpet.game.ecs.World
+import dev.stillya.vpet.game.ecs.systems.CoinSpawner
+import dev.stillya.vpet.game.input.InputState
+import dev.stillya.vpet.game.rendering.GameRenderer
 import java.awt.event.ComponentAdapter
 import java.awt.event.ComponentEvent
 import java.awt.event.KeyEvent

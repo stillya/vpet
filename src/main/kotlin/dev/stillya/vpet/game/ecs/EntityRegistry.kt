@@ -1,4 +1,4 @@
-package dev.stillya.vpet.game
+package dev.stillya.vpet.game.ecs
 
 import kotlin.reflect.KClass
 

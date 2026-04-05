@@ -1,4 +1,4 @@
-package dev.stillya.vpet.game
+package dev.stillya.vpet.game.rendering
 
 import dev.stillya.vpet.config.AsepriteJsonAtlasLoader
 import dev.stillya.vpet.graphics.create

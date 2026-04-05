@@ -1,6 +1,18 @@
 package dev.stillya.vpet.game
 
 import dev.stillya.vpet.animation.Direction
+import dev.stillya.vpet.game.ecs.Physics
+import dev.stillya.vpet.game.ecs.SpatialGrid
+import dev.stillya.vpet.game.ecs.World
+import dev.stillya.vpet.game.ecs.components.Collectible
+import dev.stillya.vpet.game.ecs.components.PhaseState
+import dev.stillya.vpet.game.ecs.components.PhysicsState
+import dev.stillya.vpet.game.ecs.components.SpriteState
+import dev.stillya.vpet.game.ecs.components.Transform
+import dev.stillya.vpet.game.ecs.components.Velocity
+import dev.stillya.vpet.game.ecs.systems.CollisionSystem
+import dev.stillya.vpet.game.input.InputState
+import dev.stillya.vpet.game.physics.PhysicsBody
 
 data class GameFrame(
 	val world: World,

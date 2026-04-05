@@ -1,5 +1,11 @@
-package dev.stillya.vpet.game
+package dev.stillya.vpet.game.ecs.systems
 
+import dev.stillya.vpet.game.VirtualTileMap
+import dev.stillya.vpet.game.ecs.EntityRegistry
+import dev.stillya.vpet.game.ecs.components.CoinVisual
+import dev.stillya.vpet.game.ecs.components.Collectible
+import dev.stillya.vpet.game.ecs.components.Transform
+import dev.stillya.vpet.game.physics.AABB
 import kotlin.random.Random
 
 object CoinSpawner {

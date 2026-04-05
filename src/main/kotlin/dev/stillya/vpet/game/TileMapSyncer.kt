@@ -6,6 +6,7 @@ import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.editor.LogicalPosition
 import com.intellij.openapi.editor.event.DocumentEvent
 import com.intellij.openapi.editor.event.DocumentListener
+import dev.stillya.vpet.game.rendering.VisualColumnMapper
 
 class TileMapSyncer(private val editor: Editor) : Disposable {
 
