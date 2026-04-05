@@ -44,15 +44,15 @@ Refactor the game engine from a single flat package to a well-structured ECS arc
 - Create: game/resources/AnimationCache.kt
 - Create: game/ecs/components/AnimationComponent.kt
 
-- [ ] Create AnimationResource data class (id: String, animation: Animation, frames: List<BufferedImage>)
-- [ ] Create AnimationCache singleton object that loads and caches AnimationResource instances
-- [ ] AnimationCache has loadAnimation(path, tag) that returns AnimationResource with pre-extracted frames
-- [ ] Add coin animation loading to AnimationCache with a specific ID like "coin_idle"
-- [ ] Create AnimationComponent data class (resourceId: String, currentFrame: Int, elapsed: Float)
-- [ ] AnimationComponent references resource by ID string, not by holding full Animation instance
-- [ ] write tests for AnimationResource and AnimationCache singleton
-- [ ] write tests for AnimationComponent
-- [ ] run project test suite - must pass before task 3
+- [x] Create AnimationResource data class (id: String, animation: Animation, frames: List<BufferedImage>)
+- [x] Create AnimationCache singleton object that loads and caches AnimationResource instances
+- [x] AnimationCache has loadAnimation(path, tag) that returns AnimationResource with pre-extracted frames
+- [x] Add coin animation loading to AnimationCache with a specific ID like "coin_idle"
+- [x] Create AnimationComponent data class (resourceId: String, currentFrame: Int, elapsed: Float)
+- [x] AnimationComponent references resource by ID string, not by holding full Animation instance
+- [x] write tests for AnimationResource and AnimationCache singleton
+- [x] write tests for AnimationComponent
+- [x] run project test suite - must pass before task 3
 
 ### Task 3: Update CoinSpawner to use shared animation resource
 
