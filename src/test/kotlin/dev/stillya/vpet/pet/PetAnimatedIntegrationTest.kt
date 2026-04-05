@@ -10,6 +10,7 @@ import dev.stillya.vpet.AtlasLoader
 import dev.stillya.vpet.IconRenderer
 import dev.stillya.vpet.animation.Animation
 import dev.stillya.vpet.config.AsepriteJsonAtlasLoader
+import dev.stillya.vpet.game.ecs.EntityID
 import dev.stillya.vpet.graphics.AnimationContext
 import dev.stillya.vpet.graphics.AnimationEpochManager
 import dev.stillya.vpet.graphics.AnimationTrigger
@@ -276,6 +277,25 @@ class PetAnimatedIntegrationTest : LightPlatform4TestCase() {
 		if (!rendererSpy.isFlipped) flippedRight = true
 
 		assertTrue("Should flip when cursor moves to different sides", flippedLeft || flippedRight)
+	}
+
+	@Test
+	fun testEntityIdCanBeSetAndRetrieved() {
+		val newId = EntityID("player_123")
+		petAnimated.setEntityId(newId)
+
+		assertEquals("EntityID should be updated after setEntityId call", newId, petAnimated.id())
+	}
+
+	@Test
+	fun testEntityIdRequiresInitialization() {
+		val freshPet = PetAnimated(project)
+		try {
+			freshPet.id()
+			fail("Expected IllegalStateException when accessing uninitialized EntityID")
+		} catch (e: IllegalStateException) {
+			assertTrue("Error message should mention initialization", e.message?.contains("not initialized") == true)
+		}
 	}
 }
 

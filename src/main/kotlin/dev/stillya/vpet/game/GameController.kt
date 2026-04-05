@@ -10,6 +10,17 @@ import com.intellij.openapi.fileEditor.FileEditorManager
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.Disposer
 import dev.stillya.vpet.Animated
+import dev.stillya.vpet.game.ecs.EntityRegistry
+import dev.stillya.vpet.game.ecs.GamePhase
+import dev.stillya.vpet.game.ecs.World
+import dev.stillya.vpet.game.ecs.components.PhaseState
+import dev.stillya.vpet.game.ecs.components.PhysicsState
+import dev.stillya.vpet.game.ecs.components.SpriteState
+import dev.stillya.vpet.game.ecs.components.Transform
+import dev.stillya.vpet.game.ecs.components.Velocity
+import dev.stillya.vpet.game.physics.AABB
+import dev.stillya.vpet.game.rendering.GameRenderer
+import dev.stillya.vpet.game.rendering.VisualColumnMapper
 
 @Service(Service.Level.PROJECT)
 class GameController(private val project: Project) {
@@ -18,6 +29,7 @@ class GameController(private val project: Project) {
 	private var gameDisposable: Disposable? = null
 	private var activeGame: Game? = null
 
+	@Volatile
 	var isGameActive: Boolean = false
 		private set
 
@@ -41,7 +53,7 @@ class GameController(private val project: Project) {
 			return
 		}
 
-		val world = buildInitialWorld(activeEditor)
+		val world = buildInitialWorld(activeEditor, animated)
 
 		val renderer = GameRenderer(activeEditor)
 
@@ -93,7 +105,7 @@ class GameController(private val project: Project) {
 		}
 	}
 
-	private fun buildInitialWorld(editor: Editor): World {
+	private fun buildInitialWorld(editor: Editor, character: Character): World {
 		val visibleArea = editor.scrollingModel.visibleArea
 		val firstVisibleLine = editor.xyToLogicalPosition(java.awt.Point(0, visibleArea.y)).line
 
@@ -112,6 +124,11 @@ class GameController(private val project: Project) {
 		registry.add(player, SpriteState())
 		registry.add(player, PhaseState(GamePhase.ENTRANCE))
 		registry.add(player, AABB(2, 2))
+
+		if (character is dev.stillya.vpet.pet.PetAnimated) {
+			character.setEntityId(player)
+		}
+
 		return World(registry = registry, player = player)
 	}
 }

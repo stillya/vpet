@@ -14,45 +14,16 @@ class VirtualTileMapTest {
 	}
 
 	@Test
-	fun `hasGroundAt returns false for empty line`() {
-		tileMap.rebuildFromLines(listOf(""))
-		assertFalse(tileMap.hasGroundAt(0, 0, 1))
-	}
+	fun `hasGroundAt handles overlap and missing-row cases`() {
+		tileMap.rebuildFromLines(listOf("    fun foo() {", "     "))
 
-	@Test
-	fun `hasGroundAt returns false for whitespace-only line`() {
-		tileMap.rebuildFromLines(listOf("     "))
-		assertFalse(tileMap.hasGroundAt(0, 0, 4))
-	}
-
-	@Test
-	fun `hasGroundAt returns true when cat overlaps code extent`() {
-		tileMap.rebuildFromLines(listOf("    fun foo() {"))
 		assertTrue(tileMap.hasGroundAt(0, 5, 6))
-	}
-
-	@Test
-	fun `hasGroundAt returns true when cat overlaps left edge of extent`() {
-		tileMap.rebuildFromLines(listOf("    fun foo() {"))
 		assertTrue(tileMap.hasGroundAt(0, 3, 4))
-	}
-
-	@Test
-	fun `hasGroundAt returns true when cat overlaps right edge of extent`() {
-		tileMap.rebuildFromLines(listOf("    fun foo() {"))
 		assertTrue(tileMap.hasGroundAt(0, 14, 15))
-	}
-
-	@Test
-	fun `hasGroundAt returns false when cat is entirely left of extent`() {
-		tileMap.rebuildFromLines(listOf("    fun foo() {"))
 		assertFalse(tileMap.hasGroundAt(0, 1, 2))
-	}
-
-	@Test
-	fun `hasGroundAt returns false when cat is entirely right of extent`() {
-		tileMap.rebuildFromLines(listOf("    fun foo() {"))
 		assertFalse(tileMap.hasGroundAt(0, 15, 16))
+		assertFalse(tileMap.hasGroundAt(1, 0, 4))
+		assertFalse(tileMap.hasGroundAt(5, 0, 1))
 	}
 
 	@Test
@@ -62,50 +33,20 @@ class VirtualTileMapTest {
 	}
 
 	@Test
-	fun `hasGroundAt returns false for line not in map`() {
-		tileMap.rebuildFromLines(listOf("hello"))
-		assertFalse(tileMap.hasGroundAt(5, 0, 1))
-	}
+	fun `isSolid distinguishes solid cells from whitespace and bounds`() {
+		tileMap.rebuildFromLines(listOf("    fun foo()", ""))
 
-	@Test
-	fun `isSolid returns true for non-whitespace character`() {
-		tileMap.rebuildFromLines(listOf("    fun foo()"))
 		assertTrue(tileMap.isSolid(0, 4))
 		assertTrue(tileMap.isSolid(0, 5))
 		assertTrue(tileMap.isSolid(0, 6))
-	}
-
-	@Test
-	fun `isSolid returns false for whitespace character`() {
-		tileMap.rebuildFromLines(listOf("    fun foo()"))
 		assertFalse(tileMap.isSolid(0, 0))
 		assertFalse(tileMap.isSolid(0, 3))
 		assertFalse(tileMap.isSolid(0, 7))
-	}
-
-	@Test
-	fun `isSolid returns false for column past end of line`() {
-		tileMap.rebuildFromLines(listOf("hello"))
-		assertFalse(tileMap.isSolid(0, 5))
+		assertFalse(tileMap.isSolid(0, 13))
 		assertFalse(tileMap.isSolid(0, 100))
-	}
-
-	@Test
-	fun `isSolid returns false for negative column`() {
-		tileMap.rebuildFromLines(listOf("hello"))
 		assertFalse(tileMap.isSolid(0, -1))
-	}
-
-	@Test
-	fun `isSolid returns false for line not in map`() {
-		tileMap.rebuildFromLines(listOf("hello"))
+		assertFalse(tileMap.isSolid(1, 0))
 		assertFalse(tileMap.isSolid(5, 0))
-	}
-
-	@Test
-	fun `isSolid returns false for empty line`() {
-		tileMap.rebuildFromLines(listOf(""))
-		assertFalse(tileMap.isSolid(0, 0))
 	}
 
 	@Test
@@ -131,19 +72,13 @@ class VirtualTileMapTest {
 	}
 
 	@Test
-	fun `findGroundBelow returns null when no ground exists`() {
-		tileMap.rebuildFromLines(listOf("", "", ""))
-		assertNull(tileMap.findGroundBelow(0, 0, 1, 2))
-	}
-
-	@Test
-	fun `findGroundBelow respects startLine parameter`() {
+	fun `findGroundBelow respects search bounds`() {
 		tileMap.rebuildFromLines(listOf("code", "", "code"))
 		assertEquals(2, tileMap.findGroundBelow(1, 0, 1, 2))
-	}
 
-	@Test
-	fun `findGroundBelow respects maxLine parameter`() {
+		tileMap.rebuildFromLines(listOf("", "", ""))
+		assertNull(tileMap.findGroundBelow(0, 0, 1, 2))
+
 		tileMap.rebuildFromLines(listOf("", "", "code"))
 		assertNull(tileMap.findGroundBelow(0, 0, 1, 1))
 	}
@@ -212,6 +147,30 @@ class VirtualTileMapTest {
 
 		assertFalse(tileMap.hasGroundAt(0, 0, 1))
 		assertTrue(tileMap.hasGroundAt(0, 1, 2))
+	}
+
+	@Test
+	fun `rebuildFromDocument respects visual columns for tab-indented code`() {
+		tileMap.rebuildFromDocument(
+			lineCount = 1,
+			lineText = { "\tfoo" },
+			colMapper = { _, col ->
+				when (col) {
+					0 -> 0
+					1 -> 4
+					2 -> 5
+					3 -> 6
+					else -> error("unexpected column $col")
+				}
+			}
+		)
+
+		assertFalse(tileMap.isSolid(0, 0))
+		assertFalse(tileMap.isSolid(0, 3))
+		assertTrue(tileMap.isSolid(0, 4))
+		assertTrue(tileMap.isSolid(0, 6))
+		assertEquals(4..6, tileMap.getExtent(0))
+		assertTrue(tileMap.hasGroundAt(0, 4, 5))
 	}
 
 	@Test

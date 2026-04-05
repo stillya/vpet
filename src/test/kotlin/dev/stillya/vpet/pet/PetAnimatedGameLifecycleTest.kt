@@ -9,8 +9,8 @@ import dev.stillya.vpet.AtlasLoader
 import dev.stillya.vpet.IconRenderer
 import dev.stillya.vpet.config.AsepriteJsonAtlasLoader
 import dev.stillya.vpet.game.Character
-import dev.stillya.vpet.game.EntityID
 import dev.stillya.vpet.game.Game
+import dev.stillya.vpet.game.ecs.EntityID
 import org.junit.Test
 
 class PetAnimatedGameLifecycleTest : LightPlatform4TestCase() {
@@ -85,6 +85,8 @@ class PetAnimatedGameLifecycleTest : LightPlatform4TestCase() {
     @Test
     fun `PetAnimated exposes stable spatial id`() {
         val character = project.service<Animated>() as Character
-        assertEquals(EntityID("pet"), character.id())
+        val testId = EntityID("test_player")
+        (character as PetAnimated).setEntityId(testId)
+        assertEquals(testId, character.id())
     }
 }

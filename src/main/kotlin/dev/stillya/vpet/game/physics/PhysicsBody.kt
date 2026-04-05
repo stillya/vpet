@@ -1,5 +1,9 @@
-package dev.stillya.vpet.game
+package dev.stillya.vpet.game.physics
 
+import dev.stillya.vpet.game.VirtualTileMap
+import dev.stillya.vpet.game.ecs.Physics
+import dev.stillya.vpet.game.ecs.components.Transform
+import dev.stillya.vpet.game.ecs.components.Velocity
 import kotlin.math.abs
 import kotlin.math.ceil
 import kotlin.math.floor

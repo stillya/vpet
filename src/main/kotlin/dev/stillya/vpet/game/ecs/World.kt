@@ -1,5 +1,10 @@
-package dev.stillya.vpet.game
+package dev.stillya.vpet.game.ecs
 
+import dev.stillya.vpet.game.ecs.components.PhaseState
+import dev.stillya.vpet.game.ecs.components.PhysicsState
+import dev.stillya.vpet.game.ecs.components.SpriteState
+import dev.stillya.vpet.game.ecs.components.Transform
+import dev.stillya.vpet.game.ecs.components.Velocity
 import kotlin.math.floor
 
 data class World(
@@ -31,12 +36,6 @@ fun World.playerPhaseState(): PhaseState =
 	registry.get<PhaseState>(player) ?: PhaseState()
 
 enum class GamePhase { ENTRANCE, PLAYING }
-
-data class InputState(
-	val moveDirection: Int = 0,
-	// TODO: Make input state more robust, i wanna have like a union for buttons
-	val jumpJustPressed: Boolean = false
-)
 
 object Physics {
 	const val GRAVITY = 70.0f

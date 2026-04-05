@@ -1,5 +1,7 @@
-package dev.stillya.vpet.game
+package dev.stillya.vpet.game.ecs
 
+import dev.stillya.vpet.game.ecs.components.Transform
+import dev.stillya.vpet.game.physics.AABB
 import kotlin.math.floor
 
 class SpatialGrid(private val cellSize: Int = 4) {

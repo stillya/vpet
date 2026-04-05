@@ -1,4 +1,6 @@
-package dev.stillya.vpet.game
+package dev.stillya.vpet.game.ecs
+
+import dev.stillya.vpet.game.physics.AABB
 
 interface Spatial {
 	fun id(): EntityID

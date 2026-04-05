@@ -1,5 +1,12 @@
-package dev.stillya.vpet.game
+package dev.stillya.vpet.game.ecs.systems
 
+import dev.stillya.vpet.game.VirtualTileMap
+import dev.stillya.vpet.game.ecs.EntityRegistry
+import dev.stillya.vpet.game.ecs.components.AnimationComponent
+import dev.stillya.vpet.game.ecs.components.Collectible
+import dev.stillya.vpet.game.ecs.components.Transform
+import dev.stillya.vpet.game.physics.AABB
+import dev.stillya.vpet.game.resources.AnimationCache
 import kotlin.random.Random
 
 object CoinSpawner {
@@ -28,7 +35,7 @@ object CoinSpawner {
 			registry.add(coin, Transform(col.toFloat(), (groundLine - 1).toFloat()))
 			registry.add(coin, AABB(1, 1))
 			registry.add(coin, Collectible())
-			registry.add(coin, CoinVisual())
+			registry.add(coin, AnimationComponent(resourceId = AnimationCache.COIN_IDLE))
 		}
 	}
 }

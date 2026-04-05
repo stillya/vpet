@@ -1,6 +1,19 @@
 package dev.stillya.vpet.game
 
 import dev.stillya.vpet.animation.Direction
+import dev.stillya.vpet.game.ecs.Physics
+import dev.stillya.vpet.game.ecs.SpatialGrid
+import dev.stillya.vpet.game.ecs.World
+import dev.stillya.vpet.game.ecs.components.Collectible
+import dev.stillya.vpet.game.ecs.components.PhaseState
+import dev.stillya.vpet.game.ecs.components.PhysicsState
+import dev.stillya.vpet.game.ecs.components.SpriteState
+import dev.stillya.vpet.game.ecs.components.Transform
+import dev.stillya.vpet.game.ecs.components.Velocity
+import dev.stillya.vpet.game.ecs.systems.AnimationSystem
+import dev.stillya.vpet.game.ecs.systems.CollisionSystem
+import dev.stillya.vpet.game.input.InputState
+import dev.stillya.vpet.game.physics.PhysicsBody
 
 data class GameFrame(
 	val world: World,
@@ -20,7 +33,7 @@ object WorldUpdate {
 		visibleRange: IntRange
 	): Pair<GameFrame, CharacterIntent> {
 		val reg = world.registry
-		val playerId = world.player
+		val playerId = character.id()
 
 		val transform = reg.get<Transform>(playerId) ?: error("player missing Transform")
 		val velocity = reg.get<Velocity>(playerId) ?: error("player missing Velocity")
@@ -59,6 +72,8 @@ object WorldUpdate {
 			reg.markForRemoval(id)
 		}
 		reg.flushRemovals()
+
+		AnimationSystem.updateAnimations(reg, dt)
 
 		val newWorld = world.copy(score = world.score + scoreGain)
 		return Pair(GameFrame(newWorld, physics.boundsAt(result.transform)), intent)

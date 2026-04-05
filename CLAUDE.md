@@ -75,7 +75,7 @@ Developer Activity → Event Listeners → Animation State Machine → Sprite Re
 - `GameController`: Thin plugin.xml adapter; creates and delegates to `GameEngine` on
   `enterGameMode()` / `exitGameMode()`
 
-**ECS System**
+**ECS System** (organized in game/ecs/)
 
 - `EntityRegistry`: Component-based entity storage with entity lifecycle management;
   supports create/destroy entities, add/get/has components by type, query entities by
@@ -83,18 +83,47 @@ Developer Activity → Event Listeners → Animation State Machine → Sprite Re
   pattern
 - `SpatialGrid`: Hash-based spatial partitioning (4-tile cells) for collision detection;
   rebuilds from registry each frame, queries entities by AABB overlap
-- `CollisionSystem`: Detects collectible-player collisions using spatial grid; filters
-  candidates by Collectible component and AABB overlap test
-- Components: `Transform`, `Velocity`, `SpriteState`, `PhysicsState`, `PhaseState`
-  (player); `Collectible`, `CoinVisual`, `AABB` (entities)
 - `World.registry: EntityRegistry` — holds all entities/components; `World.player:
   EntityID` — player entity ID; `World.score: Int` — accumulated collectible score
+
+**ECS Systems** (organized in game/ecs/systems/)
+
+- `CollisionSystem`: Detects collectible-player collisions using spatial grid; filters
+  candidates by Collectible component and AABB overlap test
+- `AnimationSystem`: Updates AnimationComponent for all entities each frame; advances
+  elapsed time and currentFrame based on AnimationResource frame duration
+
+**ECS Components** (organized in game/ecs/components/)
+
+- Player components: `Transform`, `Velocity`, `SpriteState`, `PhysicsState`, `PhaseState`
+- Entity components: `Collectible`, `AABB`, `AnimationComponent`
+- `AnimationComponent(resourceId, currentFrame, elapsed)`: References shared
+  AnimationResource by ID string, not by holding full Animation instance
+
+**Shared Resource System** (organized in game/resources/)
+
+- `AnimationResource(id, animation, frames)`: Data class holding pre-extracted sprite
+  frames and animation metadata; shared across entities
+- `AnimationCache`: Singleton object managing shared AnimationResource instances;
+  `loadAnimation(path, tag, atlasLoader)` returns cached resources, loads once per ID
+- Coins reference shared "coin_idle" resource via AnimationComponent; no duplicate frame
+  extraction
+
+**Rendering System** (organized in game/rendering/)
+
+- `RenderSystem`: Pure rendering logic class with `render(g2d, world, animation, tileMap,
+  editor, bounds)`; queries AnimationComponent entities and renders using AnimationCache;
+  dual path for Character (OOP) and entity (ECS) rendering
+- `GameRenderer`: Lightweight JComponent wrapper holding state (world, animation,
+  tileMap, bounds); calls RenderSystem.render() in paintComponent; no embedded rendering
+  logic
+- `VisualColumnMapper`: Maps world coordinates to visual columns for rendering
 
 **Collectible System**
 
 - `CoinSpawner`: Spawns coins on solid tiles within visible range; finds valid spawn
   points (solid ground with empty space above), shuffles and places N coins, creates
-  entities with Transform, AABB, Collectible, and CoinVisual components
+  entities with Transform, AABB, Collectible, and AnimationComponent(resourceId="coin_idle")
 - Collision detection: `WorldUpdate.tick()` rebuilds spatial grid, calls
   `CollisionSystem.detectCollections()`, accumulates score from collected coins, marks
   entities for removal
@@ -170,6 +199,13 @@ build/distributions/vpet-{version}.zip
   `project.messageBus.syncPublisher(TOPIC)` for broadcasting (use project bus for
   project-scoped communication). Example: `CoinCollectedListener.TOPIC` broadcasts coin
   collection events from game mode to status bar widget
+- **Resource Loading with DIP**: AnimationCache accepts injected AtlasLoader to avoid
+  dependency inversion violations. Pass `service<AtlasLoader>()` when calling
+  `AnimationCache.loadAnimation()` rather than hardcoding implementation dependencies
+- **Character EntityID Binding**: Characters implementing the `Character` interface must
+  have their EntityID assigned via `setEntityId()` after entity creation in the registry.
+  GameController handles this binding during world initialization. This ensures the
+  Character's `id()` method returns the actual registry entity ID
 
 ## Key Constraints
 
@@ -185,6 +221,9 @@ build/distributions/vpet-{version}.zip
 - **Distribution**: Plugin ZIP built via `buildPlugin` task
 - **Versioning**: Uses SemVer, configured in `gradle.properties`
 - **Icon Format**: 16x16 pixel sprites, rendered at status bar size
+- **AnimationCache Testing**: Tests must inject mock AtlasLoader implementations into
+  AnimationCache. Use `AnimationCache.clear()` between tests to reset singleton state. See
+  MockAtlasLoaderTest.kt for pattern
 
 ## No-Go Zones
 

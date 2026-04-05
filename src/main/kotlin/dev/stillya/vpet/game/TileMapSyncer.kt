@@ -6,6 +6,7 @@ import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.editor.LogicalPosition
 import com.intellij.openapi.editor.event.DocumentEvent
 import com.intellij.openapi.editor.event.DocumentListener
+import dev.stillya.vpet.game.rendering.VisualColumnMapper
 
 class TileMapSyncer(private val editor: Editor) : Disposable {
 
@@ -52,7 +53,7 @@ class TileMapSyncer(private val editor: Editor) : Disposable {
 		map.rebuildFromDocument(lineCount, lineText = { line ->
 			val start = doc.getLineStartOffset(line)
 			val end = doc.getLineEndOffset(line)
-			chars.subSequence(start, end).toString().replace("\t", "    ") // TODO: Handle tabs properly
+			chars.subSequence(start, end).toString()
 		}) { line, col ->
 			mapper.toVisualCol(editor.logicalPositionToXY(LogicalPosition(line, col)).x)
 		}

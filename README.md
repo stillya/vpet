@@ -15,6 +15,7 @@ development activities, and add a touch of joy to your coding sessions.
 
 - 🐱 Adorable pixel art companions animated in your status bar
 - 🎮 Interactive pet responds to clicks
+- 🎮 Game Mode - Click the pet to enter an interactive platformer game with collectible coins
 - 💻 Reacts to build and execution events
 - 🎉 Displays different animations based on success or failure
 - 🚀 Lightweight with minimal impact on IDE performance
@@ -58,6 +59,14 @@ More companions are planned for future releases!
 
 Once installed, your pixel companion will automatically appear in the status bar. No
 additional configuration is required!
+
+### Game Mode
+
+Click on your pet companion to enter Game Mode - an interactive platformer where you can:
+- Control the pet with arrow keys or WASD
+- Collect coins to increase your score
+- Explore your code editor as a game world
+- Press ESC to exit Game Mode and return to normal pet behavior
 
 ### Settings
 

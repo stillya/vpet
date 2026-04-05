@@ -1,4 +1,4 @@
-package dev.stillya.vpet.game
+package dev.stillya.vpet.game.rendering
 
 import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.editor.LogicalPosition

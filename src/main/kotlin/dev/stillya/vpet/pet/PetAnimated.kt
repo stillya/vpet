@@ -8,16 +8,16 @@ import dev.stillya.vpet.AtlasLoader
 import dev.stillya.vpet.IconRenderer
 import dev.stillya.vpet.animation.*
 import dev.stillya.vpet.config.SpriteSheetAtlas
-import dev.stillya.vpet.game.AABB
 import dev.stillya.vpet.game.Character
 import dev.stillya.vpet.game.CharacterIntent
-import dev.stillya.vpet.game.EntityID
 import dev.stillya.vpet.game.Game
-import dev.stillya.vpet.game.GamePhase
-import dev.stillya.vpet.game.InputState
-import dev.stillya.vpet.game.Physics
 import dev.stillya.vpet.game.TickContext
-import dev.stillya.vpet.game.Velocity
+import dev.stillya.vpet.game.ecs.EntityID
+import dev.stillya.vpet.game.ecs.GamePhase
+import dev.stillya.vpet.game.ecs.Physics
+import dev.stillya.vpet.game.ecs.components.Velocity
+import dev.stillya.vpet.game.input.InputState
+import dev.stillya.vpet.game.physics.AABB
 import dev.stillya.vpet.graphics.AnimationContext
 import dev.stillya.vpet.graphics.AnimationTrigger
 import dev.stillya.vpet.graphics.create
@@ -36,6 +36,8 @@ class PetAnimated(
 		get() = service<AtlasLoader>()
 	private val renderer: IconRenderer
 		get() = project.service<IconRenderer>()
+
+	private var entityId: EntityID? = null
 
 	var random: Random = Random
 		set(value) {
@@ -290,7 +292,11 @@ class PetAnimated(
 		playTransition(pivotSequence to AnimationState.OBSERVING, context)
 	}
 
-	override fun id() = EntityID("pet")
+	override fun id() = entityId ?: error("EntityID not initialized - call setEntityId first")
+
+	fun setEntityId(id: EntityID) {
+		entityId = id
+	}
 
 	override fun collider() = AABB(width = 2, height = 2)
 

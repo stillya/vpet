@@ -1,4 +1,4 @@
-package dev.stillya.vpet.game
+package dev.stillya.vpet.game.ecs
 
 import kotlin.reflect.KClass
 
@@ -47,8 +47,9 @@ class EntityRegistry {
 	}
 
 	fun flushRemovals() {
-		pendingRemovals.forEach { destroy(it) }
+		val toRemove = pendingRemovals.toList()
 		pendingRemovals.clear()
+		toRemove.forEach { destroy(it) }
 	}
 
 	fun exists(id: EntityID): Boolean = id in components

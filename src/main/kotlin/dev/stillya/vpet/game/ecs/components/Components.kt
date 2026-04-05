@@ -1,6 +1,7 @@
-package dev.stillya.vpet.game
+package dev.stillya.vpet.game.ecs.components
 
 import dev.stillya.vpet.animation.Direction
+import dev.stillya.vpet.game.ecs.GamePhase
 
 data class Transform(val x: Float = 0f, val y: Float = 0f)
 
