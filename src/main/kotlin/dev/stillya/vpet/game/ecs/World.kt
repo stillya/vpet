@@ -5,7 +5,7 @@ import dev.stillya.vpet.game.ecs.components.PhysicsState
 import dev.stillya.vpet.game.ecs.components.SpriteState
 import dev.stillya.vpet.game.ecs.components.Transform
 import dev.stillya.vpet.game.ecs.components.Velocity
-import kotlin.math.floor
+import dev.stillya.vpet.game.utils.toTileInt
 
 data class World(
 	val registry: EntityRegistry = EntityRegistry(),
@@ -17,7 +17,7 @@ data class World(
 	val isOnGround: Boolean get() = playerPhysicsState().isOnGround
 	val sprite: SpriteState get() = playerSprite()
 	val phase: GamePhase get() = playerPhaseState().phase
-	val displayLine: Int get() = floor(transform.y).toInt()
+	val displayLine: Int get() = transform.y.toTileInt()
 }
 
 fun World.playerTransform(): Transform =
