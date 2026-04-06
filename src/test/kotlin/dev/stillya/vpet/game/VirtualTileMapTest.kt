@@ -1,6 +1,10 @@
 package dev.stillya.vpet.game
 
-import org.junit.Assert.*
+import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
+import org.junit.Assert.assertNotNull
+import org.junit.Assert.assertNull
+import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
 
@@ -51,23 +55,27 @@ class VirtualTileMapTest {
 
 	@Test
 	fun `findGroundBelow finds first solid line scanning downward`() {
-		tileMap.rebuildFromLines(listOf(
-			"",
-			"",
-			"    code here",
-			"more code"
-		))
+		tileMap.rebuildFromLines(
+			listOf(
+				"",
+				"",
+				"    code here",
+				"more code"
+			)
+		)
 		assertEquals(2, tileMap.findGroundBelow(0, 5, 6, 3))
 	}
 
 	@Test
 	fun `findGroundBelow skips lines where cat doesn't overlap`() {
-		tileMap.rebuildFromLines(listOf(
-			"",
-			"ab",
-			"                  xy",
-			"          code"
-		))
+		tileMap.rebuildFromLines(
+			listOf(
+				"",
+				"ab",
+				"                  xy",
+				"          code"
+			)
+		)
 		assertEquals(3, tileMap.findGroundBelow(0, 10, 11, 3))
 	}
 
@@ -97,15 +105,17 @@ class VirtualTileMapTest {
 
 	@Test
 	fun `realistic code file - platform detection`() {
-		tileMap.rebuildFromLines(listOf(
-			"package dev.example",
-			"",
-			"class Foo {",
-			"    fun bar() {",
-			"        val x = 1",
-			"    }",
-			"}"
-		))
+		tileMap.rebuildFromLines(
+			listOf(
+				"package dev.example",
+				"",
+				"class Foo {",
+				"    fun bar() {",
+				"        val x = 1",
+				"    }",
+				"}"
+			)
+		)
 
 		assertTrue(tileMap.hasGroundAt(0, 10, 11))
 		assertFalse(tileMap.hasGroundAt(1, 10, 11))

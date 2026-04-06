@@ -7,7 +7,8 @@ import dev.stillya.vpet.game.ecs.components.Collectible
 import dev.stillya.vpet.game.ecs.components.Transform
 import dev.stillya.vpet.game.physics.AABB
 import dev.stillya.vpet.game.resources.AnimationCache
-import org.junit.Assert.*
+import org.junit.Assert.assertEquals
+import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
 
@@ -24,10 +25,12 @@ class CoinSpawnerTest {
 
 	@Test
 	fun `spawnCoins creates coins on solid tiles with air above`() {
-		tileMap.rebuildFromLines(listOf(
-			"",
-			"code here"
-		))
+		tileMap.rebuildFromLines(
+			listOf(
+				"",
+				"code here"
+			)
+		)
 		CoinSpawner.spawnCoins(registry, tileMap, 0..1, count = 3)
 
 		val coins = registry.allWith(AnimationComponent::class, Transform::class, Collectible::class, AABB::class)
@@ -49,10 +52,12 @@ class CoinSpawnerTest {
 
 	@Test
 	fun `spawnCoins respects count parameter`() {
-		tileMap.rebuildFromLines(listOf(
-			"",
-			"code code code code code code code"
-		))
+		tileMap.rebuildFromLines(
+			listOf(
+				"",
+				"code code code code code code code"
+			)
+		)
 		CoinSpawner.spawnCoins(registry, tileMap, 0..1, count = 2)
 
 		val coins = registry.allWith(AnimationComponent::class)
@@ -61,10 +66,12 @@ class CoinSpawnerTest {
 
 	@Test
 	fun `spawnCoins spawns no coins when no valid positions exist`() {
-		tileMap.rebuildFromLines(listOf(
-			"code",
-			"code"
-		))
+		tileMap.rebuildFromLines(
+			listOf(
+				"code",
+				"code"
+			)
+		)
 		CoinSpawner.spawnCoins(registry, tileMap, 0..1, count = 5)
 
 		val coins = registry.allWith(AnimationComponent::class)
@@ -73,11 +80,13 @@ class CoinSpawnerTest {
 
 	@Test
 	fun `spawnCoins only spawns on ground with air above`() {
-		tileMap.rebuildFromLines(listOf(
-			"code",
-			"",
-			"code"
-		))
+		tileMap.rebuildFromLines(
+			listOf(
+				"code",
+				"",
+				"code"
+			)
+		)
 		CoinSpawner.spawnCoins(registry, tileMap, 0..2, count = 10)
 
 		val coins = registry.allWith(AnimationComponent::class, Transform::class)
@@ -92,11 +101,13 @@ class CoinSpawnerTest {
 
 	@Test
 	fun `spawnCoins positions coins one tile above ground`() {
-		tileMap.rebuildFromLines(listOf(
-			"",
-			"",
-			"code"
-		))
+		tileMap.rebuildFromLines(
+			listOf(
+				"",
+				"",
+				"code"
+			)
+		)
 		CoinSpawner.spawnCoins(registry, tileMap, 0..2, count = 1)
 
 		val coins = registry.allWith(AnimationComponent::class, Transform::class)
