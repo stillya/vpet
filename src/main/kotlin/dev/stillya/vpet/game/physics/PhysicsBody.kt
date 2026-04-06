@@ -4,9 +4,9 @@ import dev.stillya.vpet.game.VirtualTileMap
 import dev.stillya.vpet.game.ecs.Physics
 import dev.stillya.vpet.game.ecs.components.Transform
 import dev.stillya.vpet.game.ecs.components.Velocity
+import dev.stillya.vpet.game.utils.toTileInt
 import kotlin.math.abs
 import kotlin.math.ceil
-import kotlin.math.floor
 import kotlin.math.max
 import kotlin.math.sqrt
 
@@ -43,7 +43,7 @@ class PhysicsBody(val collider: AABB) {
 	}
 
 	fun boundsAt(transform: Transform): IntRange {
-		val left = floor(transform.x).toInt()
+		val left = transform.x.toTileInt()
 		return left..<left + collider.width
 	}
 
@@ -61,7 +61,7 @@ class PhysicsBody(val collider: AABB) {
 		t = xResult.first
 		v = xResult.second
 
-		val bodyLineBeforeY = floor(t.y).toInt() - 1
+		val bodyLineBeforeY = t.y.toTileInt() - 1
 		val yResult = moveAndResolveY(t, v, tileMap, dt)
 		t = yResult.transform
 		v = yResult.velocity
@@ -82,12 +82,12 @@ class PhysicsBody(val collider: AABB) {
 	): Pair<Transform, Velocity> {
 		val newX = transform.x + velocity.x * dt
 
-		val prevCatLeft = floor(transform.x).toInt()
+		val prevCatLeft = transform.x.toTileInt()
 		val prevCatRight = prevCatLeft + collider.width - 1
-		val newCatLeft = floor(newX).toInt()
+		val newCatLeft = newX.toTileInt()
 		val newCatRight = newCatLeft + collider.width - 1
 
-		val bodyLine = floor(transform.y).toInt() - 1
+		val bodyLine = transform.y.toTileInt() - 1
 
 		// Skip wall collision if cat already overlaps solid cells on body line
 		val alreadyOverlaps = (prevCatLeft..prevCatRight).any { tileMap.isSolid(bodyLine, it) }
@@ -125,12 +125,12 @@ class PhysicsBody(val collider: AABB) {
 
 		val newLineY = transform.y + vy * dt
 
-		val catLeft = floor(transform.x).toInt()
+		val catLeft = transform.x.toTileInt()
 		val catRight = catLeft + collider.width - 1
 
 		if (vy >= 0) {
 			val sweepStart = ceil(transform.y - SWEEP_EPSILON).toInt()
-			val sweepEnd = floor(newLineY).toInt()
+			val sweepEnd = newLineY.toTileInt()
 
 			if (sweepStart <= sweepEnd) {
 				val landLine = tileMap.findGroundBelow(sweepStart, catLeft, catRight, sweepEnd)
@@ -143,8 +143,8 @@ class PhysicsBody(val collider: AABB) {
 				}
 			}
 		} else {
-			val oldBodyLine = floor(transform.y).toInt() - 1
-			val newBodyLine = floor(newLineY).toInt() - 1
+			val oldBodyLine = transform.y.toTileInt() - 1
+			val newBodyLine = newLineY.toTileInt() - 1
 
 			for (line in (oldBodyLine - 1) downTo newBodyLine) {
 				if (tileMap.hasCeilingAt(line, catLeft, catRight)) {
@@ -171,10 +171,10 @@ class PhysicsBody(val collider: AABB) {
 		prevBodyLine: Int,
 		tileMap: VirtualTileMap
 	): Pair<Transform, Velocity> {
-		val newBodyLine = floor(transform.y).toInt() - 1
+		val newBodyLine = transform.y.toTileInt() - 1
 		if (newBodyLine == prevBodyLine) return transform to velocity
 
-		val catLeft = floor(transform.x).toInt()
+		val catLeft = transform.x.toTileInt()
 		val catRight = catLeft + collider.width - 1
 
 		var solidLeft = Int.MAX_VALUE

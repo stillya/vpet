@@ -6,7 +6,7 @@ import dev.stillya.vpet.game.ecs.SpatialGrid
 import dev.stillya.vpet.game.ecs.components.Collectible
 import dev.stillya.vpet.game.ecs.components.Transform
 import dev.stillya.vpet.game.physics.AABB
-import kotlin.math.floor
+import dev.stillya.vpet.game.utils.toTileInt
 
 object CollisionSystem {
 
@@ -31,10 +31,10 @@ object CollisionSystem {
 	}
 
 	private fun aabbsOverlap(aPos: Transform, a: AABB, bPos: Transform, b: AABB): Boolean {
-		val ax = floor(aPos.x).toInt()
-		val ay = floor(aPos.y).toInt() - (a.height - 1)
-		val bx = floor(bPos.x).toInt()
-		val by = floor(bPos.y).toInt() - (b.height - 1)
+		val ax = aPos.x.toTileInt()
+		val ay = aPos.y.toTileInt() - (a.height - 1)
+		val bx = bPos.x.toTileInt()
+		val by = bPos.y.toTileInt() - (b.height - 1)
 
 		return ax < bx + b.width &&
 				ax + a.width > bx &&

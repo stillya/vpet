@@ -9,6 +9,7 @@ import dev.stillya.vpet.game.ecs.World
 import dev.stillya.vpet.game.ecs.components.AnimationComponent
 import dev.stillya.vpet.game.ecs.components.Transform
 import dev.stillya.vpet.game.resources.AnimationCache
+import dev.stillya.vpet.game.utils.toTileInt
 import java.awt.BasicStroke
 import java.awt.Color
 import java.awt.Font
@@ -94,7 +95,7 @@ class RenderSystem(
 			val frames = resource.frames
 			if (frames.isEmpty()) continue
 
-			val coinLine = kotlin.math.floor(t.y).toInt()
+			val coinLine = t.y.toTileInt()
 			val lineFrac = t.y - coinLine
 			val baseY = editor.logicalPositionToXY(LogicalPosition(coinLine, 0)).y
 			val pixelY = baseY + (lineFrac * lineHeight).toInt()

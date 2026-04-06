@@ -2,7 +2,7 @@ package dev.stillya.vpet.game.ecs
 
 import dev.stillya.vpet.game.ecs.components.Transform
 import dev.stillya.vpet.game.physics.AABB
-import kotlin.math.floor
+import dev.stillya.vpet.game.utils.toTileInt
 
 class SpatialGrid(private val cellSize: Int = 4) {
 
@@ -18,8 +18,8 @@ class SpatialGrid(private val cellSize: Int = 4) {
 	}
 
 	fun query(at: Transform, bounds: AABB): Set<EntityID> {
-		val x = floor(at.x).toInt()
-		val y = floor(at.y).toInt() - (bounds.height - 1)
+		val x = at.x.toTileInt()
+		val y = at.y.toTileInt() - (bounds.height - 1)
 
 		val minCx = x / cellSize - (if (x < 0 && x % cellSize != 0) 1 else 0)
 		val maxCx = (x + bounds.width - 1) / cellSize
@@ -36,8 +36,8 @@ class SpatialGrid(private val cellSize: Int = 4) {
 	}
 
 	private fun insert(id: EntityID, t: Transform, c: AABB) {
-		val x = floor(t.x).toInt()
-		val y = floor(t.y).toInt() - (c.height - 1)
+		val x = t.x.toTileInt()
+		val y = t.y.toTileInt() - (c.height - 1)
 
 		val minCx = x / cellSize - (if (x < 0 && x % cellSize != 0) 1 else 0)
 		val maxCx = (x + c.width - 1) / cellSize
