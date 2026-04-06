@@ -18,6 +18,9 @@ class GameRenderer(
 	private var tileMap: VirtualTileMap? = null
 	private var currentBounds: IntRange = 0..0
 	private var currentAnimation: Animation? = null
+	private var fpsWindowStartNanos: Long = System.nanoTime()
+	private var framesInWindow: Int = 0
+	private var currentFps: Int = 0
 	private val renderSystem = RenderSystem(editor)
 
 	init {
@@ -37,10 +40,26 @@ class GameRenderer(
 		val g2d = g as Graphics2D
 		val animation = currentAnimation ?: return
 		val map = tileMap ?: return
+		val debugEnabled = VPetSettings.getInstance().debugRenderEnabled
+
+		if (debugEnabled) {
+			updateFps()
+		}
 
 		renderSystem.render(g2d, world, animation, currentBounds)
-		if (VPetSettings.getInstance().debugRenderEnabled) {
-			renderSystem.renderDebug(g2d, world, map, currentBounds)
+		if (debugEnabled) {
+			renderSystem.renderDebug(g2d, world, map, currentBounds, currentFps)
+		}
+	}
+
+	private fun updateFps() {
+		framesInWindow += 1
+		val now = System.nanoTime()
+		val elapsedNanos = now - fpsWindowStartNanos
+		if (elapsedNanos >= 1_000_000_000L) {
+			currentFps = ((framesInWindow * 1_000_000_000L) / elapsedNanos).toInt()
+			fpsWindowStartNanos = now
+			framesInWindow = 0
 		}
 	}
 }
