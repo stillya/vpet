@@ -11,7 +11,10 @@ import dev.stillya.vpet.game.ecs.components.Transform
 import dev.stillya.vpet.game.ecs.components.Velocity
 import dev.stillya.vpet.game.resources.AnimationCache
 import org.junit.After
-import org.junit.Assert.*
+import org.junit.Assert.assertEquals
+import org.junit.Assert.assertNotNull
+import org.junit.Assert.assertNull
+import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
 

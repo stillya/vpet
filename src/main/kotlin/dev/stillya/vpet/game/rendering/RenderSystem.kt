@@ -28,7 +28,6 @@ class RenderSystem(
 		g2d: Graphics2D,
 		world: World,
 		animation: Animation,
-		tileMap: VirtualTileMap,
 		bounds: IntRange
 	) {
 		g2d.setRenderingHint(

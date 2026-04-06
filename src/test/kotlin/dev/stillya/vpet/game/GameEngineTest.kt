@@ -1,6 +1,5 @@
 package dev.stillya.vpet.game
 
-import dev.stillya.vpet.game.input.InputState
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue

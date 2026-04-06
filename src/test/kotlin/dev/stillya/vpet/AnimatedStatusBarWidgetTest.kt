@@ -35,6 +35,7 @@ class AnimatedStatusBarWidgetTest : LightPlatform4TestCase() {
 			override fun createAnimationContext(trigger: AnimationTrigger): AnimationContext {
 				return AnimationContext(epoch = 0L, triggerEvent = trigger)
 			}
+
 			override fun setFlipped(flipped: Boolean) {}
 		}
 

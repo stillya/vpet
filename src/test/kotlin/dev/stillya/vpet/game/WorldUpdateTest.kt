@@ -3,12 +3,12 @@ package dev.stillya.vpet.game
 import dev.stillya.vpet.AtlasLoader
 import dev.stillya.vpet.animation.Animation
 import dev.stillya.vpet.animation.Direction
+import dev.stillya.vpet.config.AsepriteJsonAtlasLoader
 import dev.stillya.vpet.game.ecs.EntityID
 import dev.stillya.vpet.game.ecs.EntityRegistry
 import dev.stillya.vpet.game.ecs.GamePhase
 import dev.stillya.vpet.game.ecs.Physics
 import dev.stillya.vpet.game.ecs.World
-import dev.stillya.vpet.config.AsepriteJsonAtlasLoader
 import dev.stillya.vpet.game.ecs.components.AnimationComponent
 import dev.stillya.vpet.game.ecs.components.Collectible
 import dev.stillya.vpet.game.ecs.components.PhaseState
@@ -260,8 +260,10 @@ class WorldUpdateTest {
 		val (frame, _) = WorldUpdate.tick(world, InputState(), 0.016f, characterWithMatchingId, tileMap, 0..10)
 
 		assertEquals("Character EntityID must match World.player", world.player, characterWithMatchingId.id())
-		assertNotNull("Player components should be retrievable via character.id()",
-			frame.world.registry.get<Transform>(characterWithMatchingId.id()))
+		assertNotNull(
+			"Player components should be retrievable via character.id()",
+			frame.world.registry.get<Transform>(characterWithMatchingId.id())
+		)
 	}
 
 	@Test
@@ -313,8 +315,10 @@ class WorldUpdateTest {
 			WorldUpdate.tick(world, InputState(), 0.016f, characterWithDifferentId, tileMap, 0..10)
 			assertTrue("Should throw error when character.id() doesn't match player in registry", false)
 		} catch (e: IllegalStateException) {
-			assertTrue("Error message should mention missing Transform",
-				e.message?.contains("Transform") == true)
+			assertTrue(
+				"Error message should mention missing Transform",
+				e.message?.contains("Transform") == true
+			)
 		}
 	}
 }

@@ -3,10 +3,10 @@ package dev.stillya.vpet.game
 import com.intellij.openapi.Disposable
 import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.editor.Editor
-import com.intellij.openapi.editor.LogicalPosition
 import com.intellij.openapi.editor.event.DocumentEvent
 import com.intellij.openapi.editor.event.DocumentListener
 import dev.stillya.vpet.game.rendering.VisualColumnMapper
+import kotlin.math.max
 
 class TileMapSyncer(private val editor: Editor) : Disposable {
 
@@ -55,7 +55,12 @@ class TileMapSyncer(private val editor: Editor) : Disposable {
 			val end = doc.getLineEndOffset(line)
 			chars.subSequence(start, end).toString()
 		}) { line, col ->
-			mapper.toVisualCol(editor.logicalPositionToXY(LogicalPosition(line, col)).x)
+			val lineStartOffset = doc.getLineStartOffset(line)
+			val startX = editor.offsetToXY(lineStartOffset + col).x
+			val endX = editor.offsetToXY(lineStartOffset + col + 1).x
+			val startCol = mapper.toVisualCol(startX)
+			val endColExclusive = max(startCol + 1, mapper.toVisualColCeil(endX))
+			VisualSpan(startCol, endColExclusive)
 		}
 		return map
 	}

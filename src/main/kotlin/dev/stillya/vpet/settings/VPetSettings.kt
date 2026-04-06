@@ -33,6 +33,12 @@ class VPetSettings : PersistentStateComponent<VPetSettings.State> {
 			state.xmasModeEnabled = value
 		}
 
+	var debugRenderEnabled: Boolean
+		get() = state.debugRenderEnabled
+		set(value) {
+			state.debugRenderEnabled = value
+		}
+
 	var catVariant: CatVariant
 		get() = CatVariant.entries.find { it.name == state.catVariantName } ?: CatVariant.DEFAULT
 		set(value) {
@@ -62,6 +68,7 @@ class VPetSettings : PersistentStateComponent<VPetSettings.State> {
 
 	data class State(
 		var xmasModeEnabled: Boolean = false,
+		var debugRenderEnabled: Boolean = false,
 		var catVariantName: String = CatVariant.DEFAULT.name
 	)
 }

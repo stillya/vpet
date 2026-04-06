@@ -3,7 +3,9 @@ package dev.stillya.vpet.game.rendering
 import dev.stillya.vpet.AtlasLoader
 import dev.stillya.vpet.config.AsepriteJsonAtlasLoader
 import dev.stillya.vpet.graphics.create
-import org.junit.Assert.*
+import org.junit.Assert.assertEquals
+import org.junit.Assert.assertNotNull
+import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
 import java.awt.image.BufferedImage

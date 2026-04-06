@@ -5,12 +5,13 @@ import dev.stillya.vpet.animation.Animation
 import dev.stillya.vpet.game.GameFrame
 import dev.stillya.vpet.game.VirtualTileMap
 import dev.stillya.vpet.game.ecs.World
+import dev.stillya.vpet.settings.VPetSettings
 import java.awt.Graphics
 import java.awt.Graphics2D
 import javax.swing.JComponent
 
 class GameRenderer(
-	private val editor: Editor
+	editor: Editor
 ) : JComponent() {
 
 	private var world = World()
@@ -37,6 +38,9 @@ class GameRenderer(
 		val animation = currentAnimation ?: return
 		val map = tileMap ?: return
 
-		renderSystem.render(g2d, world, animation, map, currentBounds)
+		renderSystem.render(g2d, world, animation, currentBounds)
+		if (VPetSettings.getInstance().debugRenderEnabled) {
+			renderSystem.renderDebug(g2d, world, map, currentBounds)
+		}
 	}
 }
