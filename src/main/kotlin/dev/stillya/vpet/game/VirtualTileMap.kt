@@ -5,6 +5,13 @@ object Tile {
 	const val SOLID: Byte = 0x01
 }
 
+data class VisualSpan(val startCol: Int, val endColExclusive: Int) {
+	init {
+		require(startCol >= 0) { "startCol must be non-negative" }
+		require(endColExclusive > startCol) { "endColExclusive must be greater than startCol" }
+	}
+}
+
 class VirtualTileMap {
 
 	private val rows = HashMap<Int, ByteArray>()
@@ -54,17 +61,25 @@ class VirtualTileMap {
 		}
 	}
 
-	fun rebuildFromDocument(lineCount: Int, lineText: (Int) -> String, colMapper: (Int, Int) -> Int) {
+	fun rebuildFromDocument(
+		lineCount: Int,
+		lineText: (Int) -> String,
+		spanMapper: (Int, Int) -> VisualSpan
+	) {
 		rows.clear()
 		extentCache.clear()
 		for (line in 0 until lineCount) {
 			val text = lineText(line)
 			if (text.isEmpty()) continue
-			val lastVisualCol = colMapper(line, text.length - 1)
-			val cells = ByteArray(lastVisualCol + 1)
+			val spans = text.indices.map { spanMapper(line, it) }
+			val lineWidth = spans.maxOfOrNull { it.endColExclusive } ?: continue
+			val cells = ByteArray(lineWidth)
 			for (i in text.indices) {
 				if (!text[i].isWhitespace()) {
-					cells[colMapper(line, i)] = Tile.SOLID
+					val span = spans[i]
+					for (col in span.startCol until span.endColExclusive) {
+						cells[col] = Tile.SOLID
+					}
 				}
 			}
 			rows[line] = cells

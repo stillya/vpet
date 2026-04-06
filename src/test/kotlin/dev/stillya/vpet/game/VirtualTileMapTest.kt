@@ -154,12 +154,12 @@ class VirtualTileMapTest {
 		tileMap.rebuildFromDocument(
 			lineCount = 1,
 			lineText = { "\tfoo" },
-			colMapper = { _, col ->
+			spanMapper = { _, col ->
 				when (col) {
-					0 -> 0
-					1 -> 4
-					2 -> 5
-					3 -> 6
+					0 -> VisualSpan(0, 4)
+					1 -> VisualSpan(4, 5)
+					2 -> VisualSpan(5, 6)
+					3 -> VisualSpan(6, 7)
 					else -> error("unexpected column $col")
 				}
 			}
@@ -171,6 +171,75 @@ class VirtualTileMapTest {
 		assertTrue(tileMap.isSolid(0, 6))
 		assertEquals(4..6, tileMap.getExtent(0))
 		assertTrue(tileMap.hasGroundAt(0, 4, 5))
+	}
+
+	@Test
+	fun `rebuildFromDocument handles mixed spaces and tabs`() {
+		tileMap.rebuildFromDocument(
+			lineCount = 1,
+			lineText = { " \t x" },
+			spanMapper = { _, col ->
+				when (col) {
+					0 -> VisualSpan(0, 1)
+					1 -> VisualSpan(1, 5)
+					2 -> VisualSpan(5, 6)
+					3 -> VisualSpan(6, 7)
+					else -> error("unexpected column $col")
+				}
+			}
+		)
+
+		assertFalse(tileMap.isSolid(0, 0))
+		assertFalse(tileMap.isSolid(0, 4))
+		assertFalse(tileMap.isSolid(0, 5))
+		assertTrue(tileMap.isSolid(0, 6))
+		assertEquals(6..6, tileMap.getExtent(0))
+	}
+
+	@Test
+	fun `rebuildFromDocument supports tabs with non four-space visual width`() {
+		tileMap.rebuildFromDocument(
+			lineCount = 1,
+			lineText = { "\tfoo" },
+			spanMapper = { _, col ->
+				when (col) {
+					0 -> VisualSpan(0, 8)
+					1 -> VisualSpan(8, 9)
+					2 -> VisualSpan(9, 10)
+					3 -> VisualSpan(10, 11)
+					else -> error("unexpected column $col")
+				}
+			}
+		)
+
+		assertFalse(tileMap.isSolid(0, 7))
+		assertTrue(tileMap.isSolid(0, 8))
+		assertTrue(tileMap.isSolid(0, 10))
+		assertEquals(8..10, tileMap.getExtent(0))
+	}
+
+	@Test
+	fun `rebuildFromDocument fills every visual cell occupied by widened character spans`() {
+		tileMap.rebuildFromDocument(
+			lineCount = 1,
+			lineText = { "ab" },
+			spanMapper = { _, col ->
+				when (col) {
+					0 -> VisualSpan(0, 1)
+					1 -> VisualSpan(4, 7)
+					else -> error("unexpected column $col")
+				}
+			}
+		)
+
+		assertTrue(tileMap.isSolid(0, 0))
+		assertFalse(tileMap.isSolid(0, 1))
+		assertFalse(tileMap.isSolid(0, 3))
+		assertTrue(tileMap.isSolid(0, 4))
+		assertTrue(tileMap.isSolid(0, 5))
+		assertTrue(tileMap.isSolid(0, 6))
+		assertFalse(tileMap.isSolid(0, 7))
+		assertEquals(0..6, tileMap.getExtent(0))
 	}
 
 	@Test

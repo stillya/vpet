@@ -12,12 +12,14 @@ import javax.swing.JPanel
 class VPetSettingsConfigurable : Configurable {
 	private var panel: JPanel? = null
 	private var xmasModeCheckbox: JCheckBox? = null
+	private var debugRenderCheckbox: JCheckBox? = null
 	private var catVariantComboBox: JComboBox<CatVariant>? = null
 
 	override fun getDisplayName(): String = "VPet"
 
 	override fun createComponent(): JComponent {
 		xmasModeCheckbox = JCheckBox("Enable Xmas Mode")
+		debugRenderCheckbox = JCheckBox("Enable Debug Render")
 
 		catVariantComboBox = ComboBox(CatVariant.entries.toTypedArray())
 		catVariantComboBox!!.renderer = object : javax.swing.DefaultListCellRenderer() {
@@ -38,6 +40,7 @@ class VPetSettingsConfigurable : Configurable {
 
 		panel = FormBuilder.createFormBuilder()
 			.addComponent(xmasModeCheckbox!!)
+			.addComponent(debugRenderCheckbox!!)
 			.addLabeledComponent(JBLabel("Cat variant:"), catVariantComboBox!!)
 			.addComponentFillVertically(JPanel(), 0)
 			.panel
@@ -48,24 +51,28 @@ class VPetSettingsConfigurable : Configurable {
 	override fun isModified(): Boolean {
 		val settings = VPetSettings.getInstance()
 		return xmasModeCheckbox?.isSelected != settings.xmasModeEnabled ||
+				debugRenderCheckbox?.isSelected != settings.debugRenderEnabled ||
 				catVariantComboBox?.selectedItem != settings.catVariant
 	}
 
 	override fun apply() {
 		val settings = VPetSettings.getInstance()
 		settings.xmasModeEnabled = xmasModeCheckbox?.isSelected ?: false
+		settings.debugRenderEnabled = debugRenderCheckbox?.isSelected ?: false
 		settings.catVariant = catVariantComboBox?.selectedItem as? CatVariant ?: CatVariant.DEFAULT
 	}
 
 	override fun reset() {
 		val settings = VPetSettings.getInstance()
 		xmasModeCheckbox?.isSelected = settings.xmasModeEnabled
+		debugRenderCheckbox?.isSelected = settings.debugRenderEnabled
 		catVariantComboBox?.selectedItem = settings.catVariant
 	}
 
 	override fun disposeUIResources() {
 		panel = null
 		xmasModeCheckbox = null
+		debugRenderCheckbox = null
 		catVariantComboBox = null
 	}
 }

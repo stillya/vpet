@@ -2,6 +2,7 @@ package dev.stillya.vpet.game.rendering
 
 import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.editor.LogicalPosition
+import kotlin.math.ceil
 
 class VisualColumnMapper(editor: Editor) {
 
@@ -16,4 +17,6 @@ class VisualColumnMapper(editor: Editor) {
 	fun toVisualCol(pixelX: Int): Int = (pixelX - leftMargin) / charWidth
 
 	fun toVisualColF(pixelX: Int): Float = (pixelX - leftMargin).toFloat() / charWidth
+
+	fun toVisualColCeil(pixelX: Int): Int = ceil(toVisualColF(pixelX).toDouble()).toInt()
 }
