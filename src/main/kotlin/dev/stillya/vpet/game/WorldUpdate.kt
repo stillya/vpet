@@ -5,12 +5,14 @@ import dev.stillya.vpet.game.ecs.Physics
 import dev.stillya.vpet.game.ecs.SpatialGrid
 import dev.stillya.vpet.game.ecs.World
 import dev.stillya.vpet.game.ecs.components.Collectible
+import dev.stillya.vpet.game.ecs.components.Collecting
 import dev.stillya.vpet.game.ecs.components.PhaseState
 import dev.stillya.vpet.game.ecs.components.PhysicsState
 import dev.stillya.vpet.game.ecs.components.SpriteState
 import dev.stillya.vpet.game.ecs.components.Transform
 import dev.stillya.vpet.game.ecs.components.Velocity
 import dev.stillya.vpet.game.ecs.systems.AnimationSystem
+import dev.stillya.vpet.game.ecs.systems.CollectionSystem
 import dev.stillya.vpet.game.ecs.systems.CollisionSystem
 import dev.stillya.vpet.game.input.InputState
 import dev.stillya.vpet.game.physics.PhysicsBody
@@ -68,9 +70,15 @@ object WorldUpdate {
 		var scoreGain = 0
 		for (id in collected) {
 			val collectible = reg.get<Collectible>(id)
-			if (collectible != null) scoreGain += collectible.value
-			reg.markForRemoval(id)
+			val entityTransform = reg.get<Transform>(id)
+			if (collectible != null && entityTransform != null) {
+				scoreGain += collectible.value
+				reg.add(id, Collecting(startY = entityTransform.y))
+				reg.remove<Collectible>(id)
+			}
 		}
+
+		CollectionSystem.updateCollecting(reg, dt)
 		reg.flushRemovals()
 
 		AnimationSystem.updateAnimations(reg, dt)

@@ -96,6 +96,8 @@ class RenderSystem(
 			if (frames.isEmpty()) continue
 
 			val coinLine = t.y.toTileInt()
+			if (coinLine < 0) continue
+
 			val lineFrac = t.y - coinLine
 			val baseY = editor.logicalPositionToXY(LogicalPosition(coinLine, 0)).y
 			val pixelY = baseY + (lineFrac * lineHeight).toInt()
