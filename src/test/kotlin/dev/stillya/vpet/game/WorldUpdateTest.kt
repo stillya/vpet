@@ -11,6 +11,7 @@ import dev.stillya.vpet.game.ecs.Physics
 import dev.stillya.vpet.game.ecs.World
 import dev.stillya.vpet.game.ecs.components.AnimationComponent
 import dev.stillya.vpet.game.ecs.components.Collectible
+import dev.stillya.vpet.game.ecs.components.Collecting
 import dev.stillya.vpet.game.ecs.components.PhaseState
 import dev.stillya.vpet.game.ecs.components.PhysicsState
 import dev.stillya.vpet.game.ecs.components.SpriteState
@@ -131,7 +132,9 @@ class WorldUpdateTest {
 		val (frame, _) = WorldUpdate.tick(world, InputState(), 0.016f, character, tileMap, 0..10)
 
 		assertEquals(initialScore + 1, frame.world.score)
-		assertTrue("Collected bug should be removed", !frame.world.registry.exists(bug))
+		assertTrue("Collected bug should still exist during bounce", frame.world.registry.exists(bug))
+		assertTrue("Collected bug should have Collecting component", frame.world.registry.has<Collecting>(bug))
+		assertTrue("Collected bug should not have Collectible component", !frame.world.registry.has<Collectible>(bug))
 	}
 
 	@Test

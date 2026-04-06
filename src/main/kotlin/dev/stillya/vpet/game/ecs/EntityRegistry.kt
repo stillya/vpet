@@ -37,6 +37,14 @@ class EntityRegistry {
 	fun <T : Any> has(id: EntityID, type: KClass<T>): Boolean =
 		components[id]?.containsKey(type) == true
 
+	inline fun <reified T : Any> remove(id: EntityID) {
+		remove(id, T::class)
+	}
+
+	fun <T : Any> remove(id: EntityID, type: KClass<T>) {
+		components[id]?.remove(type)
+	}
+
 	fun allWith(vararg types: KClass<*>): List<EntityID> =
 		components.entries
 			.filter { (_, comps) -> types.all { it in comps } }

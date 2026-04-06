@@ -6,6 +6,23 @@
 
 ### Added
 
+- **Coin bounce animation**: Coins now bounce upward when collected, providing satisfying
+  visual feedback with a parabolic arc animation (0.4s, 2 tiles high)
+
+### Fixed
+
+- **Java plugin dependency**: Removed Java plugin as a required dependency to improve
+  compatibility
+
+### Changed
+
+- **Coordinate calculations**: Reduced code duplication in rendering coordinate
+  calculations
+
+## [0.2.2] - 2026-04-06
+
+### Added
+
 - **Debug render mode**: Added an optional in-editor debug overlay for game rendering
 - **FPS counter**: Show current renderer FPS inside debug mode
 
