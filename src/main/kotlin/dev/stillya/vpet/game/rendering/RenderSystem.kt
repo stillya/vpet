@@ -11,6 +11,7 @@ import dev.stillya.vpet.game.ecs.components.Transform
 import dev.stillya.vpet.game.resources.AnimationCache
 import java.awt.BasicStroke
 import java.awt.Color
+import java.awt.Font
 import java.awt.Graphics2D
 import java.awt.RenderingHints
 import java.awt.geom.AffineTransform
@@ -113,7 +114,8 @@ class RenderSystem(
 		g2d: Graphics2D,
 		world: World,
 		tileMap: VirtualTileMap,
-		bounds: IntRange
+		bounds: IntRange,
+		fps: Int
 	) {
 		val lineHeight = editor.lineHeight
 		val groundLine = world.displayLine
@@ -157,6 +159,12 @@ class RenderSystem(
 				g2d.drawRect(bx, bodyY, bEndX - bx, lineHeight)
 			}
 		}
+
+		g2d.color = Color(0, 0, 0, 170)
+		g2d.fillRoundRect(8, 8, 72, 24, 8, 8)
+		g2d.color = Color(255, 255, 255, 220)
+		g2d.font = g2d.font.deriveFont(Font.BOLD, 12f)
+		g2d.drawString("FPS: $fps", 16, 24)
 
 		g2d.stroke = oldStroke
 	}

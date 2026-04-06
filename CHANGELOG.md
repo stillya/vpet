@@ -6,6 +6,21 @@
 
 ### Added
 
+- **Debug render mode**: Added an optional in-editor debug overlay for game rendering
+- **FPS counter**: Show current renderer FPS inside debug mode
+
+### Fixed
+
+- **Editor tile map alignment**: Improved tile-map reconstruction for editor rendering so
+  tab-indented code and widened visual spans map more accurately to the game collision
+  grid
+- **Kotlin runtime compatibility**: Bundle the matching Kotlin standard library with the
+  plugin to avoid missing runtime helpers on older supported IDE baselines
+
+## [0.2.1] - 2026-04-06
+
+### Added
+
 - **Build for 2026.1+**: Updated plugin to be compatible with IntelliJ IDEA 2026.1 and
   later versions
 
