@@ -26,12 +26,6 @@ class GreedyPlanner(
 		bridges: List<Bridge>
 	): PlanResult {
 		log.trace("Planning from effect: $currentEffect to requirement: $requirement")
-
-		if (requirement.isSatisfiedBy(currentEffect)) {
-			log.trace("Current effect already satisfies requirement")
-			return PlanResult(emptyList(), currentEffect)
-		}
-
 		val selectedBridges = mutableListOf<Bridge>()
 		var effect = currentEffect
 
