@@ -50,8 +50,8 @@ class EntityRegistry {
 		components[id]?.remove(type)
 	}
 
-	fun allWith(vararg types: KClass<*>): List<EntityID> =
-		components.entries
+	fun allWith(vararg types: KClass<*>): Sequence<EntityID> =
+		components.asSequence()
 			.filter { (_, comps) -> types.all { it in comps } }
 			.map { it.key }
 

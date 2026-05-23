@@ -9,7 +9,7 @@ class SpatialGrid(private val cellSize: Int = 4) {
 	private val cells = HashMap<Long, MutableSet<EntityID>>()
 
 	fun rebuild(registry: EntityRegistry) {
-		cells.clear()
+		for (set in cells.values) set.clear()
 		for (id in registry.allWith(Transform::class, AABB::class)) {
 			val t = registry.get<Transform>(id) ?: continue
 			val c = registry.get<AABB>(id) ?: continue

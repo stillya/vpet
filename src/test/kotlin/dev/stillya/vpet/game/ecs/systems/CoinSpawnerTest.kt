@@ -33,7 +33,7 @@ class CoinSpawnerTest {
 		)
 		CoinSpawner.spawnCoins(registry, tileMap, 0..1, count = 3)
 
-		val coins = registry.allWith(AnimationComponent::class, Transform::class, Collectible::class, AABB::class)
+		val coins = registry.allWith(AnimationComponent::class, Transform::class, Collectible::class, AABB::class).toList()
 		assertEquals(3, coins.size)
 
 		coins.forEach { id ->
@@ -60,7 +60,7 @@ class CoinSpawnerTest {
 		)
 		CoinSpawner.spawnCoins(registry, tileMap, 0..1, count = 2)
 
-		val coins = registry.allWith(AnimationComponent::class)
+		val coins = registry.allWith(AnimationComponent::class).toList()
 		assertEquals(2, coins.size)
 	}
 
@@ -74,7 +74,7 @@ class CoinSpawnerTest {
 		)
 		CoinSpawner.spawnCoins(registry, tileMap, 0..1, count = 5)
 
-		val coins = registry.allWith(AnimationComponent::class)
+		val coins = registry.allWith(AnimationComponent::class).toList()
 		assertEquals(0, coins.size)
 	}
 
@@ -89,7 +89,7 @@ class CoinSpawnerTest {
 		)
 		CoinSpawner.spawnCoins(registry, tileMap, 0..2, count = 10)
 
-		val coins = registry.allWith(AnimationComponent::class, Transform::class)
+		val coins = registry.allWith(AnimationComponent::class, Transform::class).toList()
 		assertTrue(coins.size > 0)
 
 		coins.forEach { id ->
@@ -110,7 +110,7 @@ class CoinSpawnerTest {
 		)
 		CoinSpawner.spawnCoins(registry, tileMap, 0..2, count = 1)
 
-		val coins = registry.allWith(AnimationComponent::class, Transform::class)
+		val coins = registry.allWith(AnimationComponent::class, Transform::class).toList()
 		assertEquals(1, coins.size)
 
 		val transform = registry.get<Transform>(coins.first())!!

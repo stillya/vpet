@@ -7,28 +7,17 @@ import dev.stillya.vpet.game.resources.AnimationCache
 
 object AnimationSystem {
 	fun updateAnimations(registry: EntityRegistry, dt: Float) {
-		val entities = registry.allWith(AnimationComponent::class)
-
-		for (entityId in entities) {
+		for (entityId in registry.allWith(AnimationComponent::class)) {
 			val component = registry.get<AnimationComponent>(entityId) ?: continue
 			val resource = AnimationCache.get(component.resourceId) ?: continue
 
 			val frameCount = resource.animation.frameCount
 			if (frameCount == 0) continue
 
-			val newElapsed = component.elapsed + dt
-
-			if (newElapsed >= Physics.FRAME_ADVANCE_INTERVAL) {
-				val nextFrame = (component.currentFrame + 1) % frameCount
-				val updatedComponent = AnimationComponent(
-					resourceId = component.resourceId,
-					currentFrame = nextFrame,
-					elapsed = newElapsed - Physics.FRAME_ADVANCE_INTERVAL
-				)
-				registry.add(entityId, updatedComponent)
-			} else {
-				val updatedComponent = component.copy(elapsed = newElapsed)
-				registry.add(entityId, updatedComponent)
+			component.elapsed += dt
+			if (component.elapsed >= Physics.FRAME_ADVANCE_INTERVAL) {
+				component.currentFrame = (component.currentFrame + 1) % frameCount
+				component.elapsed -= Physics.FRAME_ADVANCE_INTERVAL
 			}
 		}
 	}

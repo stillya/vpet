@@ -18,7 +18,6 @@ import javax.swing.Icon
 import javax.swing.ImageIcon
 import kotlin.math.roundToInt
 
-// TODO: Add caching
 class DefaultIconRenderer(project: Project) : IconRenderer {
 	private val settings
 		get() = VPetSettings.getInstance()
@@ -36,6 +35,7 @@ class DefaultIconRenderer(project: Project) : IconRenderer {
 	private val verticalOffset: Int = -8
 	private var effect: Effect? = null
 	private val epochManager = AnimationEpochManager()
+	private val renderCache = mutableMapOf<String, List<Icon>>()
 
 	companion object {
 		private val log = logger<DefaultIconRenderer>()
@@ -105,6 +105,9 @@ class DefaultIconRenderer(project: Project) : IconRenderer {
 	}
 
 	override fun setFlipped(flipped: Boolean) {
+		if (isFlipped != flipped) {
+			renderCache.clear()
+		}
 		isFlipped = flipped
 	}
 
@@ -168,39 +171,44 @@ class DefaultIconRenderer(project: Project) : IconRenderer {
 	}
 
 	private fun doRender(animation: Animation): List<Icon> {
-		return animation.extractFrames().map { frameImage ->
-			val scaledWidth = (frameImage.width * scaleValue).roundToInt()
-			val scaledHeight = (frameImage.height * scaleValue).roundToInt()
+		val key = "${animation.name}:$isFlipped"
+		return renderCache.getOrPut(key) {
+			animation.extractFrames().map { frameImage -> buildIcon(frameImage) }
+		}
+	}
 
-			val processedImage = if (isFlipped) {
-				val tx = AffineTransform.getScaleInstance(-1.0, 1.0)
-				tx.translate(-frameImage.width.toDouble(), 0.0)
-				val flippedImage = AffineTransformOp(tx, AffineTransformOp.TYPE_NEAREST_NEIGHBOR)
-					.filter(frameImage, null)
-				flippedImage.getScaledInstance(scaledWidth, scaledHeight, Image.SCALE_DEFAULT)
-			} else {
-				frameImage.getScaledInstance(scaledWidth, scaledHeight, Image.SCALE_DEFAULT)
-			}
+	private fun buildIcon(frameImage: java.awt.image.BufferedImage): Icon {
+		val scaledWidth = (frameImage.width * scaleValue).roundToInt()
+		val scaledHeight = (frameImage.height * scaleValue).roundToInt()
 
-			object : ImageIcon(processedImage) {
-				override fun paintIcon(
-					c: java.awt.Component?,
-					g: java.awt.Graphics,
-					x: Int,
-					y: Int
-				) {
-					if (settings.xmasModeEnabled) {
-						if (effect == null) {
-							effect = SnowflakeEffect(scaledWidth, scaledHeight)
-						}
-						val g2d = g.create() as java.awt.Graphics2D
-						g2d.translate(x, y)
-						val animState = currentAnimation?.state ?: AnimationState.IDLE
-						effect?.apply(g2d, animState)
-						g2d.dispose()
+		val processedImage = if (isFlipped) {
+			val tx = AffineTransform.getScaleInstance(-1.0, 1.0)
+			tx.translate(-frameImage.width.toDouble(), 0.0)
+			val flippedImage = AffineTransformOp(tx, AffineTransformOp.TYPE_NEAREST_NEIGHBOR)
+				.filter(frameImage, null)
+			flippedImage.getScaledInstance(scaledWidth, scaledHeight, Image.SCALE_DEFAULT)
+		} else {
+			frameImage.getScaledInstance(scaledWidth, scaledHeight, Image.SCALE_DEFAULT)
+		}
+
+		return object : ImageIcon(processedImage) {
+			override fun paintIcon(
+				c: java.awt.Component?,
+				g: java.awt.Graphics,
+				x: Int,
+				y: Int
+			) {
+				if (settings.xmasModeEnabled) {
+					if (effect == null) {
+						effect = SnowflakeEffect(scaledWidth, scaledHeight)
 					}
-					super.paintIcon(c, g, x, y + verticalOffset)
+					val g2d = g.create() as java.awt.Graphics2D
+					g2d.translate(x, y)
+					val animState = currentAnimation?.state ?: AnimationState.IDLE
+					effect?.apply(g2d, animState)
+					g2d.dispose()
 				}
+				super.paintIcon(c, g, x, y + verticalOffset)
 			}
 		}
 	}
