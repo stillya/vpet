@@ -1,7 +1,7 @@
 package dev.stillya.vpet.game.ecs.components
 
-data class AnimationComponent(
+class AnimationComponent(
 	val resourceId: String,
-	val currentFrame: Int = 0,
-	val elapsed: Float = 0f
+	var currentFrame: Int = 0,
+	var elapsed: Float = 0f
 )

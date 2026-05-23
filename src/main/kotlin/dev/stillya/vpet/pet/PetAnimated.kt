@@ -52,6 +52,9 @@ class PetAnimated(
 
 	private var isObserving = AtomicBoolean(false)
 
+	private var cachedAnimationKey: Pair<String, Int>? = null
+	private var cachedAnimation: Animation? = null
+
 	@Volatile
 	private var currentState: AnimationState = AnimationState.IDLE
 
@@ -325,7 +328,9 @@ class PetAnimated(
 	}
 
 	private fun createAnimation(tag: String, loop: Int = 0): Animation? {
-		return runCatching {
+		val key = tag to loop
+		if (key == cachedAnimationKey) return cachedAnimation
+		val anim = runCatching {
 			Animation(
 				name = tag,
 				loop = loop,
@@ -334,6 +339,10 @@ class PetAnimated(
 				state = AnimationState.IDLE
 			)
 		}.getOrNull()
+		cachedAnimationKey = key
+		cachedAnimation = anim
+
+		return anim
 	}
 
 	private fun processMovement(input: InputState, ctx: TickContext, dt: Float): Velocity {

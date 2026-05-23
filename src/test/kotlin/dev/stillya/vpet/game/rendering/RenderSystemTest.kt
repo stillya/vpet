@@ -70,7 +70,7 @@ class RenderSystemTest {
 		world.registry.add(coin2, Transform(x = 20f, y = 6f))
 		world.registry.add(coin2, AnimationComponent(resourceId = "coin_idle"))
 
-		val coins = world.registry.allWith(AnimationComponent::class, Transform::class)
+		val coins = world.registry.allWith(AnimationComponent::class, Transform::class).toList()
 		assertEquals("Should have 2 coins", 2, coins.size)
 	}
 
@@ -102,7 +102,7 @@ class RenderSystemTest {
 		val otherEntity = world.registry.create()
 		world.registry.add(otherEntity, Transform(x = 25f, y = 7f))
 
-		val coinsWithAnim = world.registry.allWith(AnimationComponent::class, Transform::class)
+		val coinsWithAnim = world.registry.allWith(AnimationComponent::class, Transform::class).toList()
 		assertEquals("Should find only entities with both components", 2, coinsWithAnim.size)
 	}
 }

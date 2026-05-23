@@ -65,11 +65,11 @@ class EntityRegistryTest {
 		val b = reg.create()
 		reg.add(b, Transform())
 
-		val both = reg.allWith(Transform::class, Velocity::class)
+		val both = reg.allWith(Transform::class, Velocity::class).toList()
 		assertEquals(1, both.size)
 		assertTrue(a in both)
 
-		val justTransform = reg.allWith(Transform::class)
+		val justTransform = reg.allWith(Transform::class).toList()
 		assertEquals(2, justTransform.size)
 	}
 
