@@ -9,7 +9,7 @@ import com.intellij.openapi.util.Disposer
 import dev.stillya.vpet.AtlasLoader
 import dev.stillya.vpet.game.ecs.World
 import dev.stillya.vpet.game.ecs.systems.CoinSpawner
-import dev.stillya.vpet.game.input.InputState
+import dev.stillya.vpet.game.input.InputTracker
 import dev.stillya.vpet.game.rendering.GameRenderer
 import dev.stillya.vpet.game.resources.AnimationCache
 import java.awt.event.ComponentAdapter
@@ -18,9 +18,9 @@ import java.awt.event.KeyEvent
 import javax.swing.Timer
 
 class GameEngine(
-	private val editor: Editor?,
-	private val character: Character?,
-	private val renderer: GameRenderer?,
+	private val editor: Editor,
+	private val character: Character,
+	private val renderer: GameRenderer,
 	private val onExit: () -> Unit,
 ) {
 	private var world: World = World()
@@ -29,28 +29,24 @@ class GameEngine(
 
 	private var coinsSpawned = false
 	private var lastTickNanos = 0L
-	private var jumpWasPressed = false
-	private val keysHeld = mutableSetOf<Int>() // TODO: replace with proper input handling
+	private val inputTracker = InputTracker()
 
 	val finalScore: Int get() = world.score
 
 	private val resizeListener = object : ComponentAdapter() {
 		override fun componentResized(e: ComponentEvent) {
 			val cc = e.component
-			renderer?.setBounds(0, 0, cc.width, cc.height)
+			renderer.setBounds(0, 0, cc.width, cc.height)
 		}
 	}
 
 	companion object {
 		private const val TICK_MS = 16
-		private val LOG = logger<GameEngine>()
+		private val log = logger<GameEngine>()
 	}
 
 	fun start(initialWorld: World, disposable: Disposable) {
 		require(timer == null) { "GameEngine already started" }
-		requireNotNull(editor) { "GameEngine requires a non-null editor" }
-		requireNotNull(renderer) { "GameEngine requires a non-null renderer" }
-		requireNotNull(character) { "GameEngine requires a non-null character" }
 
 		world = initialWorld
 
@@ -74,11 +70,10 @@ class GameEngine(
 	fun stop() {
 		timer?.stop()
 		timer = null
-		keysHeld.clear()
-		jumpWasPressed = false
+		inputTracker.reset()
 		coinsSpawned = false
 		tileMapSyncer = null
-		val cc = editor?.contentComponent ?: return
+		val cc = editor.contentComponent
 		cc.remove(renderer)
 		cc.removeComponentListener(resizeListener)
 		cc.repaint()
@@ -92,9 +87,9 @@ class GameEngine(
 		val dt = ((now - lastTickNanos) / 1_000_000_000f).coerceAtMost(0.05f)
 		lastTickNanos = now
 
-		val input = gatherInput()
+		val input = inputTracker.snapshot()
 
-		val lastDocumentLine = ((editor?.document?.lineCount ?: 1) - 1).coerceAtLeast(0)
+		val lastDocumentLine = (editor.document.lineCount - 1).coerceAtLeast(0)
 		val visibleRange = 0..lastDocumentLine
 
 		if (!coinsSpawned) {
@@ -103,30 +98,16 @@ class GameEngine(
 			coinsSpawned = true
 		}
 
-		val currentCharacter = character ?: return
-
 		try {
-			val (frame, intent) = WorldUpdate.tick(world, input, dt, currentCharacter, tileMap, visibleRange)
+			val (frame, intent) = WorldUpdate.tick(world, input, dt, character, tileMap, visibleRange)
 			world = frame.world
 
-			renderer?.update(frame, intent.animation, tileMap)
-			renderer?.repaint()
+			renderer.update(frame, intent.animation, tileMap)
+			renderer.repaint()
 		} catch (e: Exception) {
-			LOG.error("Game tick failed, stopping game loop", e)
+			log.error("Game tick failed, stopping game loop", e)
 			onExit()
 		}
-	}
-
-	fun gatherInput(): InputState {
-		val move = when {
-			KeyEvent.VK_LEFT in keysHeld && KeyEvent.VK_RIGHT !in keysHeld -> -1
-			KeyEvent.VK_RIGHT in keysHeld && KeyEvent.VK_LEFT !in keysHeld -> 1
-			else -> 0
-		}
-		val jumpPressed = KeyEvent.VK_UP in keysHeld || KeyEvent.VK_SPACE in keysHeld
-		val justPressed = jumpPressed && !jumpWasPressed
-		jumpWasPressed = jumpPressed
-		return InputState(move, justPressed)
 	}
 
 	private fun registerKeyDispatcher(disposable: Disposable) {
@@ -142,12 +123,12 @@ class GameEngine(
 							if (event.keyCode == KeyEvent.VK_ESCAPE) {
 								onExit()
 							} else {
-								keysHeld.add(event.keyCode)
+								inputTracker.press(event.keyCode)
 							}
 						}
 
 						KeyEvent.KEY_RELEASED -> {
-							keysHeld.remove(event.keyCode)
+							inputTracker.release(event.keyCode)
 						}
 					}
 					event.consume()

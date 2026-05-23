@@ -4,6 +4,15 @@
 
 ## [Unreleased]
 
+### Changed
+
+- **Render system caching**: Caches added to the render pipeline to
+  avoid redundant sprite processing each tick
+- **Input system**: Replaced raw AWT key-code set and ad-hoc `gatherInput()` logic inside
+  `GameEngine` with an input subsystem
+
+## [0.2.3] - 2026-04-07
+
 ### Added
 
 - **Coin bounce animation**: Coins now bounce upward when collected, providing satisfying
