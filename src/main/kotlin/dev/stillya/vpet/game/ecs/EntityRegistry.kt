@@ -14,6 +14,11 @@ class EntityRegistry {
 		return id
 	}
 
+	fun register(id: EntityID): EntityID {
+		components[id] = mutableMapOf()
+		return id
+	}
+
 	fun destroy(id: EntityID) {
 		components.remove(id)
 		pendingRemovals.remove(id)

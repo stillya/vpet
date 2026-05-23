@@ -117,17 +117,13 @@ class GameController(private val project: Project) {
 		val visualCol = mapper.toVisualColF(caretPixelX)
 
 		val registry = EntityRegistry()
-		val player = registry.create()
+		val player = registry.register(character.id())
 		registry.add(player, Transform(visualCol, firstVisibleLine.toFloat()))
 		registry.add(player, Velocity(0f, 0f))
 		registry.add(player, PhysicsState(isOnGround = false))
 		registry.add(player, SpriteState())
 		registry.add(player, PhaseState(GamePhase.ENTRANCE))
 		registry.add(player, AABB(2, 2))
-
-		if (character is dev.stillya.vpet.pet.PetAnimated) {
-			character.setEntityId(player)
-		}
 
 		return World(registry = registry, player = player)
 	}
