@@ -4,6 +4,11 @@
 
 ## [Unreleased]
 
+- **Build for 262.+ IntelliJ Platform**: Updated plugin to be compatible with 262 IDE
+  version
+
+## [0.2.4] - 2026-05-24
+
 ### Changed
 
 - **Render system caching**: Caches added to the render pipeline to
