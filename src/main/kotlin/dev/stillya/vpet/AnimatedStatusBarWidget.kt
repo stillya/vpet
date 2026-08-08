@@ -1,8 +1,11 @@
 package dev.stillya.vpet
 
 import com.intellij.openapi.Disposable
+import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.components.service
+import com.intellij.openapi.project.DumbService
 import com.intellij.openapi.project.Project
+import com.intellij.openapi.util.Computable
 import com.intellij.openapi.wm.IconWidgetPresentation
 import com.intellij.openapi.wm.StatusBar
 import com.intellij.openapi.wm.StatusBarWidgetFactory
@@ -152,6 +155,13 @@ class AnimatedStatusBarWidget(
 		)
 
 		curFrames = iconRenderer.render()
+
+		// Project listeners don't fire retroactively, so catch an already running indexing pass
+		val indexing = ApplicationManager.getApplication()
+			.runReadAction(Computable { DumbService.isDumb(project) })
+		if (indexing) {
+			animation.onIndexingStart()
+		}
 	}
 
 	private fun startCursorTracking() {

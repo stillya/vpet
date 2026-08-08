@@ -51,6 +51,7 @@ class PetAnimated(
 	private var animationPlayer: AnimationPlayer = AnimationPlayer(bridges)
 
 	private var isObserving = AtomicBoolean(false)
+	private var isSleeping = AtomicBoolean(false)
 
 	private var cachedAnimationKey: Pair<String, Int>? = null
 	private var cachedAnimation: Animation? = null
@@ -80,6 +81,8 @@ class PetAnimated(
 		atlas = atlasLoader.load(params.atlasPath)
 			?: throw IllegalArgumentException("Atlas not found")
 		image = loadImage(params.imgPath)
+
+		wakeUp()
 
 		val context = renderer.createAnimationContext(AnimationTrigger.IDLE_BEHAVIOR)
 		log.trace("Starting initial transition to IDLE state")
@@ -170,6 +173,7 @@ class PetAnimated(
 
 	override fun onFail() {
 		log.trace("BUILD FAILED - Transitioning to FAILED")
+		wakeUp()
 		exitObservingMode()
 		val sequence = transitionMatrix.transitionTo(currentState, AnimationState.FAILED)
 		if (sequence.first.steps.isNotEmpty()) {
@@ -182,6 +186,7 @@ class PetAnimated(
 
 	override fun onSuccess() {
 		log.trace("BUILD SUCCESS - Transitioning to CELEBRATING")
+		wakeUp()
 		exitObservingMode()
 		val sequence = transitionMatrix.transitionTo(currentState, AnimationState.CELEBRATING)
 		if (sequence.first.steps.isNotEmpty()) {
@@ -194,6 +199,7 @@ class PetAnimated(
 
 	override fun onProgress() {
 		log.trace("BUILD START - Transitioning to RUNNING")
+		wakeUp()
 		exitObservingMode()
 		val sequence = transitionMatrix.transitionTo(currentState, AnimationState.RUNNING)
 		if (sequence.first.steps.isNotEmpty()) {
@@ -206,6 +212,7 @@ class PetAnimated(
 
 	override fun onCompleted() {
 		log.trace("BUILD COMPLETED - Transitioning to CELEBRATING")
+		wakeUp()
 		exitObservingMode()
 		val sequence = transitionMatrix.transitionTo(currentState, AnimationState.CELEBRATING)
 		if (sequence.first.steps.isNotEmpty()) {
@@ -218,6 +225,7 @@ class PetAnimated(
 
 	override fun onOccasion() {
 		log.trace("USER CLICK - Transitioning to OCCASION")
+		wakeUp()
 		exitObservingMode()
 		val sequence = transitionMatrix.transitionTo(currentState, AnimationState.OCCASION)
 		if (sequence.first.steps.isNotEmpty()) {
@@ -225,6 +233,22 @@ class PetAnimated(
 			playTransition(sequence, context)
 		} else {
 			log.trace("No transition available from $currentState to OCCASION, ignoring")
+		}
+	}
+
+	override fun onIndexingStart() {
+		if (isSleeping.compareAndSet(false, true)) {
+			log.trace("INDEXING STARTED - locking frame")
+			renderer.lockFrame()
+		}
+	}
+
+	override fun onIndexingFinish() = wakeUp()
+
+	private fun wakeUp() {
+		if (isSleeping.compareAndSet(true, false)) {
+			log.trace("Waking up - unlocking frame")
+			renderer.unlockFrame()
 		}
 	}
 
@@ -238,6 +262,10 @@ class PetAnimated(
 	}
 
 	override fun onStartObserving() {
+		if (isSleeping.get()) {
+			return
+		}
+
 		if (currentState == AnimationState.IDLE && isObserving.compareAndSet(false, true)) {
 			log.trace("INACTIVITY - Starting OBSERVING mode")
 			observingStartTimeMs = System.currentTimeMillis()

@@ -5,4 +5,6 @@ import java.awt.Graphics2D
 
 interface Effect {
 	fun apply(g: Graphics2D, state: AnimationState)
+
+	val overSprite: Boolean get() = false
 }

@@ -9,6 +9,8 @@ interface Animated {
 	fun onOccasion()
 	fun onStartObserving()
 	fun onCursorMove(isOnLeftSide: Boolean)
+	fun onIndexingStart()
+	fun onIndexingFinish()
 
 	data class Params(
 		val atlasPath: String,

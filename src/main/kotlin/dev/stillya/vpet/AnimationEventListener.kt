@@ -10,6 +10,8 @@ interface AnimationEventListener {
 		FAIL,
 		SUCCESS,
 		PROGRESS,
+		INDEXING_START,
+		INDEXING_FINISH,
 	}
 
 	companion object {

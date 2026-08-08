@@ -13,4 +13,6 @@ interface IconRenderer {
 	): AnimationContext
 
 	fun setFlipped(flipped: Boolean)
+	fun lockFrame()
+	fun unlockFrame()
 }

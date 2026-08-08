@@ -11,13 +11,28 @@ class AnimationEventService(private val project: Project) : AnimationEventListen
 		get() = project.service<Animated>()
 
 	override fun onEvent(event: AnimationEventListener.AnimationEvent) {
-		ActivityTracker.getInstance(project).notifyActivity()
 		when (event) {
-			AnimationEventListener.AnimationEvent.FAIL -> animated.onFail()
-			AnimationEventListener.AnimationEvent.SUCCESS -> animated.onSuccess()
-			AnimationEventListener.AnimationEvent.PROGRESS -> animated.onProgress()
+			AnimationEventListener.AnimationEvent.FAIL -> {
+				notifyActivity()
+				animated.onFail()
+			}
+
+			AnimationEventListener.AnimationEvent.SUCCESS -> {
+				notifyActivity()
+				animated.onSuccess()
+			}
+
+			AnimationEventListener.AnimationEvent.PROGRESS -> {
+				notifyActivity()
+				animated.onProgress()
+			}
+
+			AnimationEventListener.AnimationEvent.INDEXING_START -> animated.onIndexingStart()
+			AnimationEventListener.AnimationEvent.INDEXING_FINISH -> animated.onIndexingFinish()
 		}
 	}
+
+	private fun notifyActivity() = ActivityTracker.getInstance(project).notifyActivity()
 }
 
 @Service(Service.Level.PROJECT)
