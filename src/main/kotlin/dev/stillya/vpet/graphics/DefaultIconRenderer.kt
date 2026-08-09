@@ -6,6 +6,7 @@ import dev.stillya.vpet.IconRenderer
 import dev.stillya.vpet.animation.Animation
 import dev.stillya.vpet.animation.AnimationState
 import dev.stillya.vpet.animation.INFINITE
+import dev.stillya.vpet.graphics.effect.SleepEffect
 import dev.stillya.vpet.graphics.effect.SnowflakeEffect
 import dev.stillya.vpet.settings.VPetSettings
 import java.awt.Image
@@ -29,11 +30,15 @@ class DefaultIconRenderer(project: Project) : IconRenderer {
 
 	@Volatile
 	private var isFlipped: Boolean = false
+
+	@Volatile
+	private var locked: Boolean = false
 	private val currentLoopCount: AtomicInteger = AtomicInteger(0)
 
 	private val scaleValue: Double = 1.2
 	private val verticalOffset: Int = -8
-	private var effect: Effect? = null
+	private var snowEffect: Effect? = null
+	private var sleepEffect: Effect? = null
 	private val epochManager = AnimationEpochManager()
 	private val renderCache = mutableMapOf<String, List<Icon>>()
 
@@ -58,6 +63,29 @@ class DefaultIconRenderer(project: Project) : IconRenderer {
 	}
 
 	override fun render(): List<Icon> {
+		val frames = if (locked) lockedFrame() else renderInternal()
+		if (activeEffect == EffectKind.NONE) return frames
+
+		// An effect animates inside paintIcon, and the widget's icon flow goes through
+		// distinctUntilChanged, so only a distinct instance triggers the next repaint
+		return frames.map { object : Icon by it {} }
+	}
+
+	private fun lockedFrame(): List<Icon> {
+		val frame = currentAnimation?.let { doRender(it).firstOrNull() }
+			?: renderInternal().firstOrNull()
+		return frame?.let { listOf(it) } ?: emptyList()
+	}
+
+	override fun lockFrame() {
+		locked = true
+	}
+
+	override fun unlockFrame() {
+		locked = false
+	}
+
+	private fun renderInternal(): List<Icon> {
 		currentAnimation?.let { current ->
 			if (!validateAnimation(current)) {
 				log.trace("Animation '${current.name}' no longer valid, finding next")
@@ -198,18 +226,33 @@ class DefaultIconRenderer(project: Project) : IconRenderer {
 				x: Int,
 				y: Int
 			) {
-				if (settings.xmasModeEnabled) {
-					if (effect == null) {
-						effect = SnowflakeEffect(scaledWidth, scaledHeight)
-					}
-					val g2d = g.create() as java.awt.Graphics2D
-					g2d.translate(x, y)
-					val animState = currentAnimation?.state ?: AnimationState.IDLE
-					effect?.apply(g2d, animState)
-					g2d.dispose()
-				}
+				val effect = resolveEffect(scaledWidth, scaledHeight)
+				if (effect != null && !effect.overSprite) paintEffect(effect, g, x, y)
 				super.paintIcon(c, g, x, y + verticalOffset)
+				if (effect != null && effect.overSprite) paintEffect(effect, g, x, y)
 			}
 		}
+	}
+
+	private enum class EffectKind { NONE, SLEEP, SNOW }
+
+	private val activeEffect: EffectKind
+		get() = when {
+			locked -> EffectKind.SLEEP
+			settings.xmasModeEnabled -> EffectKind.SNOW
+			else -> EffectKind.NONE
+		}
+
+	private fun resolveEffect(width: Int, height: Int): Effect? = when (activeEffect) {
+		EffectKind.SLEEP -> sleepEffect ?: SleepEffect(width, height).also { sleepEffect = it }
+		EffectKind.SNOW -> snowEffect ?: SnowflakeEffect(width, height).also { snowEffect = it }
+		EffectKind.NONE -> null
+	}
+
+	private fun paintEffect(effect: Effect, g: java.awt.Graphics, x: Int, y: Int) {
+		val g2d = g.create() as java.awt.Graphics2D
+		g2d.translate(x, y)
+		effect.apply(g2d, currentAnimation?.state ?: AnimationState.IDLE)
+		g2d.dispose()
 	}
 }

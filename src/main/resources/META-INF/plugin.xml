@@ -64,6 +64,10 @@
 				  topic="com.intellij.execution.ExecutionListener"/>
 	</projectListeners>
 	<projectListeners>
+		<listener class="dev.stillya.vpet.listener.IndexingEventListener"
+				  topic="com.intellij.openapi.project.DumbService$DumbModeListener"/>
+	</projectListeners>
+	<projectListeners>
 		<listener class="dev.stillya.vpet.service.AnimationEventService"
 				  topic="dev.stillya.vpet.AnimationEventListener"/>
 	</projectListeners>

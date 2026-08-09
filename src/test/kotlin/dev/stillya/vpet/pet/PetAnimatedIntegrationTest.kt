@@ -276,14 +276,84 @@ class PetAnimatedIntegrationTest : LightPlatform4TestCase() {
 
 		assertTrue("Should flip when cursor moves to different sides", flippedLeft || flippedRight)
 	}
+
+	@Test
+	fun testIndexingLocksAndUnlocksTheFrame() {
+		petAnimated.onIndexingStart()
+		assertTrue("Frame should be locked while indexing", rendererSpy.isLocked)
+
+		petAnimated.onIndexingFinish()
+		assertFalse("Frame should be unlocked once indexing is done", rendererSpy.isLocked)
+	}
+
+	@Test
+	fun testIndexingDoesNotEnqueueAnimations() {
+		rendererSpy.clear()
+
+		petAnimated.onIndexingStart()
+
+		assertEquals(
+			"Sleeping must not touch the animation queue",
+			0,
+			rendererSpy.enqueuedAnimations.size
+		)
+	}
+
+	@Test
+	fun testBuildWakesUpTheSleepingPet() {
+		petAnimated.onIndexingStart()
+		rendererSpy.clear()
+
+		petAnimated.onProgress()
+
+		assertFalse("Build should wake the pet", rendererSpy.isLocked)
+		assertTrue(
+			"Woken pet should play the running animation",
+			rendererSpy.collectChain().any { it.name == "Run" }
+		)
+	}
+
+	@Test
+	fun testIndexingFinishAfterBuildAlreadyWokeUpIsNoOp() {
+		petAnimated.onIndexingStart()
+		petAnimated.onProgress()
+		rendererSpy.clear()
+
+		petAnimated.onIndexingFinish()
+
+		assertFalse(rendererSpy.isLocked)
+		assertEquals(
+			"A late exitDumbMode must not disturb the running animation",
+			0,
+			rendererSpy.enqueuedAnimations.size
+		)
+	}
+
+	@Test
+	fun testObservingIsSuppressedWhileSleeping() {
+		petAnimated.onIndexingStart()
+		rendererSpy.clear()
+
+		petAnimated.onStartObserving()
+
+		assertEquals(
+			"Observing would clear the locked frame and flip the sprite",
+			0,
+			rendererSpy.enqueuedAnimations.size
+		)
+	}
 }
 
 class IconRendererSpy(project: Project) : IconRenderer {
 	val enqueuedAnimations = mutableListOf<Animation>()
 	private var flippedState: Boolean = false
+	private var lockedState: Boolean = false
 
 	val isFlipped: Boolean
 		get() = flippedState
+
+	val isLocked: Boolean
+		get() = lockedState
 
 	override fun enqueue(animation: Animation) {
 		enqueuedAnimations.add(animation)
@@ -303,9 +373,18 @@ class IconRendererSpy(project: Project) : IconRenderer {
 		flippedState = flipped
 	}
 
+	override fun lockFrame() {
+		lockedState = true
+	}
+
+	override fun unlockFrame() {
+		lockedState = false
+	}
+
 	fun clear() {
 		enqueuedAnimations.clear()
 		flippedState = false
+		lockedState = false
 	}
 
 	fun collectChain(): List<Animation> {
