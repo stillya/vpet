@@ -6,6 +6,7 @@ import dev.stillya.vpet.animation.AnimationState
 import dev.stillya.vpet.animation.INFINITE
 import dev.stillya.vpet.config.AsepriteJsonAtlasLoader
 import dev.stillya.vpet.config.SpriteSheetAtlas
+import dev.stillya.vpet.settings.VPetSettings
 import org.junit.Test
 import java.awt.Image
 import javax.imageio.ImageIO
@@ -62,12 +63,19 @@ class DefaultIconRendererTest : LightPlatform4TestCase() {
 
 	@Test
 	fun testWithoutAnyEffectFramesAreReusedAsIs() {
-		renderer.enqueue(animation(WALK, loop = INFINITE))
-		val first = renderer.render()
-		val second = renderer.render()
+		val settings = VPetSettings.getInstance()
+		val xmasModeWasEnabled = settings.xmasModeEnabled
+		settings.xmasModeEnabled = false
+		try {
+			renderer.enqueue(animation(WALK, loop = INFINITE))
+			val first = renderer.render()
+			val second = renderer.render()
 
-		first.forEachIndexed { i, icon ->
-			assertSame("No effect is active, frames should come straight from the cache", icon, second[i])
+			first.forEachIndexed { i, icon ->
+				assertSame("No effect is active, frames should come straight from the cache", icon, second[i])
+			}
+		} finally {
+			settings.xmasModeEnabled = xmasModeWasEnabled
 		}
 	}
 
