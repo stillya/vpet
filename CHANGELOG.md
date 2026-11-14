@@ -6,6 +6,8 @@
 
 - **Build for 263.+ IntelliJ Platform**: Updated plugin to be compatible with 263 IDE
   version
+- **Christmas Mode**: Festive snowflakes and snowdrifts effect is enabled by default
+  again
 
 ## [0.2.5] - 2026-07-18
 
