@@ -4,6 +4,13 @@
 
 ## [Unreleased]
 
+- **Build for 263.+ IntelliJ Platform**: Updated plugin to be compatible with 263 IDE
+  version
+
+## [0.2.5] - 2026-07-18
+
+### Changed
+
 - **Build for 262.+ IntelliJ Platform**: Updated plugin to be compatible with 262 IDE
   version
 
