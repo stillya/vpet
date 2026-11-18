@@ -2,6 +2,7 @@
 # libraries
 junit = "4.13.2"
 opentest4j = "1.3.0"
+lincheck = "2.37"
 
 # plugins
 changelog = "2.4.0"
@@ -14,6 +15,7 @@ jackson = "2.15.2"
 [libraries]
 junit = { group = "junit", name = "junit", version.ref = "junit" }
 jacksonDatabind = { group = "com.fasterxml.jackson.core", name = "jackson-databind", version.ref = "jackson" }
+lincheck = { group = "org.jetbrains.kotlinx", name = "lincheck", version.ref = "lincheck" }
 
 [plugins]
 changelog = { id = "org.jetbrains.changelog", version.ref = "changelog" }
